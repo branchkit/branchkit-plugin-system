@@ -1,0 +1,107 @@
+<div id="settings-table-container" class="settings-table"
+     data-signals='{"volume": {{.Volume}}, "muted": {{.Muted}}, "uid": "", "device_type": ""}'>
+    <div class="settings-row" style="grid-template-columns: 1fr 1fr;">
+        <div class="label">Volume</div>
+        <div style="text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+            <button style="font-size: 13px; padding: 2px 10px; min-width: 28px;"
+                    data-on:click="$volume = {{.VolumeMinus}}; @post('/v1/plugins/system/hooks/set-volume')">&#8722;</button>
+            <span style="font-family: 'SF Mono', monospace; min-width: 40px; text-align: center;">{{.Volume}}%</span>
+            <button style="font-size: 13px; padding: 2px 10px; min-width: 28px;"
+                    data-on:click="$volume = {{.VolumePlus}}; @post('/v1/plugins/system/hooks/set-volume')">+</button>
+        </div>
+    </div>
+    <div class="settings-row" style="grid-template-columns: 1fr 1fr;">
+        <div class="label">Mute</div>
+        <div style="text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+            <button style="font-size: 13px; padding: 2px 10px; min-width: 40px; {{if .Muted}}font-weight: bold;{{end}}"
+                    data-on:click="$muted = true; @post('/v1/plugins/system/hooks/set-mute')">On</button>
+            <button style="font-size: 13px; padding: 2px 10px; min-width: 40px; {{if not .Muted}}font-weight: bold;{{end}}"
+                    data-on:click="$muted = false; @post('/v1/plugins/system/hooks/set-mute')">Off</button>
+        </div>
+    </div>
+    {{if .Outputs}}
+    <div class="table-header" style="grid-template-columns: 2fr 100px; margin-top: 16px;">
+        <div>Output Devices</div>
+        <div style="text-align: right;">Status</div>
+    </div>
+    {{range $dev := .Outputs}}
+    <div class="settings-row" style="grid-template-columns: 2fr 100px;">
+        <div class="label">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="cursor: pointer;" data-on:click="$uid = '{{jsEscape $dev.UID}}'; $device_type = 'output'; @post('/v1/plugins/system/hooks/set-device')">{{$dev.Name}}</span>
+            </div>
+            <div style="margin-top: 4px;">
+                <div class="alias-tags">
+                    <code style="font-size: 11px; color: #666;">set output {{$dev.VoiceHint}}</code>
+                    {{range $alias := $dev.Aliases}}
+                    <span class="alias-tag">
+                        {{$alias}}
+                        <button data-on:click="$uid = '{{jsEscape $dev.UID}}'; $newAlias = '{{jsEscape $alias}}'; @post('/v1/plugins/system/hooks/device-alias-remove')">×</button>
+                    </span>
+                    {{end}}
+                    <div data-show="$editingDevice === '{{jsEscape $dev.UID}}'">
+                        <input class="add-alias-input" type="text" data-bind:newAlias placeholder="e.g. headphones"
+                               data-on:keydown="evt.key === 'Enter' && ($uid = '{{jsEscape $dev.UID}}', @post('/v1/plugins/system/hooks/device-alias-add'), $editingDevice = ''); evt.key === 'Escape' && ($editingDevice = '')"
+                               data-on:blur__debounce.150ms="$editingDevice = ''">
+                    </div>
+                    <div data-show="$editingDevice !== '{{jsEscape $dev.UID}}'">
+                        <button class="icon-btn" style="opacity: 1; font-size: 16px;" title="Add alias"
+                                data-on:click="evt.stopPropagation(); $editingDevice = '{{jsEscape $dev.UID}}'; $newAlias = ''">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row-actions">
+            {{if $dev.IsDefault}}<span class="badge badge-core">Default</span>{{end}}
+        </div>
+    </div>
+    {{end}}
+    {{end}}
+    {{if .Inputs}}
+    <div class="table-header" style="grid-template-columns: 2fr 100px; margin-top: 16px;">
+        <div>Input Devices</div>
+        <div style="text-align: right;">Status</div>
+    </div>
+    {{range $dev := .Inputs}}
+    <div class="settings-row" style="grid-template-columns: 2fr 100px;">
+        <div class="label">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="cursor: pointer;" data-on:click="$uid = '{{jsEscape $dev.UID}}'; $device_type = 'input'; @post('/v1/plugins/system/hooks/set-device')">{{$dev.Name}}</span>
+            </div>
+            <div style="margin-top: 4px;">
+                <div class="alias-tags">
+                    <code style="font-size: 11px; color: #666;">set input {{$dev.VoiceHint}}</code>
+                    {{range $alias := $dev.Aliases}}
+                    <span class="alias-tag">
+                        {{$alias}}
+                        <button data-on:click="$uid = '{{jsEscape $dev.UID}}'; $newAlias = '{{jsEscape $alias}}'; @post('/v1/plugins/system/hooks/device-alias-remove')">×</button>
+                    </span>
+                    {{end}}
+                    <div data-show="$editingDevice === '{{jsEscape $dev.UID}}'">
+                        <input class="add-alias-input" type="text" data-bind:newAlias placeholder="e.g. headphones"
+                               data-on:keydown="evt.key === 'Enter' && ($uid = '{{jsEscape $dev.UID}}', @post('/v1/plugins/system/hooks/device-alias-add'), $editingDevice = ''); evt.key === 'Escape' && ($editingDevice = '')"
+                               data-on:blur__debounce.150ms="$editingDevice = ''">
+                    </div>
+                    <div data-show="$editingDevice !== '{{jsEscape $dev.UID}}'">
+                        <button class="icon-btn" style="opacity: 1; font-size: 16px;" title="Add alias"
+                                data-on:click="evt.stopPropagation(); $editingDevice = '{{jsEscape $dev.UID}}'; $newAlias = ''">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row-actions">
+            {{if $dev.IsDefault}}<span class="badge badge-core">Default</span>{{end}}
+        </div>
+    </div>
+    {{end}}
+    {{end}}
+    <div style="margin-top: 24px; padding: 12px 16px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 12px; color: #888;">
+        <div style="margin-bottom: 6px; font-weight: 600; color: #aaa;">Voice Commands</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px;">
+            <span><code>volume up</code> / <code>volume down</code></span>
+            <span><code>mute</code> / <code>unmute</code></span>
+            <span><code>set output &lt;name&gt;</code></span>
+            <span><code>set input &lt;name&gt;</code></span>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,38 @@
+[
+  {
+    "phrase": ["volume", "up"],
+
+    "action": { "type": "shell", "command": "system volume-up" },
+    "category": "Audio"
+  },
+  {
+    "phrase": ["volume", "down"],
+
+    "action": { "type": "shell", "command": "system volume-down" },
+    "category": "Audio"
+  },
+  {
+    "phrase": ["mute"],
+
+    "action": { "type": "shell", "command": "system mute" },
+    "category": "Audio"
+  },
+  {
+    "phrase": ["unmute"],
+
+    "action": { "type": "shell", "command": "system unmute" },
+    "category": "Audio"
+  },
+  {
+    "phrase": [["set", "switch"], "output", "<text>"],
+
+    "action": { "type": "shell", "command": "system set-output" },
+    "category": "Audio"
+  },
+  {
+    "phrase": [["set", "switch"], "input", "<text>"],
+
+    "action": { "type": "shell", "command": "system set-input" },
+    "category": "Audio"
+  }
+]

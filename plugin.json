@@ -1,0 +1,20 @@
+{
+  "id": "system",
+  "name": "System",
+  "capabilities": ["windows"],
+  "version": "1.0.0",
+  "description": "Application registry, app switching HUD, audio control, and system settings.",
+  "author": "BranchKit",
+  "run": "./system-plugin",
+  "action_prefix": "system",
+  "store_data": {
+    "voice_commands": "commands.json"
+  },
+  "hooks": {
+    "hud_modes": {"apps": "apps"},
+    "settings_tabs": [{"label": "Apps", "key": "apps"}, {"label": "Sound", "key": "sound"}],
+    "on_action": true,
+    "render_hud": true,
+    "render_settings": true
+  }
+}
