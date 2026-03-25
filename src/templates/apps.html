@@ -32,7 +32,7 @@
         </div>
         <div class="row-actions">
             <span class="badge {{$app.BadgeClass}}" style="cursor: pointer;"
-                  data-on:click="@post('/settings/apps/toggle', {bundle_id: '{{jsEscape $app.BundleID}}'})">
+                  data-on:click="@post('/settings/apps/toggle', {payload: {bundle_id: '{{jsEscape $app.BundleID}}'}})">
                 {{$app.Status}}
             </span>
         </div>
