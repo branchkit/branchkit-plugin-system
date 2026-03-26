@@ -7,6 +7,7 @@
   "author": "BranchKit",
   "run": "./system-plugin",
   "action_prefix": "system",
+  "hud_targets": ["apps"],
   "store_data": {
     "voice_commands": "commands.json"
   },
