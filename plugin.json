@@ -6,6 +6,7 @@
   "description": "Application registry, app switching HUD, audio control, and system settings.",
   "author": "BranchKit",
   "run": "./system-plugin",
+  "transport": "rpc",
   "action_prefix": "system",
   "hud_targets": ["apps"],
   "store_data": {

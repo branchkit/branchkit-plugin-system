@@ -69,6 +69,23 @@ func getMuted() (bool, error) {
 	return strings.TrimSpace(string(out)) == "true", nil
 }
 
+// getAudioDevices fetches audio devices from the actuator via RPC.
+func getAudioDevices(p *shared.Plugin) (*shared.AudioDeviceList, error) {
+	var resp shared.AudioDeviceList
+	if err := p.Call("native.audio_devices", nil, &resp); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// setAudioDeviceViaRPC sets the default audio device via RPC.
+func setAudioDeviceViaRPC(p *shared.Plugin, uid, deviceType string) error {
+	return p.Call("native.set_audio_device", map[string]string{
+		"uid":         uid,
+		"device_type": deviceType,
+	}, nil)
+}
+
 // matchesDevice checks if spokenName matches a device by name, voice hint, or alias.
 func matchesDevice(d shared.AudioDevice, spoken string, aliases map[string][]string) bool {
 	if strings.Contains(strings.ToLower(d.Name), spoken) {
@@ -83,8 +100,8 @@ func matchesDevice(d shared.AudioDevice, spoken string, aliases map[string][]str
 }
 
 // setOutputDevice fuzzy-matches a spoken device name and sets the default output device.
-func setOutputDevice(platform *shared.PlatformClient, spokenName string) error {
-	devices, err := platform.GetAudioDevices()
+func setOutputDevice(p *shared.Plugin, spokenName string) error {
+	devices, err := getAudioDevices(p)
 	if err != nil {
 		return fmt.Errorf("get audio devices: %w", err)
 	}
@@ -92,15 +109,15 @@ func setOutputDevice(platform *shared.PlatformClient, spokenName string) error {
 	aliases := loadDeviceAliases()
 	for _, d := range devices.Devices {
 		if d.IsOutput && matchesDevice(d, spoken, aliases) {
-			return platform.SetAudioDevice(d.UID, "output")
+			return setAudioDeviceViaRPC(p, d.UID, "output")
 		}
 	}
 	return fmt.Errorf("no output device matching %q", spokenName)
 }
 
 // setInputDevice fuzzy-matches a spoken device name and sets the default input device.
-func setInputDevice(platform *shared.PlatformClient, spokenName string) error {
-	devices, err := platform.GetAudioDevices()
+func setInputDevice(p *shared.Plugin, spokenName string) error {
+	devices, err := getAudioDevices(p)
 	if err != nil {
 		return fmt.Errorf("get audio devices: %w", err)
 	}
@@ -108,7 +125,7 @@ func setInputDevice(platform *shared.PlatformClient, spokenName string) error {
 	aliases := loadDeviceAliases()
 	for _, d := range devices.Devices {
 		if d.IsInput && matchesDevice(d, spoken, aliases) {
-			return platform.SetAudioDevice(d.UID, "input")
+			return setAudioDeviceViaRPC(p, d.UID, "input")
 		}
 	}
 	return fmt.Errorf("no input device matching %q", spokenName)

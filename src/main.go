@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"io"
-	"net/http"
 	"os"
 	"sort"
 	"strings"
@@ -18,7 +16,7 @@ import (
 //go:embed templates/apps.html
 var appsTemplateHTML string
 
-// --- On-action types ---
+// --- Request/Response types ---
 
 type OnActionRequest struct {
 	Action         string   `json:"action"`
@@ -31,31 +29,15 @@ type OnActionResponse struct {
 	Result string `json:"result"`
 }
 
-// --- Request/Response types ---
-
-type AppData struct {
-	Name     string   `json:"name"`
-	BundleID string   `json:"bundle_id"`
-	Aliases  []string `json:"aliases"`
-	Enabled  *bool    `json:"enabled"` // pointer to detect missing (defaults to true)
-}
-
-func (a AppData) IsEnabled() bool {
-	if a.Enabled == nil {
-		return true
-	}
-	return *a.Enabled
-}
-
 type RenderHudRequest struct {
-	HudMode string    `json:"hud_mode"`
-	Apps    []AppData `json:"apps"`
+	HudMode string         `json:"hud_mode"`
+	Apps    []shared.AppData `json:"apps"`
 }
 
 type RenderSettingsRequest struct {
-	TabKey string    `json:"tab_key"`
-	Search string    `json:"search"`
-	Apps   []AppData `json:"apps"`
+	TabKey string         `json:"tab_key"`
+	Search string         `json:"search"`
+	Apps   []shared.AppData `json:"apps"`
 }
 
 // --- Templates ---
@@ -76,25 +58,30 @@ type appRowView struct {
 	BadgeClass string
 }
 
-// --- Handlers ---
+// --- Generic RPC handler ---
 
-func handleHealth(w http.ResponseWriter, r *http.Request) {
-	shared.WriteJSON(w, map[string]bool{"ready": true})
+func rpcHandler[Req any](fn func(*Req) (any, error)) shared.HandlerFunc {
+	return func(params json.RawMessage) (any, error) {
+		var req Req
+		if len(params) > 0 {
+			if err := json.Unmarshal(params, &req); err != nil {
+				return nil, fmt.Errorf("bad params: %w", err)
+			}
+		}
+		return fn(&req)
+	}
 }
 
-func handleRenderHud(w http.ResponseWriter, r *http.Request) {
-	var req RenderHudRequest
-	if err := shared.ReadJSON(r, &req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+// --- Handlers ---
 
+var plugin *shared.Plugin
+
+func handleRenderHud(req *RenderHudRequest) (any, error) {
 	if req.HudMode != "apps" {
-		shared.WriteJSON(w, shared.HudResponse{
+		return shared.HudResponse{
 			Title:    "Unknown",
 			Sections: []shared.HudSection{},
-		})
-		return
+		}, nil
 	}
 
 	items := []shared.HudItem{}
@@ -117,31 +104,23 @@ func handleRenderHud(w http.ResponseWriter, r *http.Request) {
 		return strings.ToLower(items[i].Title) < strings.ToLower(items[j].Title)
 	})
 
-	shared.WriteJSON(w, shared.HudResponse{
+	return shared.HudResponse{
 		Title:  "Known Applications",
 		Footer: "Say 'switch <name>' or 'open <name>'",
 		Sections: []shared.HudSection{
 			{Title: "Applications", Items: items},
 		},
-	})
+	}, nil
 }
 
-func handleRenderSettings(w http.ResponseWriter, r *http.Request) {
-	var req RenderSettingsRequest
-	if err := shared.ReadJSON(r, &req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
+func handleRenderSettings(req *RenderSettingsRequest) (any, error) {
 	if req.TabKey == "sound" {
-		html := renderSoundSettings(platform)
-		shared.WriteJSON(w, shared.SettingsResponse{HTML: html})
-		return
+		html := renderSoundSettings(plugin)
+		return shared.SettingsResponse{HTML: html}, nil
 	}
 
 	if req.TabKey != "apps" {
-		shared.WriteJSON(w, shared.SettingsResponse{})
-		return
+		return shared.SettingsResponse{}, nil
 	}
 
 	search := strings.ToLower(req.Search)
@@ -170,25 +149,15 @@ func handleRenderSettings(w http.ResponseWriter, r *http.Request) {
 	var buf bytes.Buffer
 	if err := appsSettingsTemplate.Execute(&buf, struct{ Apps []appRowView }{Apps: rows}); err != nil {
 		fmt.Fprintf(os.Stderr, "[SYSTEM] template error: %v\n", err)
-		shared.WriteJSON(w, shared.SettingsResponse{})
-		return
+		return shared.SettingsResponse{}, nil
 	}
-	shared.WriteJSON(w, shared.SettingsResponse{HTML: buf.String()})
+	return shared.SettingsResponse{HTML: buf.String()}, nil
 }
 
-var platform *shared.PlatformClient
-
-func handleOnAction(w http.ResponseWriter, r *http.Request) {
-	var req OnActionRequest
-	if err := shared.ReadJSON(r, &req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
+func handleOnAction(req *OnActionRequest) (any, error) {
 	sub, ok := strings.CutPrefix(req.Action, "system ")
 	if !ok {
-		shared.WriteJSON(w, OnActionResponse{Result: "pass"})
-		return
+		return OnActionResponse{Result: "pass"}, nil
 	}
 
 	// Split sub-command from inline args (action string includes args, e.g. "set-output speakers")
@@ -213,64 +182,46 @@ func handleOnAction(w http.ResponseWriter, r *http.Request) {
 		name := strings.Join(args, " ")
 		if name == "" {
 			fmt.Fprintf(os.Stderr, "[SYSTEM] set-output: no device name provided\n")
-			shared.WriteJSON(w, OnActionResponse{Result: "handled"})
-			return
+			return OnActionResponse{Result: "handled"}, nil
 		}
-		err = setOutputDevice(platform, name)
+		err = setOutputDevice(plugin, name)
 	case "set-input":
 		name := strings.Join(args, " ")
 		if name == "" {
 			fmt.Fprintf(os.Stderr, "[SYSTEM] set-input: no device name provided\n")
-			shared.WriteJSON(w, OnActionResponse{Result: "handled"})
-			return
+			return OnActionResponse{Result: "handled"}, nil
 		}
-		err = setInputDevice(platform, name)
+		err = setInputDevice(plugin, name)
 	default:
-		shared.WriteJSON(w, OnActionResponse{Result: "pass"})
-		return
+		return OnActionResponse{Result: "pass"}, nil
 	}
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[SYSTEM] audio %s error: %v\n", sub, err)
 	}
-	shared.WriteJSON(w, OnActionResponse{Result: "handled"})
+	return OnActionResponse{Result: "handled"}, nil
 }
 
 // --- Sound settings hook handlers ---
 
-func handleSetVolume(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	var payload struct {
-		Volume int `json:"volume"`
-	}
-	if err := json.Unmarshal(body, &payload); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	if err := setVolume(payload.Volume); err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] set-volume error: %v\n", err)
-	}
-	shared.WriteJSON(w, map[string]string{"result": "ok"})
+type setVolumeRequest struct {
+	Volume int `json:"volume"`
 }
 
-func handleSetMute(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+func handleSetVolume(req *setVolumeRequest) (any, error) {
+	if err := setVolume(req.Volume); err != nil {
+		fmt.Fprintf(os.Stderr, "[SYSTEM] set-volume error: %v\n", err)
 	}
-	var payload struct {
-		Muted bool `json:"muted"`
-	}
-	if err := json.Unmarshal(body, &payload); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	if payload.Muted {
+	return map[string]string{"result": "ok"}, nil
+}
+
+type setMuteRequest struct {
+	Muted bool `json:"muted"`
+}
+
+func handleSetMute(req *setMuteRequest) (any, error) {
+	var err error
+	if req.Muted {
 		err = mute()
 	} else {
 		err = unmute()
@@ -278,79 +229,50 @@ func handleSetMute(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[SYSTEM] set-mute error: %v\n", err)
 	}
-	shared.WriteJSON(w, map[string]string{"result": "ok"})
+	return map[string]string{"result": "ok"}, nil
 }
 
-func handleDeviceAliasAdd(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	var payload struct {
-		UID   string `json:"uid"`
-		Alias string `json:"newAlias"`
-	}
-	if err := json.Unmarshal(body, &payload); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	addDeviceAlias(payload.UID, payload.Alias)
-	shared.WriteJSON(w, map[string]string{"result": "ok"})
+type deviceAliasRequest struct {
+	UID   string `json:"uid"`
+	Alias string `json:"newAlias"`
 }
 
-func handleDeviceAliasRemove(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	var payload struct {
-		UID   string `json:"uid"`
-		Alias string `json:"newAlias"`
-	}
-	if err := json.Unmarshal(body, &payload); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	removeDeviceAlias(payload.UID, payload.Alias)
-	shared.WriteJSON(w, map[string]string{"result": "ok"})
+func handleDeviceAliasAdd(req *deviceAliasRequest) (any, error) {
+	addDeviceAlias(req.UID, req.Alias)
+	return map[string]string{"result": "ok"}, nil
 }
 
-func handleSetDevice(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	var payload struct {
-		UID        string `json:"uid"`
-		DeviceType string `json:"device_type"`
-	}
-	if err := json.Unmarshal(body, &payload); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	if err := platform.SetAudioDevice(payload.UID, payload.DeviceType); err != nil {
+func handleDeviceAliasRemove(req *deviceAliasRequest) (any, error) {
+	removeDeviceAlias(req.UID, req.Alias)
+	return map[string]string{"result": "ok"}, nil
+}
+
+type setDeviceRequest struct {
+	UID        string `json:"uid"`
+	DeviceType string `json:"device_type"`
+}
+
+func handleSetDevice(req *setDeviceRequest) (any, error) {
+	if err := setAudioDeviceViaRPC(plugin, req.UID, req.DeviceType); err != nil {
 		fmt.Fprintf(os.Stderr, "[SYSTEM] set-device error: %v\n", err)
 	}
-	shared.WriteJSON(w, map[string]string{"result": "ok"})
+	return map[string]string{"result": "ok"}, nil
 }
 
 func main() {
-	platform = shared.NewPlatformClient()
+	plugin = shared.NewPlugin()
 	initDeviceAliases()
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", handleHealth)
-	mux.HandleFunc("POST /hooks/on-action", handleOnAction)
-	mux.HandleFunc("POST /hooks/render-hud", handleRenderHud)
-	mux.HandleFunc("POST /hooks/render-settings", handleRenderSettings)
-	mux.HandleFunc("POST /hooks/set-volume", handleSetVolume)
-	mux.HandleFunc("POST /hooks/set-mute", handleSetMute)
-	mux.HandleFunc("POST /hooks/set-device", handleSetDevice)
-	mux.HandleFunc("POST /hooks/device-alias-add", handleDeviceAliasAdd)
-	mux.HandleFunc("POST /hooks/device-alias-remove", handleDeviceAliasRemove)
+	// Register handlers (actuator→plugin requests)
+	plugin.Handle("on_action", rpcHandler(handleOnAction))
+	plugin.Handle("render_hud", rpcHandler(handleRenderHud))
+	plugin.Handle("render_settings", rpcHandler(handleRenderSettings))
+	plugin.Handle("set_volume", rpcHandler(handleSetVolume))
+	plugin.Handle("set_mute", rpcHandler(handleSetMute))
+	plugin.Handle("set_device", rpcHandler(handleSetDevice))
+	plugin.Handle("device_alias_add", rpcHandler(handleDeviceAliasAdd))
+	plugin.Handle("device_alias_remove", rpcHandler(handleDeviceAliasRemove))
 
-	shared.RunPlugin(mux)
+	// Run the message loop (blocks until stdin closes or SIGTERM)
+	plugin.Run()
 }

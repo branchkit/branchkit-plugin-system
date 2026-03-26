@@ -129,7 +129,7 @@ func voiceHint(name string) string {
 	return lower
 }
 
-func renderSoundSettings(platform *shared.PlatformClient) string {
+func renderSoundSettings(p *shared.Plugin) string {
 	vol, err := getVolume()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[SYSTEM] getVolume error: %v\n", err)
@@ -139,7 +139,7 @@ func renderSoundSettings(platform *shared.PlatformClient) string {
 		fmt.Fprintf(os.Stderr, "[SYSTEM] getMuted error: %v\n", err)
 	}
 
-	devList, err := platform.GetAudioDevices()
+	devList, err := getAudioDevices(p)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[SYSTEM] GetAudioDevices error: %v\n", err)
 		devList = &shared.AudioDeviceList{}
@@ -205,4 +205,3 @@ var soundSettingsTemplate = template.Must(template.New("sound").Funcs(template.F
 		return s
 	},
 }).Parse(soundTemplateHTML))
-
