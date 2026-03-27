@@ -11,7 +11,7 @@
   "store_data": {
     "voice_commands": "commands.json"
   },
-  "hooks": {
+  "implements": {
     "hud_modes": {"apps": "apps"},
     "settings_tabs": [{"label": "Apps", "key": "apps"}, {"label": "Sound", "key": "sound"}],
     "on_action": true,
