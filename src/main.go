@@ -259,9 +259,33 @@ func handleSetDevice(req *setDeviceRequest) (any, error) {
 	return map[string]string{"result": "ok"}, nil
 }
 
+func pushCommands(p *shared.Plugin) {
+	pluginDir := os.Getenv("BRANCHKIT_PLUGIN_DIR")
+	if pluginDir == "" {
+		return
+	}
+	data, err := os.ReadFile(pluginDir + "/commands.json")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[SYSTEM] failed to read commands.json: %v\n", err)
+		return
+	}
+	var commands []json.RawMessage
+	if err := json.Unmarshal(data, &commands); err != nil {
+		fmt.Fprintf(os.Stderr, "[SYSTEM] failed to parse commands.json: %v\n", err)
+		return
+	}
+	var resp struct{ Count int `json:"count"` }
+	if err := p.Call("grammar.push", map[string]any{"commands": commands}, &resp); err != nil {
+		fmt.Fprintf(os.Stderr, "[SYSTEM] grammar.push failed: %v\n", err)
+		return
+	}
+	fmt.Fprintf(os.Stderr, "[SYSTEM] Registered %d command variants\n", resp.Count)
+}
+
 func main() {
 	plugin = shared.NewPlugin()
 	initDeviceAliases()
+	pushCommands(plugin)
 
 	// Register handlers (actuator→plugin requests)
 	plugin.Handle("on_action", rpcHandler(handleOnAction))

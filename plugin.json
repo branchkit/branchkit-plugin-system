@@ -1,7 +1,7 @@
 {
   "id": "system",
   "name": "System",
-  "capabilities": ["windows"],
+  "capabilities": ["windows", "shell"],
   "version": "1.0.0",
   "description": "Application registry, app switching HUD, audio control, and system settings.",
   "author": "BranchKit",
