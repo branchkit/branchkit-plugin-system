@@ -70,8 +70,8 @@ func getMuted() (bool, error) {
 }
 
 // getAudioDevices fetches audio devices from the actuator via RPC.
-func getAudioDevices(p *shared.Plugin) (*shared.AudioDeviceList, error) {
-	var resp shared.AudioDeviceList
+func getAudioDevices(p *shared.Plugin) (*shared.NativeAudioDevicesResponse, error) {
+	var resp shared.NativeAudioDevicesResponse
 	if err := p.Call("native.audio_devices", nil, &resp); err != nil {
 		return nil, err
 	}

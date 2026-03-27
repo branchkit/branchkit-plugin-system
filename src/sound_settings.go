@@ -142,7 +142,7 @@ func renderSoundSettings(p *shared.Plugin) string {
 	devList, err := getAudioDevices(p)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[SYSTEM] GetAudioDevices error: %v\n", err)
-		devList = &shared.AudioDeviceList{}
+		devList = &shared.NativeAudioDevicesResponse{}
 	}
 
 	aliases := loadDeviceAliases()

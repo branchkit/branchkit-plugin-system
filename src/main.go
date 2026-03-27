@@ -116,11 +116,11 @@ func handleRenderHud(req *RenderHudRequest) (any, error) {
 func handleRenderSettings(req *RenderSettingsRequest) (any, error) {
 	if req.TabKey == "sound" {
 		html := renderSoundSettings(plugin)
-		return shared.SettingsResponse{HTML: html}, nil
+		return shared.RenderSettingsResponse{HTML: html}, nil
 	}
 
 	if req.TabKey != "apps" {
-		return shared.SettingsResponse{}, nil
+		return shared.RenderSettingsResponse{}, nil
 	}
 
 	search := strings.ToLower(req.Search)
@@ -149,9 +149,9 @@ func handleRenderSettings(req *RenderSettingsRequest) (any, error) {
 	var buf bytes.Buffer
 	if err := appsSettingsTemplate.Execute(&buf, struct{ Apps []appRowView }{Apps: rows}); err != nil {
 		fmt.Fprintf(os.Stderr, "[SYSTEM] template error: %v\n", err)
-		return shared.SettingsResponse{}, nil
+		return shared.RenderSettingsResponse{}, nil
 	}
-	return shared.SettingsResponse{HTML: buf.String()}, nil
+	return shared.RenderSettingsResponse{HTML: buf.String()}, nil
 }
 
 func handleOnAction(req *OnActionRequest) (any, error) {
