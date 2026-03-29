@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strings"
 
-	"branchkit.local/shared"
+	"github.com/branchkit/plugin-sdk-go"
 )
 
 //go:embed templates/apps.html

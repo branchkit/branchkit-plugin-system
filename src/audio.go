@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"branchkit.local/shared"
+	"github.com/branchkit/plugin-sdk-go"
 )
 
 const volumeStep = 7
