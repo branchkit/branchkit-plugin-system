@@ -7,15 +7,13 @@
   "author": "BranchKit",
   "run": "./system-plugin",
   "action_prefix": "system",
-  "hud_targets": ["apps"],
+  "hud_targets": [],
   "store_data": {
     "voice_commands": "commands.json"
   },
   "implements": {
-    "hud_modes": {"apps": "apps"},
     "settings_tabs": [{"label": "Apps", "key": "apps"}, {"label": "Sound", "key": "sound"}],
     "on_action": true,
-    "render_hud": true,
     "render_settings": true
   }
 }
