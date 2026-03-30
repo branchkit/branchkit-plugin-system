@@ -260,26 +260,12 @@ func handleSetDevice(req *setDeviceRequest) (any, error) {
 }
 
 func pushCommands(p *shared.Plugin) {
-	pluginDir := os.Getenv("BRANCHKIT_PLUGIN_DIR")
-	if pluginDir == "" {
-		return
-	}
-	data, err := os.ReadFile(pluginDir + "/commands.json")
+	count, err := shared.PushCommands(p)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] failed to read commands.json: %v\n", err)
+		fmt.Fprintf(os.Stderr, "[SYSTEM] %v\n", err)
 		return
 	}
-	var commands []json.RawMessage
-	if err := json.Unmarshal(data, &commands); err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] failed to parse commands.json: %v\n", err)
-		return
-	}
-	var resp struct{ Count int `json:"count"` }
-	if err := p.Call("grammar.push", map[string]any{"commands": commands}, &resp); err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] grammar.push failed: %v\n", err)
-		return
-	}
-	fmt.Fprintf(os.Stderr, "[SYSTEM] Registered %d command variants\n", resp.Count)
+	fmt.Fprintf(os.Stderr, "[SYSTEM] Registered %d command variants\n", count)
 }
 
 func main() {
