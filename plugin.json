@@ -7,6 +7,21 @@
   "author": "BranchKit",
   "run": "./system-plugin",
   "action_prefix": "system",
+  "action_types": {
+    "launch": {
+      "label": "Launch App",
+      "fields": [
+        { "key": "bundleID", "label": "Bundle ID", "placeholder": "com.apple.Safari", "field_type": "string", "required": true },
+        { "key": "new_instance", "label": "New Instance", "field_type": "boolean", "required": false }
+      ]
+    },
+    "open": {
+      "label": "Open URL or File",
+      "fields": [
+        { "key": "target", "label": "Target", "placeholder": "https://example.com", "field_type": "string", "required": true }
+      ]
+    }
+  },
   "hud_targets": [],
   "store_data": {
     "voice_commands": "commands.json"

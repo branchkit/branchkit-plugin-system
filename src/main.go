@@ -19,10 +19,11 @@ var appsTemplateHTML string
 // --- Request/Response types ---
 
 type OnActionRequest struct {
-	Action         string   `json:"action"`
-	Args           []string `json:"args,omitempty"`
-	ActiveApp      *string  `json:"active_app,omitempty"`
-	ActiveWindowID *string  `json:"active_window_id,omitempty"`
+	Action         string                 `json:"action"`
+	Args           []string               `json:"args,omitempty"`
+	Params         map[string]interface{} `json:"params,omitempty"`
+	ActiveApp      *string                `json:"active_app,omitempty"`
+	ActiveWindowID *string                `json:"active_window_id,omitempty"`
 }
 
 type OnActionResponse struct {
@@ -155,6 +156,12 @@ func handleRenderSettings(req *RenderSettingsRequest) (any, error) {
 }
 
 func handleOnAction(req *OnActionRequest) (any, error) {
+	// Plugin-dispatched action types (dotted prefix, e.g., "system.launch")
+	if strings.Contains(req.Action, ".") {
+		return handlePluginAction(req)
+	}
+
+	// Route-style actions (space prefix, e.g., "system volume-up")
 	sub, ok := strings.CutPrefix(req.Action, "system ")
 	if !ok {
 		return OnActionResponse{Result: "pass"}, nil
@@ -198,6 +205,54 @@ func handleOnAction(req *OnActionRequest) (any, error) {
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[SYSTEM] audio %s error: %v\n", sub, err)
+	}
+	return OnActionResponse{Result: "handled"}, nil
+}
+
+// handlePluginAction handles plugin-dispatched action types (e.g., "system.launch").
+func handlePluginAction(req *OnActionRequest) (any, error) {
+	// Strip prefix to get sub-action
+	subAction := req.Action
+	if idx := strings.Index(req.Action, "."); idx >= 0 {
+		subAction = req.Action[idx+1:]
+	}
+
+	p := req.Params
+	var err error
+
+	switch subAction {
+	case "launch":
+		bundleID, _ := p["bundleID"].(string)
+		if bundleID == "" {
+			bundleID, _ = p["bundle_id"].(string)
+		}
+		if bundleID == "" {
+			fmt.Fprintf(os.Stderr, "[SYSTEM] launch: no bundleID provided\n")
+			return OnActionResponse{Result: "handled"}, nil
+		}
+		newInstance, _ := p["new_instance"].(bool)
+		err = plugin.Call("native.launch_app", map[string]interface{}{
+			"bundle_id":    bundleID,
+			"new_instance": newInstance,
+		}, nil)
+
+	case "open":
+		target, _ := p["target"].(string)
+		if target == "" {
+			fmt.Fprintf(os.Stderr, "[SYSTEM] open: no target provided\n")
+			return OnActionResponse{Result: "handled"}, nil
+		}
+		err = plugin.Call("native.open_target", map[string]interface{}{
+			"target": target,
+		}, nil)
+
+	default:
+		fmt.Fprintf(os.Stderr, "[SYSTEM] on_action: unknown plugin action '%s'\n", subAction)
+		return OnActionResponse{Result: "pass"}, nil
+	}
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[SYSTEM] plugin action %s error: %v\n", subAction, err)
 	}
 	return OnActionResponse{Result: "handled"}, nil
 }
