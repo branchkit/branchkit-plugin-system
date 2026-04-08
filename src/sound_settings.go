@@ -1,11 +1,8 @@
 package main
 
 import (
-	"bytes"
-	_ "embed"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,9 +10,6 @@ import (
 
 	"github.com/branchkit/plugin-sdk-go"
 )
-
-//go:embed templates/sound.html
-var soundTemplateHTML string
 
 // --- Device aliases persistence ---
 
@@ -191,17 +185,5 @@ func renderSoundSettings(p *shared.Plugin) string {
 		Inputs:      inputs,
 	}
 
-	var buf bytes.Buffer
-	if err := soundSettingsTemplate.Execute(&buf, data); err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] sound template error: %v\n", err)
-		return ""
-	}
-	return buf.String()
+	return renderTempl(Sound(data))
 }
-
-var soundSettingsTemplate = template.Must(template.New("sound").Funcs(template.FuncMap{
-	"jsEscape": func(s string) string {
-		s = template.JSEscapeString(s)
-		return s
-	},
-}).Parse(soundTemplateHTML))

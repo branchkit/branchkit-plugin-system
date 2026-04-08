@@ -2,19 +2,16 @@ package main
 
 import (
 	"bytes"
-	_ "embed"
+	"context"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"os"
 	"sort"
 	"strings"
 
+	"github.com/a-h/templ"
 	"github.com/branchkit/plugin-sdk-go"
 )
-
-//go:embed templates/apps.html
-var appsTemplateHTML string
 
 // --- Request/Response types ---
 
@@ -41,15 +38,22 @@ type RenderSettingsRequest struct {
 	Apps   []shared.AppData `json:"apps"`
 }
 
-// --- Templates ---
+// jsEscape escapes a string for safe use in single-quoted JavaScript literals.
+func jsEscape(s string) string {
+	s = strings.ReplaceAll(s, `\`, `\\`)
+	s = strings.ReplaceAll(s, `'`, `\'`)
+	return s
+}
 
-var appsSettingsTemplate = template.Must(template.New("apps").Funcs(template.FuncMap{
-	"jsEscape": func(s string) string {
-		s = strings.ReplaceAll(s, `\`, `\\`)
-		s = strings.ReplaceAll(s, `'`, `\'`)
-		return s
-	},
-}).Parse(appsTemplateHTML))
+// renderTempl renders a templ component to an HTML string.
+func renderTempl(c templ.Component) string {
+	var buf bytes.Buffer
+	if err := c.Render(context.Background(), &buf); err != nil {
+		fmt.Fprintf(os.Stderr, "[SYSTEM] templ render error: %v\n", err)
+		return ""
+	}
+	return buf.String()
+}
 
 type appRowView struct {
 	Name       string
@@ -147,12 +151,7 @@ func handleRenderSettings(req *RenderSettingsRequest) (any, error) {
 		})
 	}
 
-	var buf bytes.Buffer
-	if err := appsSettingsTemplate.Execute(&buf, struct{ Apps []appRowView }{Apps: rows}); err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] template error: %v\n", err)
-		return shared.RenderSettingsResponse{}, nil
-	}
-	return shared.RenderSettingsResponse{HTML: buf.String()}, nil
+	return shared.RenderSettingsResponse{HTML: renderTempl(Apps(rows))}, nil
 }
 
 func handleOnAction(req *OnActionRequest) (any, error) {
