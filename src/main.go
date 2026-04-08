@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"sort"
 	"strings"
 
@@ -49,7 +48,7 @@ func jsEscape(s string) string {
 func renderTempl(c templ.Component) string {
 	var buf bytes.Buffer
 	if err := c.Render(context.Background(), &buf); err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] templ render error: %v\n", err)
+		shared.Logf("system", "templ render error: %v", err)
 		return ""
 	}
 	return buf.String()
@@ -187,14 +186,14 @@ func handleOnAction(req *OnActionRequest) (any, error) {
 	case "set-output":
 		name := strings.Join(args, " ")
 		if name == "" {
-			fmt.Fprintf(os.Stderr, "[SYSTEM] set-output: no device name provided\n")
+			shared.Logf("system", "set-output: no device name provided")
 			return OnActionResponse{Result: "handled"}, nil
 		}
 		err = setOutputDevice(plugin, name)
 	case "set-input":
 		name := strings.Join(args, " ")
 		if name == "" {
-			fmt.Fprintf(os.Stderr, "[SYSTEM] set-input: no device name provided\n")
+			shared.Logf("system", "set-input: no device name provided")
 			return OnActionResponse{Result: "handled"}, nil
 		}
 		err = setInputDevice(plugin, name)
@@ -203,7 +202,7 @@ func handleOnAction(req *OnActionRequest) (any, error) {
 	}
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] audio %s error: %v\n", sub, err)
+		shared.Logf("system", "audio %s error: %v", sub, err)
 	}
 	return OnActionResponse{Result: "handled"}, nil
 }
@@ -226,7 +225,7 @@ func handlePluginAction(req *OnActionRequest) (any, error) {
 			bundleID, _ = p["bundle_id"].(string)
 		}
 		if bundleID == "" {
-			fmt.Fprintf(os.Stderr, "[SYSTEM] launch: no bundleID provided\n")
+			shared.Logf("system", "launch: no bundleID provided")
 			return OnActionResponse{Result: "handled"}, nil
 		}
 		newInstance, _ := p["new_instance"].(bool)
@@ -238,7 +237,7 @@ func handlePluginAction(req *OnActionRequest) (any, error) {
 	case "open":
 		target, _ := p["target"].(string)
 		if target == "" {
-			fmt.Fprintf(os.Stderr, "[SYSTEM] open: no target provided\n")
+			shared.Logf("system", "open: no target provided")
 			return OnActionResponse{Result: "handled"}, nil
 		}
 		err = plugin.Call("native.open_target", map[string]interface{}{
@@ -246,12 +245,12 @@ func handlePluginAction(req *OnActionRequest) (any, error) {
 		}, nil)
 
 	default:
-		fmt.Fprintf(os.Stderr, "[SYSTEM] on_action: unknown plugin action '%s'\n", subAction)
+		shared.Logf("system", "on_action: unknown plugin action '%s'", subAction)
 		return OnActionResponse{Result: "pass"}, nil
 	}
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] plugin action %s error: %v\n", subAction, err)
+		shared.Logf("system", "plugin action %s error: %v", subAction, err)
 	}
 	return OnActionResponse{Result: "handled"}, nil
 }
@@ -264,7 +263,7 @@ type setVolumeRequest struct {
 
 func handleSetVolume(req *setVolumeRequest) (any, error) {
 	if err := setVolume(req.Volume); err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] set-volume error: %v\n", err)
+		shared.Logf("system", "set-volume error: %v", err)
 	}
 	return map[string]string{"result": "ok"}, nil
 }
@@ -281,7 +280,7 @@ func handleSetMute(req *setMuteRequest) (any, error) {
 		err = unmute()
 	}
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] set-mute error: %v\n", err)
+		shared.Logf("system", "set-mute error: %v", err)
 	}
 	return map[string]string{"result": "ok"}, nil
 }
@@ -308,7 +307,7 @@ type setDeviceRequest struct {
 
 func handleSetDevice(req *setDeviceRequest) (any, error) {
 	if err := setAudioDeviceViaRPC(plugin, req.UID, req.DeviceType); err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] set-device error: %v\n", err)
+		shared.Logf("system", "set-device error: %v", err)
 	}
 	return map[string]string{"result": "ok"}, nil
 }
@@ -316,10 +315,10 @@ func handleSetDevice(req *setDeviceRequest) (any, error) {
 func pushCommands(p *shared.Plugin) {
 	count, err := shared.PushCommands(p)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] %v\n", err)
+		shared.Logf("system", "%v", err)
 		return
 	}
-	fmt.Fprintf(os.Stderr, "[SYSTEM] Registered %d command variants\n", count)
+	shared.Logf("system", "Registered %d command variants", count)
 }
 
 func main() {

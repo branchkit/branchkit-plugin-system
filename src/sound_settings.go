@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -45,11 +44,11 @@ func loadDeviceAliases() map[string][]string {
 func saveDeviceAliases(m map[string][]string) {
 	data, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] save device aliases: %v\n", err)
+		shared.Logf("system", "save device aliases: %v", err)
 		return
 	}
 	if err := os.WriteFile(deviceAliasesPath, data, 0644); err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] write device aliases: %v\n", err)
+		shared.Logf("system", "write device aliases: %v", err)
 	}
 }
 
@@ -126,16 +125,16 @@ func voiceHint(name string) string {
 func renderSoundSettings(p *shared.Plugin) string {
 	vol, err := getVolume()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] getVolume error: %v\n", err)
+		shared.Logf("system", "getVolume error: %v", err)
 	}
 	muted, err := getMuted()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] getMuted error: %v\n", err)
+		shared.Logf("system", "getMuted error: %v", err)
 	}
 
 	devList, err := getAudioDevices(p)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[SYSTEM] GetAudioDevices error: %v\n", err)
+		shared.Logf("system", "GetAudioDevices error: %v", err)
 		devList = &shared.NativeAudioDevicesResponse{}
 	}
 
