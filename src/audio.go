@@ -2,42 +2,35 @@ package main
 
 import (
 	"fmt"
-	"os/exec"
-	"strconv"
 	"strings"
 
-	"github.com/branchkit/plugin-sdk-go"
+	shared "github.com/branchkit/plugin-sdk-go"
 )
 
-const volumeStep = 7
+const volumeStep = 0.07 // ~7% per step
 
-// getVolume returns the current output volume (0–100).
-func getVolume() (int, error) {
-	out, err := exec.Command("osascript", "-e", "output volume of (get volume settings)").Output()
-	if err != nil {
-		return 0, fmt.Errorf("get volume: %w", err)
+// getVolume returns the current output volume (0.0–1.0) and mute state via actuator RPC.
+func getVolume() (float64, bool, error) {
+	var resp shared.NativeVolumeResponse
+	if err := plugin.Call("native.volume", nil, &resp); err != nil {
+		return 0, false, fmt.Errorf("get volume: %w", err)
 	}
-	vol, err := strconv.Atoi(strings.TrimSpace(string(out)))
-	if err != nil {
-		return 0, fmt.Errorf("parse volume: %w", err)
-	}
-	return vol, nil
+	return resp.Volume, resp.IsMuted, nil
 }
 
-// setVolume sets the output volume (0–100).
-func setVolume(vol int) error {
+// setVolume sets the output volume (0.0–1.0) via actuator RPC.
+func setVolume(vol float64) error {
 	if vol < 0 {
 		vol = 0
 	}
-	if vol > 100 {
-		vol = 100
+	if vol > 1 {
+		vol = 1
 	}
-	cmd := fmt.Sprintf("set volume output volume %d", vol)
-	return exec.Command("osascript", "-e", cmd).Run()
+	return plugin.Call("native.set_volume", shared.NativeSetVolumeRequest{Volume: vol}, nil)
 }
 
 func volumeUp() error {
-	vol, err := getVolume()
+	vol, _, err := getVolume()
 	if err != nil {
 		return err
 	}
@@ -45,7 +38,7 @@ func volumeUp() error {
 }
 
 func volumeDown() error {
-	vol, err := getVolume()
+	vol, _, err := getVolume()
 	if err != nil {
 		return err
 	}
@@ -53,20 +46,11 @@ func volumeDown() error {
 }
 
 func mute() error {
-	return exec.Command("osascript", "-e", "set volume output muted true").Run()
+	return plugin.Call("native.mute", shared.NativeMuteRequest{Muted: true}, nil)
 }
 
 func unmute() error {
-	return exec.Command("osascript", "-e", "set volume output muted false").Run()
-}
-
-// getMuted returns whether audio output is muted.
-func getMuted() (bool, error) {
-	out, err := exec.Command("osascript", "-e", "output muted of (get volume settings)").Output()
-	if err != nil {
-		return false, fmt.Errorf("get muted: %w", err)
-	}
-	return strings.TrimSpace(string(out)) == "true", nil
+	return plugin.Call("native.mute", shared.NativeMuteRequest{Muted: false}, nil)
 }
 
 // getAudioDevices fetches audio devices from the actuator via RPC.

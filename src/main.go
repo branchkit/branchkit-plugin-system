@@ -262,7 +262,7 @@ type setVolumeRequest struct {
 }
 
 func handleSetVolume(req *setVolumeRequest) (any, error) {
-	if err := setVolume(req.Volume); err != nil {
+	if err := setVolume(float64(req.Volume) / 100.0); err != nil {
 		shared.Logf("system", "set-volume error: %v", err)
 	}
 	return map[string]string{"result": "ok"}, nil

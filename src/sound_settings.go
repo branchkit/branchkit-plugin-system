@@ -123,13 +123,9 @@ func voiceHint(name string) string {
 }
 
 func renderSoundSettings(p *shared.Plugin) string {
-	vol, err := getVolume()
+	vol, muted, err := getVolume()
 	if err != nil {
 		shared.Logf("system", "getVolume error: %v", err)
-	}
-	muted, err := getMuted()
-	if err != nil {
-		shared.Logf("system", "getMuted error: %v", err)
 	}
 
 	devList, err := getAudioDevices(p)
@@ -166,19 +162,20 @@ func renderSoundSettings(p *shared.Plugin) string {
 		}
 	}
 
-	minus := vol - volumeStep
-	if minus < 0 {
-		minus = 0
+	volPct := int(vol * 100)
+	minusPct := volPct - int(volumeStep*100)
+	if minusPct < 0 {
+		minusPct = 0
 	}
-	plus := vol + volumeStep
-	if plus > 100 {
-		plus = 100
+	plusPct := volPct + int(volumeStep*100)
+	if plusPct > 100 {
+		plusPct = 100
 	}
 
 	data := soundSettingsData{
-		Volume:      vol,
-		VolumeMinus: minus,
-		VolumePlus:  plus,
+		Volume:      volPct,
+		VolumeMinus: minusPct,
+		VolumePlus:  plusPct,
 		Muted:       muted,
 		Outputs:     outputs,
 		Inputs:      inputs,

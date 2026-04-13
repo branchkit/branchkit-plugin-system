@@ -4,8 +4,7 @@
   "capabilities": [
     "apps.control",
     "audio",
-    "filesystem",
-    "shell"
+    "filesystem"
   ],
   "version": "1.0.0",
   "description": "Application registry, app switching HUD, audio control, and system settings.",
