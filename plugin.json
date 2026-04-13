@@ -1,7 +1,12 @@
 {
   "id": "system",
   "name": "System",
-  "capabilities": ["windows", "shell"],
+  "capabilities": [
+    "apps.control",
+    "audio",
+    "filesystem",
+    "shell"
+  ],
   "version": "1.0.0",
   "description": "Application registry, app switching HUD, audio control, and system settings.",
   "author": "BranchKit",
@@ -11,14 +16,31 @@
     "launch": {
       "label": "Launch App",
       "fields": [
-        { "key": "bundleID", "label": "Bundle ID", "placeholder": "com.apple.Safari", "field_type": "string", "required": true },
-        { "key": "new_instance", "label": "New Instance", "field_type": "boolean", "required": false }
+        {
+          "key": "bundleID",
+          "label": "Bundle ID",
+          "placeholder": "com.apple.Safari",
+          "field_type": "string",
+          "required": true
+        },
+        {
+          "key": "new_instance",
+          "label": "New Instance",
+          "field_type": "boolean",
+          "required": false
+        }
       ]
     },
     "open": {
       "label": "Open URL or File",
       "fields": [
-        { "key": "target", "label": "Target", "placeholder": "https://example.com", "field_type": "string", "required": true }
+        {
+          "key": "target",
+          "label": "Target",
+          "placeholder": "https://example.com",
+          "field_type": "string",
+          "required": true
+        }
       ]
     }
   },
@@ -27,7 +49,16 @@
     "voice_commands": "commands.json"
   },
   "implements": {
-    "settings_tabs": [{"label": "Apps", "key": "apps"}, {"label": "Sound", "key": "sound"}],
+    "settings_tabs": [
+      {
+        "label": "Apps",
+        "key": "apps"
+      },
+      {
+        "label": "Sound",
+        "key": "sound"
+      }
+    ],
     "on_action": true,
     "render_settings": true
   }
