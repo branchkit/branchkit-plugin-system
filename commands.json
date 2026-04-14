@@ -2,37 +2,37 @@
   {
     "phrase": ["volume", "up"],
 
-    "action": { "type": "command", "command": "system volume-up" },
+    "action": { "type": "dispatch", "action": "system volume-up" },
     "category": "Audio"
   },
   {
     "phrase": ["volume", "down"],
 
-    "action": { "type": "command", "command": "system volume-down" },
+    "action": { "type": "dispatch", "action": "system volume-down" },
     "category": "Audio"
   },
   {
     "phrase": ["mute"],
 
-    "action": { "type": "command", "command": "system mute" },
+    "action": { "type": "dispatch", "action": "system mute" },
     "category": "Audio"
   },
   {
     "phrase": ["unmute"],
 
-    "action": { "type": "command", "command": "system unmute" },
+    "action": { "type": "dispatch", "action": "system unmute" },
     "category": "Audio"
   },
   {
     "phrase": [["set", "switch"], "output", "<text>"],
 
-    "action": { "type": "command", "command": "system set-output" },
+    "action": { "type": "dispatch", "action": "system set-output" },
     "category": "Audio"
   },
   {
     "phrase": [["set", "switch"], "input", "<text>"],
 
-    "action": { "type": "command", "command": "system set-input" },
+    "action": { "type": "dispatch", "action": "system set-input" },
     "category": "Audio"
   }
 ]
