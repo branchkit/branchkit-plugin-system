@@ -154,72 +154,34 @@ func handleRenderSettings(req *RenderSettingsRequest) (any, error) {
 }
 
 func handleOnAction(req *OnActionRequest) (any, error) {
-	// Plugin-dispatched action types (dotted prefix, e.g., "system.launch")
-	if strings.Contains(req.Action, ".") {
-		return handlePluginAction(req)
-	}
-
-	// Route-style actions (space prefix, e.g., "system volume-up")
-	sub, ok := strings.CutPrefix(req.Action, "system ")
-	if !ok {
-		return OnActionResponse{Result: "pass"}, nil
-	}
-
-	// Split sub-command from inline args (action string includes args, e.g. "set-output speakers")
-	subCmd, argStr, _ := strings.Cut(sub, " ")
-	// Merge inline args with explicit Args field (prefer explicit if present)
+	p := req.Params
 	args := req.Args
-	if len(args) == 0 && argStr != "" {
-		args = strings.Fields(argStr)
-	}
 
 	var err error
-	switch subCmd {
-	case "volume-up":
+	switch req.Action {
+	case "system.volume_up":
 		err = volumeUp()
-	case "volume-down":
+	case "system.volume_down":
 		err = volumeDown()
-	case "mute":
+	case "system.mute":
 		err = mute()
-	case "unmute":
+	case "system.unmute":
 		err = unmute()
-	case "set-output":
+	case "system.set_output":
 		name := strings.Join(args, " ")
 		if name == "" {
-			shared.Logf("system", "set-output: no device name provided")
+			shared.Logf("system", "set_output: no device name provided")
 			return OnActionResponse{Result: "handled"}, nil
 		}
 		err = setOutputDevice(plugin, name)
-	case "set-input":
+	case "system.set_input":
 		name := strings.Join(args, " ")
 		if name == "" {
-			shared.Logf("system", "set-input: no device name provided")
+			shared.Logf("system", "set_input: no device name provided")
 			return OnActionResponse{Result: "handled"}, nil
 		}
 		err = setInputDevice(plugin, name)
-	default:
-		return OnActionResponse{Result: "pass"}, nil
-	}
-
-	if err != nil {
-		shared.Logf("system", "audio %s error: %v", sub, err)
-	}
-	return OnActionResponse{Result: "handled"}, nil
-}
-
-// handlePluginAction handles plugin-dispatched action types (e.g., "system.launch").
-func handlePluginAction(req *OnActionRequest) (any, error) {
-	// Strip prefix to get sub-action
-	subAction := req.Action
-	if idx := strings.Index(req.Action, "."); idx >= 0 {
-		subAction = req.Action[idx+1:]
-	}
-
-	p := req.Params
-	var err error
-
-	switch subAction {
-	case "launch":
+	case "system.launch":
 		bundleID, _ := p["bundleID"].(string)
 		if bundleID == "" {
 			bundleID, _ = p["bundle_id"].(string)
@@ -233,8 +195,7 @@ func handlePluginAction(req *OnActionRequest) (any, error) {
 			"bundle_id":    bundleID,
 			"new_instance": newInstance,
 		}, nil)
-
-	case "open":
+	case "system.open":
 		target, _ := p["target"].(string)
 		if target == "" {
 			shared.Logf("system", "open: no target provided")
@@ -243,14 +204,12 @@ func handlePluginAction(req *OnActionRequest) (any, error) {
 		err = plugin.Call("native.open_target", map[string]interface{}{
 			"target": target,
 		}, nil)
-
 	default:
-		shared.Logf("system", "on_action: unknown plugin action '%s'", subAction)
 		return OnActionResponse{Result: "pass"}, nil
 	}
 
 	if err != nil {
-		shared.Logf("system", "plugin action %s error: %v", subAction, err)
+		shared.Logf("system", "on_action %s error: %v", req.Action, err)
 	}
 	return OnActionResponse{Result: "handled"}, nil
 }

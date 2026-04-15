@@ -253,7 +253,7 @@ func TestHandleOnAction_UnknownAction(t *testing.T) {
 }
 
 func TestHandleOnAction_UnknownSubcommand(t *testing.T) {
-	req := &OnActionRequest{Action: "system unknown-subcmd"}
+	req := &OnActionRequest{Action: "system.unknown_subcmd"}
 	result, err := handleOnAction(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -265,7 +265,7 @@ func TestHandleOnAction_UnknownSubcommand(t *testing.T) {
 }
 
 func TestHandleOnAction_SetOutputNoName(t *testing.T) {
-	req := &OnActionRequest{Action: "system set-output"}
+	req := &OnActionRequest{Action: "system.set_output"}
 	result, err := handleOnAction(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -277,7 +277,7 @@ func TestHandleOnAction_SetOutputNoName(t *testing.T) {
 }
 
 func TestHandleOnAction_SetInputNoName(t *testing.T) {
-	req := &OnActionRequest{Action: "system set-input"}
+	req := &OnActionRequest{Action: "system.set_input"}
 	result, err := handleOnAction(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -293,7 +293,7 @@ func TestHandlePluginAction_Launch_NoBundleID(t *testing.T) {
 		Action: "system.launch",
 		Params: map[string]interface{}{},
 	}
-	result, err := handlePluginAction(req)
+	result, err := handleOnAction(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -308,7 +308,7 @@ func TestHandlePluginAction_Open_NoTarget(t *testing.T) {
 		Action: "system.open",
 		Params: map[string]interface{}{},
 	}
-	result, err := handlePluginAction(req)
+	result, err := handleOnAction(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -320,7 +320,7 @@ func TestHandlePluginAction_Open_NoTarget(t *testing.T) {
 
 func TestHandlePluginAction_UnknownAction(t *testing.T) {
 	req := &OnActionRequest{Action: "system.foobar"}
-	result, err := handlePluginAction(req)
+	result, err := handleOnAction(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -525,7 +525,7 @@ func TestHandlePluginAction_Launch_UsesBundleIDKey(t *testing.T) {
 		Action: "system.launch",
 		Params: map[string]interface{}{"bundle_id": ""},
 	}
-	result, err := handlePluginAction(req)
+	result, err := handleOnAction(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

@@ -2,37 +2,37 @@
   {
     "pattern": ["volume", "up"],
 
-    "action": { "type": "dispatch", "action": "system volume-up" },
+    "action": { "type": "system.volume_up" },
     "category": "Audio"
   },
   {
     "pattern": ["volume", "down"],
 
-    "action": { "type": "dispatch", "action": "system volume-down" },
+    "action": { "type": "system.volume_down" },
     "category": "Audio"
   },
   {
     "pattern": ["mute"],
 
-    "action": { "type": "dispatch", "action": "system mute" },
+    "action": { "type": "system.mute" },
     "category": "Audio"
   },
   {
     "pattern": ["unmute"],
 
-    "action": { "type": "dispatch", "action": "system unmute" },
+    "action": { "type": "system.unmute" },
     "category": "Audio"
   },
   {
     "pattern": [["set", "switch"], "output", "<text>"],
 
-    "action": { "type": "dispatch", "action": "system set-output" },
+    "action": { "type": "system.set_output" },
     "category": "Audio"
   },
   {
     "pattern": [["set", "switch"], "input", "<text>"],
 
-    "action": { "type": "dispatch", "action": "system set-input" },
+    "action": { "type": "system.set_input" },
     "category": "Audio"
   }
 ]
