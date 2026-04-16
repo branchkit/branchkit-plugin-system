@@ -26,13 +26,13 @@
   {
     "pattern": [["set", "switch"], "output", "<text>"],
 
-    "action": { "type": "system.set_output" },
+    "action": { "type": "system.set_output", "name": "{0}" },
     "category": "Audio"
   },
   {
     "pattern": [["set", "switch"], "input", "<text>"],
 
-    "action": { "type": "system.set_input" },
+    "action": { "type": "system.set_input", "name": "{0}" },
     "category": "Audio"
   }
 ]

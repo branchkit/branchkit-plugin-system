@@ -238,134 +238,37 @@ func TestHandleRenderSettings_UnknownTab(t *testing.T) {
 	}
 }
 
-// --- handleOnAction routing ---
+// --- per-action no-op input handling ---
+//
+// Routing of unknown actions and "did the dispatch happen" semantics live in
+// the SDK's HandleAction tests (plugin-sdk-go/actions_test.go). These tests
+// only cover plugin-local input validation paths.
 
-func TestHandleOnAction_UnknownAction(t *testing.T) {
-	req := &OnActionRequest{Action: "other do-something"}
-	result, err := handleOnAction(req)
-	if err != nil {
+func TestHandleSetOutput_NoName(t *testing.T) {
+	req := &shared.OnActionRequest{Action: "system.set_output"}
+	if _, err := handleSetOutput(req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
-	}
-	resp := result.(OnActionResponse)
-	if resp.Result != "pass" {
-		t.Errorf("expected 'pass' for unknown action, got %q", resp.Result)
 	}
 }
 
-func TestHandleOnAction_UnknownSubcommand(t *testing.T) {
-	req := &OnActionRequest{Action: "system.unknown_subcmd"}
-	result, err := handleOnAction(req)
-	if err != nil {
+func TestHandleSetInput_NoName(t *testing.T) {
+	req := &shared.OnActionRequest{Action: "system.set_input"}
+	if _, err := handleSetInput(req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
-	}
-	resp := result.(OnActionResponse)
-	if resp.Result != "pass" {
-		t.Errorf("expected 'pass' for unknown subcommand, got %q", resp.Result)
 	}
 }
 
-func TestHandleOnAction_SetOutputNoName(t *testing.T) {
-	req := &OnActionRequest{Action: "system.set_output"}
-	result, err := handleOnAction(req)
-	if err != nil {
+func TestHandleLaunch_NoBundleID(t *testing.T) {
+	req := &shared.OnActionRequest{Action: "system.launch", Params: json.RawMessage(`{}`)}
+	if _, err := handleLaunch(req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
-	}
-	resp := result.(OnActionResponse)
-	if resp.Result != "handled" {
-		t.Errorf("expected 'handled' for set-output with no name, got %q", resp.Result)
 	}
 }
 
-func TestHandleOnAction_SetInputNoName(t *testing.T) {
-	req := &OnActionRequest{Action: "system.set_input"}
-	result, err := handleOnAction(req)
-	if err != nil {
+func TestHandleOpen_NoTarget(t *testing.T) {
+	req := &shared.OnActionRequest{Action: "system.open", Params: json.RawMessage(`{}`)}
+	if _, err := handleOpen(req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
-	}
-	resp := result.(OnActionResponse)
-	if resp.Result != "handled" {
-		t.Errorf("expected 'handled' for set-input with no name, got %q", resp.Result)
-	}
-}
-
-func TestHandlePluginAction_Launch_NoBundleID(t *testing.T) {
-	req := &OnActionRequest{
-		Action: "system.launch",
-		Params: map[string]interface{}{},
-	}
-	result, err := handleOnAction(req)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	resp := result.(OnActionResponse)
-	if resp.Result != "handled" {
-		t.Errorf("expected 'handled', got %q", resp.Result)
-	}
-}
-
-func TestHandlePluginAction_Open_NoTarget(t *testing.T) {
-	req := &OnActionRequest{
-		Action: "system.open",
-		Params: map[string]interface{}{},
-	}
-	result, err := handleOnAction(req)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	resp := result.(OnActionResponse)
-	if resp.Result != "handled" {
-		t.Errorf("expected 'handled', got %q", resp.Result)
-	}
-}
-
-func TestHandlePluginAction_UnknownAction(t *testing.T) {
-	req := &OnActionRequest{Action: "system.foobar"}
-	result, err := handleOnAction(req)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	resp := result.(OnActionResponse)
-	if resp.Result != "pass" {
-		t.Errorf("expected 'pass' for unknown plugin action, got %q", resp.Result)
-	}
-}
-
-// --- rpcHandler generic wrapper ---
-
-func TestRpcHandler_ValidParams(t *testing.T) {
-	handler := rpcHandler(func(req *RenderHudRequest) (any, error) {
-		return req.HudMode, nil
-	})
-	params, _ := json.Marshal(map[string]string{"hud_mode": "apps"})
-	result, err := handler(params)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if result != "apps" {
-		t.Errorf("expected 'apps', got %v", result)
-	}
-}
-
-func TestRpcHandler_EmptyParams(t *testing.T) {
-	handler := rpcHandler(func(req *RenderHudRequest) (any, error) {
-		return req.HudMode, nil
-	})
-	result, err := handler(nil)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if result != "" {
-		t.Errorf("expected zero-value empty string, got %v", result)
-	}
-}
-
-func TestRpcHandler_InvalidJSON(t *testing.T) {
-	handler := rpcHandler(func(req *RenderHudRequest) (any, error) {
-		return nil, nil
-	})
-	_, err := handler(json.RawMessage(`{invalid`))
-	if err == nil {
-		t.Error("expected error for invalid JSON")
 	}
 }
 
@@ -501,36 +404,16 @@ func TestHandleRenderSettings_SearchByBundleID(t *testing.T) {
 	}
 }
 
-// --- Action routing with dotted prefix ---
+// --- Action launch param compatibility ---
 
-func TestHandleOnAction_DottedPrefix_RoutesToPluginAction(t *testing.T) {
-	// Dotted actions route to handlePluginAction, not the space-prefix path
-	req := &OnActionRequest{
-		Action: "system.unknown",
-		Params: map[string]interface{}{},
-	}
-	result, err := handleOnAction(req)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	resp := result.(OnActionResponse)
-	if resp.Result != "pass" {
-		t.Errorf("expected 'pass' for unknown dotted action, got %q", resp.Result)
-	}
-}
-
-func TestHandlePluginAction_Launch_UsesBundleIDKey(t *testing.T) {
-	// Verify both "bundleID" and "bundle_id" keys are accepted (no RPC call if empty)
-	req := &OnActionRequest{
+func TestHandleLaunch_AcceptsSnakeCaseBundleID(t *testing.T) {
+	// Verify both "bundleID" and "bundle_id" keys are accepted.
+	// (No RPC call happens because the value is empty.)
+	req := &shared.OnActionRequest{
 		Action: "system.launch",
-		Params: map[string]interface{}{"bundle_id": ""},
+		Params: json.RawMessage(`{"bundle_id": ""}`),
 	}
-	result, err := handleOnAction(req)
-	if err != nil {
+	if _, err := handleLaunch(req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
-	}
-	resp := result.(OnActionResponse)
-	if resp.Result != "handled" {
-		t.Errorf("expected 'handled', got %q", resp.Result)
 	}
 }

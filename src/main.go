@@ -3,8 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
 	"sort"
 	"strings"
 
@@ -12,28 +10,16 @@ import (
 	"github.com/branchkit/plugin-sdk-go"
 )
 
-// --- Request/Response types ---
-
-type OnActionRequest struct {
-	Action         string                 `json:"action"`
-	Args           []string               `json:"args,omitempty"`
-	Params         map[string]interface{} `json:"params,omitempty"`
-	ActiveApp      *string                `json:"active_app,omitempty"`
-	ActiveWindowID *string                `json:"active_window_id,omitempty"`
-}
-
-type OnActionResponse struct {
-	Result string `json:"result"`
-}
+// --- Local view types (request/response types come from shared) ---
 
 type RenderHudRequest struct {
-	HudMode string         `json:"hud_mode"`
+	HudMode string           `json:"hud_mode"`
 	Apps    []shared.AppData `json:"apps"`
 }
 
 type RenderSettingsRequest struct {
-	TabKey string         `json:"tab_key"`
-	Search string         `json:"search"`
+	TabKey string           `json:"tab_key"`
+	Search string           `json:"search"`
 	Apps   []shared.AppData `json:"apps"`
 }
 
@@ -60,20 +46,6 @@ type appRowView struct {
 	Aliases    []string
 	Status     string
 	BadgeClass string
-}
-
-// --- Generic RPC handler ---
-
-func rpcHandler[Req any](fn func(*Req) (any, error)) shared.HandlerFunc {
-	return func(params json.RawMessage) (any, error) {
-		var req Req
-		if len(params) > 0 {
-			if err := json.Unmarshal(params, &req); err != nil {
-				return nil, fmt.Errorf("bad params: %w", err)
-			}
-		}
-		return fn(&req)
-	}
 }
 
 // --- Handlers ---
@@ -153,65 +125,117 @@ func handleRenderSettings(req *RenderSettingsRequest) (any, error) {
 	return shared.RenderSettingsResponse{HTML: renderTempl(Apps(rows))}, nil
 }
 
-func handleOnAction(req *OnActionRequest) (any, error) {
-	p := req.Params
-	args := req.Args
+// --- Per-action handlers ---
 
-	var err error
-	switch req.Action {
-	case "system.volume_up":
-		err = volumeUp()
-	case "system.volume_down":
-		err = volumeDown()
-	case "system.mute":
-		err = mute()
-	case "system.unmute":
-		err = unmute()
-	case "system.set_output":
-		name := strings.Join(args, " ")
-		if name == "" {
-			shared.Logf("system", "set_output: no device name provided")
-			return OnActionResponse{Result: "handled"}, nil
-		}
-		err = setOutputDevice(plugin, name)
-	case "system.set_input":
-		name := strings.Join(args, " ")
-		if name == "" {
-			shared.Logf("system", "set_input: no device name provided")
-			return OnActionResponse{Result: "handled"}, nil
-		}
-		err = setInputDevice(plugin, name)
-	case "system.launch":
-		bundleID, _ := p["bundleID"].(string)
-		if bundleID == "" {
-			bundleID, _ = p["bundle_id"].(string)
-		}
-		if bundleID == "" {
-			shared.Logf("system", "launch: no bundleID provided")
-			return OnActionResponse{Result: "handled"}, nil
-		}
-		newInstance, _ := p["new_instance"].(bool)
-		err = plugin.Call("native.launch_app", map[string]interface{}{
-			"bundle_id":    bundleID,
-			"new_instance": newInstance,
-		}, nil)
-	case "system.open":
-		target, _ := p["target"].(string)
-		if target == "" {
-			shared.Logf("system", "open: no target provided")
-			return OnActionResponse{Result: "handled"}, nil
-		}
-		err = plugin.Call("native.open_target", map[string]interface{}{
-			"target": target,
-		}, nil)
-	default:
-		return OnActionResponse{Result: "pass"}, nil
+func handleVolumeUp(_ *shared.OnActionRequest) (any, error) {
+	if err := volumeUp(); err != nil {
+		shared.Logf("system", "volume_up: %v", err)
 	}
+	return nil, nil
+}
 
-	if err != nil {
-		shared.Logf("system", "on_action %s error: %v", req.Action, err)
+func handleVolumeDown(_ *shared.OnActionRequest) (any, error) {
+	if err := volumeDown(); err != nil {
+		shared.Logf("system", "volume_down: %v", err)
 	}
-	return OnActionResponse{Result: "handled"}, nil
+	return nil, nil
+}
+
+func handleMute(_ *shared.OnActionRequest) (any, error) {
+	if err := mute(); err != nil {
+		shared.Logf("system", "mute: %v", err)
+	}
+	return nil, nil
+}
+
+func handleUnmute(_ *shared.OnActionRequest) (any, error) {
+	if err := unmute(); err != nil {
+		shared.Logf("system", "unmute: %v", err)
+	}
+	return nil, nil
+}
+
+type setDeviceParams struct {
+	Name string `json:"name"`
+}
+
+func handleSetOutput(req *shared.OnActionRequest) (any, error) {
+	var p setDeviceParams
+	if err := req.UnmarshalParams(&p); err != nil {
+		return nil, err
+	}
+	if p.Name == "" {
+		shared.Logf("system", "set_output: no device name provided")
+		return nil, nil
+	}
+	if err := setOutputDevice(plugin, p.Name); err != nil {
+		shared.Logf("system", "set_output: %v", err)
+	}
+	return nil, nil
+}
+
+func handleSetInput(req *shared.OnActionRequest) (any, error) {
+	var p setDeviceParams
+	if err := req.UnmarshalParams(&p); err != nil {
+		return nil, err
+	}
+	if p.Name == "" {
+		shared.Logf("system", "set_input: no device name provided")
+		return nil, nil
+	}
+	if err := setInputDevice(plugin, p.Name); err != nil {
+		shared.Logf("system", "set_input: %v", err)
+	}
+	return nil, nil
+}
+
+type launchParams struct {
+	BundleID    string `json:"bundleID"`
+	BundleIDAlt string `json:"bundle_id"`
+	NewInstance bool   `json:"new_instance"`
+}
+
+func handleLaunch(req *shared.OnActionRequest) (any, error) {
+	var p launchParams
+	if err := req.UnmarshalParams(&p); err != nil {
+		return nil, err
+	}
+	bundleID := p.BundleID
+	if bundleID == "" {
+		bundleID = p.BundleIDAlt
+	}
+	if bundleID == "" {
+		shared.Logf("system", "launch: no bundleID provided")
+		return nil, nil
+	}
+	if err := plugin.Call("native.launch_app", map[string]any{
+		"bundle_id":    bundleID,
+		"new_instance": p.NewInstance,
+	}, nil); err != nil {
+		shared.Logf("system", "launch: %v", err)
+	}
+	return nil, nil
+}
+
+type openParams struct {
+	Target string `json:"target"`
+}
+
+func handleOpen(req *shared.OnActionRequest) (any, error) {
+	var p openParams
+	if err := req.UnmarshalParams(&p); err != nil {
+		return nil, err
+	}
+	if p.Target == "" {
+		shared.Logf("system", "open: no target provided")
+		return nil, nil
+	}
+	if err := plugin.Call("native.open_target", map[string]any{
+		"target": p.Target,
+	}, nil); err != nil {
+		shared.Logf("system", "open: %v", err)
+	}
+	return nil, nil
 }
 
 // --- Sound settings hook handlers ---
@@ -285,16 +309,23 @@ func main() {
 	initDeviceAliases()
 	pushCommands(plugin)
 
-	// Register handlers (actuator→plugin requests)
-	plugin.Handle("on_action", rpcHandler(handleOnAction))
-	plugin.Handle("render_hud", rpcHandler(handleRenderHud))
-	plugin.Handle("render_settings", rpcHandler(handleRenderSettings))
-	plugin.Handle("set_volume", rpcHandler(handleSetVolume))
-	plugin.Handle("set_mute", rpcHandler(handleSetMute))
-	plugin.Handle("set_device", rpcHandler(handleSetDevice))
-	plugin.Handle("device_alias_add", rpcHandler(handleDeviceAliasAdd))
-	plugin.Handle("device_alias_remove", rpcHandler(handleDeviceAliasRemove))
+	// Per-action handlers (replaces the old single on_action switch).
+	plugin.HandleAction("system.volume_up", handleVolumeUp)
+	plugin.HandleAction("system.volume_down", handleVolumeDown)
+	plugin.HandleAction("system.mute", handleMute)
+	plugin.HandleAction("system.unmute", handleUnmute)
+	plugin.HandleAction("system.set_output", handleSetOutput)
+	plugin.HandleAction("system.set_input", handleSetInput)
+	plugin.HandleAction("system.launch", handleLaunch)
+	plugin.HandleAction("system.open", handleOpen)
 
-	// Run the message loop (blocks until stdin closes or SIGTERM)
+	shared.HandleTyped(plugin, "render_hud", handleRenderHud)
+	shared.HandleTyped(plugin, "render_settings", handleRenderSettings)
+	shared.HandleTyped(plugin, "set_volume", handleSetVolume)
+	shared.HandleTyped(plugin, "set_mute", handleSetMute)
+	shared.HandleTyped(plugin, "set_device", handleSetDevice)
+	shared.HandleTyped(plugin, "device_alias_add", handleDeviceAliasAdd)
+	shared.HandleTyped(plugin, "device_alias_remove", handleDeviceAliasRemove)
+
 	plugin.Run()
 }
