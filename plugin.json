@@ -12,11 +12,27 @@
   "run": "./system-plugin",
   "action_prefix": "system",
   "action_types": {
+    "volume_up": { "label": "Volume Up" },
+    "volume_down": { "label": "Volume Down" },
+    "mute": { "label": "Mute" },
+    "unmute": { "label": "Unmute" },
+    "set_output": {
+      "label": "Set Audio Output Device",
+      "fields": [
+        { "key": "name", "label": "Device Name", "field_type": "string", "required": true }
+      ]
+    },
+    "set_input": {
+      "label": "Set Audio Input Device",
+      "fields": [
+        { "key": "name", "label": "Device Name", "field_type": "string", "required": true }
+      ]
+    },
     "launch": {
       "label": "Launch App",
       "fields": [
         {
-          "key": "bundleID",
+          "key": "bundle_id",
           "label": "Bundle ID",
           "placeholder": "com.apple.Safari",
           "field_type": "string",

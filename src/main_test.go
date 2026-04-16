@@ -406,9 +406,10 @@ func TestHandleRenderSettings_SearchByBundleID(t *testing.T) {
 
 // --- Action launch param compatibility ---
 
-func TestHandleLaunch_AcceptsSnakeCaseBundleID(t *testing.T) {
-	// Verify both "bundleID" and "bundle_id" keys are accepted.
-	// (No RPC call happens because the value is empty.)
+func TestHandleLaunch_EmptyBundleIDNoOp(t *testing.T) {
+	// The canonical key is "bundle_id" (matches the manifest and the
+	// generated LaunchParams struct). With an empty value, the handler
+	// logs and returns without making an RPC call.
 	req := &shared.OnActionRequest{
 		Action: "system.launch",
 		Params: json.RawMessage(`{"bundle_id": ""}`),

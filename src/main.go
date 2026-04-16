@@ -155,12 +155,12 @@ func handleUnmute(_ *shared.OnActionRequest) (any, error) {
 	return nil, nil
 }
 
-type setDeviceParams struct {
-	Name string `json:"name"`
-}
+// Param structs (LaunchParams, SetInputParams, …) live in actions_gen.go,
+// generated from plugin.json's action_types block. Edit that and re-run
+// `just gen-plugins` — do not hand-declare these structs here.
 
 func handleSetOutput(req *shared.OnActionRequest) (any, error) {
-	var p setDeviceParams
+	var p SetOutputParams
 	if err := req.UnmarshalParams(&p); err != nil {
 		return nil, err
 	}
@@ -175,7 +175,7 @@ func handleSetOutput(req *shared.OnActionRequest) (any, error) {
 }
 
 func handleSetInput(req *shared.OnActionRequest) (any, error) {
-	var p setDeviceParams
+	var p SetInputParams
 	if err := req.UnmarshalParams(&p); err != nil {
 		return nil, err
 	}
@@ -189,40 +189,30 @@ func handleSetInput(req *shared.OnActionRequest) (any, error) {
 	return nil, nil
 }
 
-type launchParams struct {
-	BundleID    string `json:"bundleID"`
-	BundleIDAlt string `json:"bundle_id"`
-	NewInstance bool   `json:"new_instance"`
-}
-
 func handleLaunch(req *shared.OnActionRequest) (any, error) {
-	var p launchParams
+	var p LaunchParams
 	if err := req.UnmarshalParams(&p); err != nil {
 		return nil, err
 	}
-	bundleID := p.BundleID
-	if bundleID == "" {
-		bundleID = p.BundleIDAlt
-	}
-	if bundleID == "" {
-		shared.Logf("system", "launch: no bundleID provided")
+	if p.BundleID == "" {
+		shared.Logf("system", "launch: no bundle_id provided")
 		return nil, nil
 	}
+	newInstance := false
+	if p.NewInstance != nil {
+		newInstance = *p.NewInstance
+	}
 	if err := plugin.Call("native.launch_app", map[string]any{
-		"bundle_id":    bundleID,
-		"new_instance": p.NewInstance,
+		"bundle_id":    p.BundleID,
+		"new_instance": newInstance,
 	}, nil); err != nil {
 		shared.Logf("system", "launch: %v", err)
 	}
 	return nil, nil
 }
 
-type openParams struct {
-	Target string `json:"target"`
-}
-
 func handleOpen(req *shared.OnActionRequest) (any, error) {
-	var p openParams
+	var p OpenParams
 	if err := req.UnmarshalParams(&p); err != nil {
 		return nil, err
 	}
