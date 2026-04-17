@@ -60,7 +60,7 @@
     }
   },
   "hud_targets": [],
-  "store_data": {
+  "collection_data": {
     "voice_commands": "commands.json"
   },
   "implements": {
