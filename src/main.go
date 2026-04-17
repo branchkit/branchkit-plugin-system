@@ -285,19 +285,9 @@ func handleSetDevice(req *setDeviceRequest) (any, error) {
 	return map[string]string{"result": "ok"}, nil
 }
 
-func pushCommands(p *shared.Plugin) {
-	count, err := shared.PushCommands(p)
-	if err != nil {
-		shared.Logf("system", "%v", err)
-		return
-	}
-	shared.Logf("system", "Registered %d command variants", count)
-}
-
 func main() {
 	plugin = shared.NewPlugin()
 	initDeviceAliases()
-	pushCommands(plugin)
 
 	// Per-action handlers (replaces the old single on_action switch).
 	plugin.HandleAction("system.volume_up", handleVolumeUp)
