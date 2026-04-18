@@ -25,19 +25,18 @@ type installedApp struct {
 }
 
 var (
-	appsMu       sync.Mutex
-	apps         []AppEntry
-	appsDataPath string
+	appsMu sync.Mutex
+	apps   []AppEntry
 )
 
-// initApps loads installed apps, merges curated aliases and user overrides,
-// and pushes the flat collection to the matching engine.
+// initApps loads installed apps, merges curated aliases, and pushes the
+// flat collection. User overrides (aliases, disabled) are handled by the
+// platform collection override system.
 func initApps(p *shared.Plugin) {
 	dir := os.Getenv("BRANCHKIT_PLUGIN_DIR")
 	if dir == "" {
 		dir = "."
 	}
-	appsDataPath = filepath.Join(dir, "user_apps.json")
 
 	// 1. Scan installed apps via native method
 	scanned := scanInstalledApps(p)
@@ -45,10 +44,6 @@ func initApps(p *shared.Plugin) {
 	// 2. Load curated core aliases (shipped alongside plugin binary)
 	coreApps := loadAppsFile(filepath.Join(dir, "core_apps.json"))
 	scanned = mergeAliases(scanned, coreApps)
-
-	// 3. Apply user overrides
-	userApps := loadAppsFile(appsDataPath)
-	scanned = applyOverrides(scanned, userApps)
 
 	appsMu.Lock()
 	apps = scanned
@@ -95,31 +90,7 @@ func mergeAliases(scanned []AppEntry, core []AppEntry) []AppEntry {
 				}
 			}
 		} else {
-			// Core app not installed — add anyway so user can configure it
 			scanned = append(scanned, ca)
-		}
-	}
-	return scanned
-}
-
-// applyOverrides applies sparse user overrides (aliases, enabled/disabled).
-func applyOverrides(scanned []AppEntry, overrides []AppEntry) []AppEntry {
-	idx := make(map[string]int)
-	for i, app := range scanned {
-		idx[strings.ToLower(app.BundleID)] = i
-	}
-	for _, ov := range overrides {
-		key := strings.ToLower(ov.BundleID)
-		if i, ok := idx[key]; ok {
-			scanned[i].Enabled = ov.Enabled
-			for _, alias := range ov.Aliases {
-				lower := strings.ToLower(alias)
-				if !containsLower(scanned[i].Aliases, lower) {
-					scanned[i].Aliases = append(scanned[i].Aliases, lower)
-				}
-			}
-		} else {
-			scanned = append(scanned, ov)
 		}
 	}
 	return scanned
@@ -135,20 +106,16 @@ func containsLower(ss []string, target string) bool {
 }
 
 // pushAppsCollection derives the flat collection entries and pushes them.
+// Pushes ALL apps (platform overrides handle disabling via removed entries).
 func pushAppsCollection(p *shared.Plugin) {
 	type entry struct {
 		Spoken   string `json:"spoken"`
 		BundleID string `json:"bundle_id"`
 	}
 
-	// Build the flat entries under the lock, then release before RPC call
-	// to avoid deadlock if the actuator calls back into this plugin.
 	appsMu.Lock()
 	var flat []entry
 	for _, app := range apps {
-		if !app.Enabled {
-			continue
-		}
 		for _, alias := range app.Aliases {
 			flat = append(flat, entry{
 				Spoken:   strings.ToLower(alias),
@@ -167,19 +134,38 @@ func pushAppsCollection(p *shared.Plugin) {
 	}
 }
 
-// --- Mutations ---
+// --- Mutations (route through platform collection.override) ---
 
 func toggleApp(p *shared.Plugin, bundleID string) {
 	appsMu.Lock()
+	var aliases []string
+	var nowEnabled bool
 	for i := range apps {
 		if apps[i].BundleID == bundleID {
 			apps[i].Enabled = !apps[i].Enabled
+			nowEnabled = apps[i].Enabled
+			aliases = append([]string{}, apps[i].Aliases...)
 			break
 		}
 	}
 	appsMu.Unlock()
-	saveUserApps()
-	pushAppsCollection(p)
+
+	// Add/remove each alias via platform override
+	for _, alias := range aliases {
+		spoken := strings.ToLower(alias)
+		if nowEnabled {
+			// Re-enable: remove the override so plugin data takes effect
+			_ = p.Call("collection.override", map[string]any{
+				"collection": "apps", "action": "add",
+				"key": spoken, "value": bundleID,
+			}, nil)
+		} else {
+			// Disable: suppress each alias
+			_ = p.Call("collection.override", map[string]any{
+				"collection": "apps", "action": "remove", "key": spoken,
+			}, nil)
+		}
+	}
 }
 
 func addAppAlias(p *shared.Plugin, bundleID, alias string) {
@@ -197,8 +183,12 @@ func addAppAlias(p *shared.Plugin, bundleID, alias string) {
 		}
 	}
 	appsMu.Unlock()
-	saveUserApps()
-	pushAppsCollection(p)
+
+	// Add via platform override
+	_ = p.Call("collection.override", map[string]any{
+		"collection": "apps", "action": "add",
+		"key": alias, "value": bundleID,
+	}, nil)
 }
 
 func removeAppAlias(p *shared.Plugin, bundleID, alias string) {
@@ -217,23 +207,11 @@ func removeAppAlias(p *shared.Plugin, bundleID, alias string) {
 		}
 	}
 	appsMu.Unlock()
-	saveUserApps()
-	pushAppsCollection(p)
-}
 
-// saveUserApps persists user overrides (only apps that differ from defaults).
-func saveUserApps() {
-	appsMu.Lock()
-	// Save all app entries as user state — simple approach for now.
-	data, err := json.MarshalIndent(apps, "", "  ")
-	appsMu.Unlock()
-	if err != nil {
-		shared.Logf("system", "save user_apps: %v", err)
-		return
-	}
-	if err := os.WriteFile(appsDataPath, data, 0644); err != nil {
-		shared.Logf("system", "write user_apps: %v", err)
-	}
+	// Remove via platform override
+	_ = p.Call("collection.override", map[string]any{
+		"collection": "apps", "action": "remove", "key": alias,
+	}, nil)
 }
 
 // getApps returns a snapshot of the current app list.

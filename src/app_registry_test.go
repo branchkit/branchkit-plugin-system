@@ -59,73 +59,24 @@ func TestMergeAliases_NoDuplicateAliases(t *testing.T) {
 	}
 }
 
-func TestApplyOverrides_DisablesApp(t *testing.T) {
-	scanned := []AppEntry{
-		{Name: "Chrome", BundleID: "com.google.Chrome", Aliases: []string{"chrome"}, Enabled: true},
-	}
-	overrides := []AppEntry{
-		{Name: "Chrome", BundleID: "com.google.Chrome", Enabled: false},
-	}
-	result := applyOverrides(scanned, overrides)
-	if result[0].Enabled {
-		t.Error("expected app to be disabled by override")
-	}
-}
-
-func TestApplyOverrides_AddsAliases(t *testing.T) {
-	scanned := []AppEntry{
-		{Name: "Chrome", BundleID: "com.google.Chrome", Aliases: []string{"chrome"}, Enabled: true},
-	}
-	overrides := []AppEntry{
-		{Name: "Chrome", BundleID: "com.google.Chrome", Aliases: []string{"browser", "web"}, Enabled: true},
-	}
-	result := applyOverrides(scanned, overrides)
-	if !containsLower(result[0].Aliases, "browser") {
-		t.Error("expected 'browser' alias from override")
-	}
-	if !containsLower(result[0].Aliases, "web") {
-		t.Error("expected 'web' alias from override")
-	}
-	if !containsLower(result[0].Aliases, "chrome") {
-		t.Error("expected original 'chrome' alias preserved")
-	}
-}
-
-func TestApplyOverrides_AppendsCustomApp(t *testing.T) {
-	scanned := []AppEntry{
-		{Name: "Safari", BundleID: "com.apple.Safari", Aliases: []string{"safari"}, Enabled: true},
-	}
-	overrides := []AppEntry{
-		{Name: "Custom App", BundleID: "com.custom.app", Aliases: []string{"custom"}, Enabled: true},
-	}
-	result := applyOverrides(scanned, overrides)
-	if len(result) != 2 {
-		t.Fatalf("expected 2 apps, got %d", len(result))
-	}
-}
-
 func TestPushAppsCollection_BuildsFlatEntries(t *testing.T) {
-	// Set internal state and verify the flat structure would be correct
 	setTestApps([]AppEntry{
 		{Name: "Chrome", BundleID: "com.google.Chrome", Aliases: []string{"chrome", "google chrome"}, Enabled: true},
 		{Name: "Hidden", BundleID: "com.example.hidden", Aliases: []string{"hidden"}, Enabled: false},
 	})
 
-	// Verify getApps returns the right data
 	allApps := getApps()
 	if len(allApps) != 2 {
 		t.Fatalf("expected 2 apps, got %d", len(allApps))
 	}
 
-	// Count enabled aliases (what pushAppsCollection would produce)
+	// pushAppsCollection now pushes ALL apps (platform overrides handle disabling)
 	flatCount := 0
 	for _, app := range allApps {
-		if app.Enabled {
-			flatCount += len(app.Aliases)
-		}
+		flatCount += len(app.Aliases)
 	}
-	if flatCount != 2 {
-		t.Errorf("expected 2 flat entries (chrome + google chrome), got %d", flatCount)
+	if flatCount != 3 {
+		t.Errorf("expected 3 flat entries (chrome + google chrome + hidden), got %d", flatCount)
 	}
 }
 
