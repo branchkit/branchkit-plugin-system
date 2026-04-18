@@ -70,9 +70,9 @@ func Apps(apps []appRowView) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var4 string
-				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("$uid = '" + jsEscape(app.BundleID) + "'; $newAlias = '" + jsEscape(alias) + "'; @post('/settings/apps/alias/remove')")
+				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("$uid = '" + jsEscape(app.BundleID) + "'; $newAlias = '" + jsEscape(alias) + "'; @post('/v1/plugins/system/app_alias_remove')")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 18, Col: 150}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 18, Col: 158}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
@@ -101,9 +101,9 @@ func Apps(apps []appRowView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("evt.key === 'Enter' && ($uid = '" + jsEscape(app.BundleID) + "', @post('/settings/apps/alias/add'), $editingApp = ''); evt.key === 'Escape' && ($editingApp = '')")
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("evt.key === 'Enter' && ($uid = '" + jsEscape(app.BundleID) + "', @post('/v1/plugins/system/app_alias_add'), $editingApp = ''); evt.key === 'Escape' && ($editingApp = '')")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 23, Col: 189}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 23, Col: 197}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -162,9 +162,9 @@ func Apps(apps []appRowView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var11 string
-			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs("@post('/settings/apps/toggle', {payload: {bundle_id: '" + jsEscape(app.BundleID) + "'}})")
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs("@post('/v1/plugins/system/app_toggle', {payload: {bundle_id: '" + jsEscape(app.BundleID) + "'}})")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 34, Col: 112}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 34, Col: 120}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {

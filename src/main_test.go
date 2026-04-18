@@ -101,13 +101,19 @@ func TestMatchesDevice_NilAliases(t *testing.T) {
 
 // --- handleRenderHud ---
 
+// setTestApps sets the internal app list for testing.
+func setTestApps(entries []AppEntry) {
+	appsMu.Lock()
+	apps = entries
+	appsMu.Unlock()
+}
+
 func TestHandleRenderHud_AppsMode(t *testing.T) {
-	enabled := true
-	apps := []shared.AppData{
-		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: &enabled, Aliases: []string{"browser"}},
-		{Name: "Finder", BundleID: "com.apple.finder", Enabled: &enabled},
-	}
-	req := &RenderHudRequest{HudMode: "apps", Apps: apps}
+	setTestApps([]AppEntry{
+		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true, Aliases: []string{"browser"}},
+		{Name: "Finder", BundleID: "com.apple.finder", Enabled: true},
+	})
+	req := &RenderHudRequest{HudMode: "apps"}
 	result, err := handleRenderHud(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -136,13 +142,11 @@ func TestHandleRenderHud_AppsMode(t *testing.T) {
 }
 
 func TestHandleRenderHud_DisabledAppsFiltered(t *testing.T) {
-	enabled := true
-	disabled := false
-	apps := []shared.AppData{
-		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: &enabled},
-		{Name: "Hidden", BundleID: "com.example.hidden", Enabled: &disabled},
-	}
-	req := &RenderHudRequest{HudMode: "apps", Apps: apps}
+	setTestApps([]AppEntry{
+		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true},
+		{Name: "Hidden", BundleID: "com.example.hidden", Enabled: false},
+	})
+	req := &RenderHudRequest{HudMode: "apps"}
 	result, err := handleRenderHud(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -166,7 +170,8 @@ func TestHandleRenderHud_UnknownMode(t *testing.T) {
 }
 
 func TestHandleRenderHud_EmptyApps(t *testing.T) {
-	req := &RenderHudRequest{HudMode: "apps", Apps: nil}
+	setTestApps(nil)
+	req := &RenderHudRequest{HudMode: "apps"}
 	result, err := handleRenderHud(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -180,13 +185,10 @@ func TestHandleRenderHud_EmptyApps(t *testing.T) {
 // --- handleRenderSettings (apps tab) ---
 
 func TestHandleRenderSettings_AppsTab(t *testing.T) {
-	enabled := true
-	req := &RenderSettingsRequest{
-		TabKey: "apps",
-		Apps: []shared.AppData{
-			{Name: "Safari", BundleID: "com.apple.Safari", Enabled: &enabled, Aliases: []string{"browser"}},
-		},
-	}
+	setTestApps([]AppEntry{
+		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true, Aliases: []string{"browser"}},
+	})
+	req := &RenderSettingsRequest{TabKey: "apps"}
 	result, err := handleRenderSettings(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -204,14 +206,13 @@ func TestHandleRenderSettings_AppsTab(t *testing.T) {
 }
 
 func TestHandleRenderSettings_AppsSearch(t *testing.T) {
-	enabled := true
+	setTestApps([]AppEntry{
+		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true},
+		{Name: "Finder", BundleID: "com.apple.finder", Enabled: true},
+	})
 	req := &RenderSettingsRequest{
 		TabKey: "apps",
 		Search: "safari",
-		Apps: []shared.AppData{
-			{Name: "Safari", BundleID: "com.apple.Safari", Enabled: &enabled},
-			{Name: "Finder", BundleID: "com.apple.finder", Enabled: &enabled},
-		},
 	}
 	result, err := handleRenderSettings(req)
 	if err != nil {
@@ -364,13 +365,10 @@ func TestSoundTempl_NoDevices(t *testing.T) {
 // --- appRowView construction in handleRenderSettings ---
 
 func TestAppRowView_DisabledStatus(t *testing.T) {
-	disabled := false
-	req := &RenderSettingsRequest{
-		TabKey: "apps",
-		Apps: []shared.AppData{
-			{Name: "Hidden", BundleID: "com.example.hidden", Enabled: &disabled},
-		},
-	}
+	setTestApps([]AppEntry{
+		{Name: "Hidden", BundleID: "com.example.hidden", Enabled: false},
+	})
+	req := &RenderSettingsRequest{TabKey: "apps"}
 	result, err := handleRenderSettings(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -382,14 +380,13 @@ func TestAppRowView_DisabledStatus(t *testing.T) {
 }
 
 func TestHandleRenderSettings_SearchByBundleID(t *testing.T) {
-	enabled := true
+	setTestApps([]AppEntry{
+		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true},
+		{Name: "Finder", BundleID: "com.apple.finder", Enabled: true},
+	})
 	req := &RenderSettingsRequest{
 		TabKey: "apps",
 		Search: "com.apple.Safari",
-		Apps: []shared.AppData{
-			{Name: "Safari", BundleID: "com.apple.Safari", Enabled: &enabled},
-			{Name: "Finder", BundleID: "com.apple.finder", Enabled: &enabled},
-		},
 	}
 	result, err := handleRenderSettings(req)
 	if err != nil {

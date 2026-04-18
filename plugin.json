@@ -2,6 +2,7 @@
   "id": "system",
   "name": "System",
   "capabilities": [
+    "apps",
     "apps.control",
     "audio",
     "filesystem"
@@ -60,6 +61,23 @@
     }
   },
   "hud_targets": [],
+  "provides": {
+    "collections": {
+      "apps": {
+        "label": "Apps",
+        "description": "Installed applications with speakable names and aliases.",
+        "merge": "authoritative",
+        "entry_schema": {
+          "key_field": "spoken",
+          "value_field": "bundle_id",
+          "fields": [
+            { "key": "spoken", "field_type": "string", "label": "Spoken name" },
+            { "key": "bundle_id", "field_type": "string", "label": "Bundle ID" }
+          ]
+        }
+      }
+    }
+  },
   "collection_data": {
     "voice_commands": "commands.json"
   },

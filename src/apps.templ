@@ -15,12 +15,12 @@ templ Apps(apps []appRowView) {
 						for _, alias := range app.Aliases {
 							<span class="alias-tag">
 								{ alias }
-								<button data-on:click={ "$uid = '" + jsEscape(app.BundleID) + "'; $newAlias = '" + jsEscape(alias) + "'; @post('/settings/apps/alias/remove')" }>&#215;</button>
+								<button data-on:click={ "$uid = '" + jsEscape(app.BundleID) + "'; $newAlias = '" + jsEscape(alias) + "'; @post('/v1/plugins/system/app_alias_remove')" }>&#215;</button>
 							</span>
 						}
 						<div data-show={ "$editingApp === '" + jsEscape(app.BundleID) + "'" }>
 							<input class="add-alias-input" type="text" data-bind:newAlias placeholder="Add alias…"
-								data-on:keydown={ "evt.key === 'Enter' && ($uid = '" + jsEscape(app.BundleID) + "', @post('/settings/apps/alias/add'), $editingApp = ''); evt.key === 'Escape' && ($editingApp = '')" }
+								data-on:keydown={ "evt.key === 'Enter' && ($uid = '" + jsEscape(app.BundleID) + "', @post('/v1/plugins/system/app_alias_add'), $editingApp = ''); evt.key === 'Escape' && ($editingApp = '')" }
 								data-on:blur__debounce.200ms="$editingApp = ''"/>
 						</div>
 						<div data-show={ "$editingApp !== '" + jsEscape(app.BundleID) + "'" }>
@@ -31,7 +31,7 @@ templ Apps(apps []appRowView) {
 				</div>
 				<div class="row-actions">
 					<span class={ "badge " + app.BadgeClass } style="cursor: pointer;"
-						data-on:click={ "@post('/settings/apps/toggle', {payload: {bundle_id: '" + jsEscape(app.BundleID) + "'}})" }>
+						data-on:click={ "@post('/v1/plugins/system/app_toggle', {payload: {bundle_id: '" + jsEscape(app.BundleID) + "'}})" }>
 						{ app.Status }
 					</span>
 				</div>

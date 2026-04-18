@@ -13,14 +13,12 @@ import (
 // --- Local view types (request/response types come from shared) ---
 
 type RenderHudRequest struct {
-	HudMode string           `json:"hud_mode"`
-	Apps    []shared.AppData `json:"apps"`
+	HudMode string `json:"hud_mode"`
 }
 
 type RenderSettingsRequest struct {
-	TabKey string           `json:"tab_key"`
-	Search string           `json:"search"`
-	Apps   []shared.AppData `json:"apps"`
+	TabKey string `json:"tab_key"`
+	Search string `json:"search"`
 }
 
 // jsEscape escapes a string for safe use in single-quoted JavaScript literals.
@@ -60,9 +58,10 @@ func handleRenderHud(req *RenderHudRequest) (any, error) {
 		}, nil
 	}
 
+	allApps := getApps()
 	items := []shared.HudItem{}
-	for _, app := range req.Apps {
-		if !app.IsEnabled() {
+	for _, app := range allApps {
+		if !app.Enabled {
 			continue
 		}
 		var subtitle *string
@@ -99,9 +98,10 @@ func handleRenderSettings(req *RenderSettingsRequest) (any, error) {
 		return shared.RenderSettingsResponse{}, nil
 	}
 
+	allApps := getApps()
 	search := strings.ToLower(req.Search)
 	var rows []appRowView
-	for _, app := range req.Apps {
+	for _, app := range allApps {
 		if search != "" &&
 			!strings.Contains(strings.ToLower(app.Name), search) &&
 			!strings.Contains(strings.ToLower(app.BundleID), search) {
@@ -109,7 +109,7 @@ func handleRenderSettings(req *RenderSettingsRequest) (any, error) {
 		}
 		status := "Enabled"
 		badgeClass := "badge-core"
-		if !app.IsEnabled() {
+		if !app.Enabled {
 			status = "Disabled"
 			badgeClass = "badge-user"
 		}
@@ -228,6 +228,32 @@ func handleOpen(req *shared.OnActionRequest) (any, error) {
 	return nil, nil
 }
 
+// --- App settings action handlers ---
+
+type appToggleRequest struct {
+	BundleID string `json:"bundle_id"`
+}
+
+func handleAppToggle(req *appToggleRequest) (any, error) {
+	toggleApp(plugin, req.BundleID)
+	return map[string]string{"result": "ok"}, nil
+}
+
+type appAliasRequest struct {
+	BundleID string `json:"bundle_id"`
+	Alias    string `json:"newAlias"`
+}
+
+func handleAppAliasAdd(req *appAliasRequest) (any, error) {
+	addAppAlias(plugin, req.BundleID, req.Alias)
+	return map[string]string{"result": "ok"}, nil
+}
+
+func handleAppAliasRemove(req *appAliasRequest) (any, error) {
+	removeAppAlias(plugin, req.BundleID, req.Alias)
+	return map[string]string{"result": "ok"}, nil
+}
+
 // --- Sound settings hook handlers ---
 
 type setVolumeRequest struct {
@@ -288,6 +314,7 @@ func handleSetDevice(req *setDeviceRequest) (any, error) {
 func main() {
 	plugin = shared.NewPlugin()
 	initDeviceAliases()
+	initApps(plugin)
 
 	// Per-action handlers (replaces the old single on_action switch).
 	plugin.HandleAction("system.volume_up", handleVolumeUp)
@@ -306,6 +333,9 @@ func main() {
 	shared.HandleTyped(plugin, "set_device", handleSetDevice)
 	shared.HandleTyped(plugin, "device_alias_add", handleDeviceAliasAdd)
 	shared.HandleTyped(plugin, "device_alias_remove", handleDeviceAliasRemove)
+	shared.HandleTyped(plugin, "app_toggle", handleAppToggle)
+	shared.HandleTyped(plugin, "app_alias_add", handleAppAliasAdd)
+	shared.HandleTyped(plugin, "app_alias_remove", handleAppAliasRemove)
 
 	plugin.Run()
 }
