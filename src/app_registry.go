@@ -50,6 +50,12 @@ func initApps(p *shared.Plugin) {
 	appsMu.Unlock()
 
 	pushAppsCollection(p)
+
+	// Sync enabled/disabled state from platform overrides.
+	// If a user previously disabled an app, the override has its aliases
+	// in the 'removed' map. Mark those apps as disabled in the internal model
+	// so the HUD and settings UI reflect the persisted state.
+	syncDisabledFromOverrides(p)
 }
 
 // scanInstalledApps calls native.installed_apps and returns AppEntry slice.
@@ -103,6 +109,40 @@ func containsLower(ss []string, target string) bool {
 		}
 	}
 	return false
+}
+
+// syncDisabledFromOverrides reads the platform's collection_overrides for the
+// apps collection and marks apps as disabled if ALL their aliases are removed.
+func syncDisabledFromOverrides(p *shared.Plugin) {
+	// Read the current named_lists["apps"] — this has overrides already applied.
+	// Compare with our internal list to find apps whose aliases are all removed.
+	var resp struct {
+		Data map[string]string `json:"data"`
+	}
+	if err := p.Call("collection.get", map[string]string{"name": "apps"}, &resp); err != nil {
+		return
+	}
+
+	appsMu.Lock()
+	defer appsMu.Unlock()
+
+	activeAliases := make(map[string]bool, len(resp.Data))
+	for spoken := range resp.Data {
+		activeAliases[spoken] = true
+	}
+
+	for i := range apps {
+		allRemoved := true
+		for _, alias := range apps[i].Aliases {
+			if activeAliases[strings.ToLower(alias)] {
+				allRemoved = false
+				break
+			}
+		}
+		if allRemoved && len(apps[i].Aliases) > 0 {
+			apps[i].Enabled = false
+		}
+	}
 }
 
 // pushAppsCollection derives the flat collection entries and pushes them.
