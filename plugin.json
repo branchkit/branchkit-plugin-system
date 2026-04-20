@@ -64,8 +64,7 @@
   "provides": {
     "collections": {
       "apps": {
-        "kind": "capture",
-        "label": "Apps",
+        "kind": "entity",
         "description": "Installed applications with speakable names and aliases.",
         "merge": "authoritative",
         "key_field": "spoken",
