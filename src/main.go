@@ -125,109 +125,6 @@ func handleRenderSettings(req *RenderSettingsRequest) (any, error) {
 	return shared.RenderSettingsResponse{HTML: renderTempl(Apps(rows))}, nil
 }
 
-// --- Per-action handlers ---
-
-func handleVolumeUp(_ *shared.OnActionRequest) (any, error) {
-	if err := volumeUp(); err != nil {
-		shared.Logf("system", "volume_up: %v", err)
-	}
-	return nil, nil
-}
-
-func handleVolumeDown(_ *shared.OnActionRequest) (any, error) {
-	if err := volumeDown(); err != nil {
-		shared.Logf("system", "volume_down: %v", err)
-	}
-	return nil, nil
-}
-
-func handleMute(_ *shared.OnActionRequest) (any, error) {
-	if err := mute(); err != nil {
-		shared.Logf("system", "mute: %v", err)
-	}
-	return nil, nil
-}
-
-func handleUnmute(_ *shared.OnActionRequest) (any, error) {
-	if err := unmute(); err != nil {
-		shared.Logf("system", "unmute: %v", err)
-	}
-	return nil, nil
-}
-
-// Param structs (LaunchParams, SetInputParams, …) live in actions_gen.go,
-// generated from plugin.json's action_types block. Edit that and re-run
-// `just gen-plugins` — do not hand-declare these structs here.
-
-func handleSetOutput(req *shared.OnActionRequest) (any, error) {
-	var p SetOutputParams
-	if err := req.UnmarshalParams(&p); err != nil {
-		return nil, err
-	}
-	if p.Name == "" {
-		shared.Logf("system", "set_output: no device name provided")
-		return nil, nil
-	}
-	if err := setOutputDevice(plugin, p.Name); err != nil {
-		shared.Logf("system", "set_output: %v", err)
-	}
-	return nil, nil
-}
-
-func handleSetInput(req *shared.OnActionRequest) (any, error) {
-	var p SetInputParams
-	if err := req.UnmarshalParams(&p); err != nil {
-		return nil, err
-	}
-	if p.Name == "" {
-		shared.Logf("system", "set_input: no device name provided")
-		return nil, nil
-	}
-	if err := setInputDevice(plugin, p.Name); err != nil {
-		shared.Logf("system", "set_input: %v", err)
-	}
-	return nil, nil
-}
-
-func handleLaunch(req *shared.OnActionRequest) (any, error) {
-	var p LaunchParams
-	if err := req.UnmarshalParams(&p); err != nil {
-		return nil, err
-	}
-	if p.BundleID == "" {
-		shared.Logf("system", "launch: no bundle_id provided")
-		return nil, nil
-	}
-	newInstance := false
-	if p.NewInstance != nil {
-		newInstance = *p.NewInstance
-	}
-	if err := plugin.Call("native.launch_app", map[string]any{
-		"bundle_id":    p.BundleID,
-		"new_instance": newInstance,
-	}, nil); err != nil {
-		shared.Logf("system", "launch: %v", err)
-	}
-	return nil, nil
-}
-
-func handleOpen(req *shared.OnActionRequest) (any, error) {
-	var p OpenParams
-	if err := req.UnmarshalParams(&p); err != nil {
-		return nil, err
-	}
-	if p.Target == "" {
-		shared.Logf("system", "open: no target provided")
-		return nil, nil
-	}
-	if err := plugin.Call("native.open_target", map[string]any{
-		"target": p.Target,
-	}, nil); err != nil {
-		shared.Logf("system", "open: %v", err)
-	}
-	return nil, nil
-}
-
 // --- App settings action handlers ---
 
 type appToggleRequest struct {
@@ -311,12 +208,14 @@ func handleSetDevice(req *setDeviceRequest) (any, error) {
 	return map[string]string{"result": "ok"}, nil
 }
 
+// --- Startup ---
+
 func main() {
 	plugin = shared.NewPlugin()
 	initDeviceAliases()
 	initApps(plugin)
 
-	// Per-action handlers (replaces the old single on_action switch).
+	// Per-action handlers
 	plugin.HandleAction("system.volume_up", handleVolumeUp)
 	plugin.HandleAction("system.volume_down", handleVolumeDown)
 	plugin.HandleAction("system.mute", handleMute)
