@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/branchkit/plugin-sdk-go"
+	toolkit "github.com/branchkit/plugin-toolkit-go"
 )
 
 // --- Device aliases persistence ---
@@ -18,11 +19,7 @@ var (
 )
 
 func initDeviceAliases() {
-	dir := os.Getenv("BRANCHKIT_PLUGIN_DIR")
-	if dir == "" {
-		dir = "."
-	}
-	deviceAliasesPath = filepath.Join(dir, "device_aliases.json")
+	deviceAliasesPath = filepath.Join(toolkit.PluginDir(), "device_aliases.json")
 }
 
 // loadDeviceAliases reads UID → aliases map from disk.

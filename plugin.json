@@ -88,6 +88,10 @@
       {
         "label": "Sound",
         "key": "sound"
+      },
+      {
+        "label": "Devices",
+        "key": "devices"
       }
     ],
     "on_action": true,

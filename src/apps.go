@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	shared "github.com/branchkit/plugin-sdk-go"
+	toolkit "github.com/branchkit/plugin-toolkit-go"
 )
 
 // AppEntry is the internal rich model for a known application.
@@ -33,16 +34,11 @@ var (
 // flat collection. User overrides (aliases, disabled) are handled by the
 // platform collection override system.
 func initApps(p *shared.Plugin) {
-	dir := os.Getenv("BRANCHKIT_PLUGIN_DIR")
-	if dir == "" {
-		dir = "."
-	}
-
 	// 1. Scan installed apps via native method
 	scanned := scanInstalledApps(p)
 
 	// 2. Load curated core aliases (shipped alongside plugin binary)
-	coreApps := loadAppsFile(filepath.Join(dir, "core_apps.json"))
+	coreApps := loadAppsFile(filepath.Join(toolkit.PluginDir(), "core_apps.json"))
 	scanned = mergeAliases(scanned, coreApps)
 
 	appsMu.Lock()
@@ -165,11 +161,7 @@ func pushAppsCollection(p *shared.Plugin) {
 	}
 	appsMu.Unlock()
 
-	if err := p.Call("collection.push", map[string]any{
-		"name":  "apps",
-		"data":  flat,
-		"label": "Apps",
-	}, nil); err != nil {
+	if err := toolkit.PushCollection(p, "apps", flat, toolkit.WithLabel("Apps")); err != nil {
 		shared.Logf("system", "collection.push apps: %v", err)
 	}
 }

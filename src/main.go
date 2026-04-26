@@ -1,13 +1,12 @@
 package main
 
 import (
-	"bytes"
-	"context"
 	"sort"
 	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/branchkit/plugin-sdk-go"
+	toolkit "github.com/branchkit/plugin-toolkit-go"
 )
 
 // --- Local view types (request/response types come from shared) ---
@@ -16,26 +15,12 @@ type RenderHudRequest struct {
 	HudMode string `json:"hud_mode"`
 }
 
-type RenderSettingsRequest struct {
-	TabKey string `json:"tab_key"`
-	Search string `json:"search"`
-}
-
-// jsEscape escapes a string for safe use in single-quoted JavaScript literals.
-func jsEscape(s string) string {
-	s = strings.ReplaceAll(s, `\`, `\\`)
-	s = strings.ReplaceAll(s, `'`, `\'`)
-	return s
-}
+// jsEscape wraps toolkit.JSEscape for use in templ files.
+func jsEscape(s string) string { return toolkit.JSEscape(s) }
 
 // renderTempl renders a templ component to an HTML string.
 func renderTempl(c templ.Component) string {
-	var buf bytes.Buffer
-	if err := c.Render(context.Background(), &buf); err != nil {
-		shared.Logf("system", "templ render error: %v", err)
-		return ""
-	}
-	return buf.String()
+	return toolkit.RenderTempl("system", c)
 }
 
 type appRowView struct {
@@ -88,9 +73,14 @@ func handleRenderHud(req *RenderHudRequest) (any, error) {
 	}, nil
 }
 
-func handleRenderSettings(req *RenderSettingsRequest) (any, error) {
+func handleRenderSettings(req *shared.RenderSettingsRequest) (any, error) {
 	if req.TabKey == "sound" {
 		html := renderSoundSettings(plugin)
+		return shared.RenderSettingsResponse{HTML: html}, nil
+	}
+
+	if req.TabKey == "devices" {
+		html := renderDevicesSettings(plugin)
 		return shared.RenderSettingsResponse{HTML: html}, nil
 	}
 

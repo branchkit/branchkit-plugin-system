@@ -188,7 +188,7 @@ func TestHandleRenderSettings_AppsTab(t *testing.T) {
 	setTestApps([]AppEntry{
 		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true, Aliases: []string{"browser"}},
 	})
-	req := &RenderSettingsRequest{TabKey: "apps"}
+	req := &shared.RenderSettingsRequest{TabKey: "apps"}
 	result, err := handleRenderSettings(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -210,7 +210,7 @@ func TestHandleRenderSettings_AppsSearch(t *testing.T) {
 		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true},
 		{Name: "Finder", BundleID: "com.apple.finder", Enabled: true},
 	})
-	req := &RenderSettingsRequest{
+	req := &shared.RenderSettingsRequest{
 		TabKey: "apps",
 		Search: "safari",
 	}
@@ -228,7 +228,7 @@ func TestHandleRenderSettings_AppsSearch(t *testing.T) {
 }
 
 func TestHandleRenderSettings_UnknownTab(t *testing.T) {
-	req := &RenderSettingsRequest{TabKey: "nonexistent"}
+	req := &shared.RenderSettingsRequest{TabKey: "nonexistent"}
 	result, err := handleRenderSettings(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -368,7 +368,7 @@ func TestAppRowView_DisabledStatus(t *testing.T) {
 	setTestApps([]AppEntry{
 		{Name: "Hidden", BundleID: "com.example.hidden", Enabled: false},
 	})
-	req := &RenderSettingsRequest{TabKey: "apps"}
+	req := &shared.RenderSettingsRequest{TabKey: "apps"}
 	result, err := handleRenderSettings(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -384,7 +384,7 @@ func TestHandleRenderSettings_SearchByBundleID(t *testing.T) {
 		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true},
 		{Name: "Finder", BundleID: "com.apple.finder", Enabled: true},
 	})
-	req := &RenderSettingsRequest{
+	req := &shared.RenderSettingsRequest{
 		TabKey: "apps",
 		Search: "com.apple.Safari",
 	}
