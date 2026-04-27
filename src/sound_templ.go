@@ -38,9 +38,9 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var2 string
-			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("$uid = '" + jsEscape(dev.UID) + "'; $device_type = '" + deviceType + "'; @post('/v1/plugins/system/methods/set-device')")
+			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("@post('/v1/plugins/system/methods/set-device', {payload: {uid: '" + jsEscape(dev.UID) + "', device_type: '" + deviceType + "'}})")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 11, Col: 173}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 11, Col: 182}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -53,7 +53,7 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(dev.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 11, Col: 186}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 11, Col: 195}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -95,9 +95,9 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var6 string
-				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("$uid = '" + jsEscape(dev.UID) + "'; $newAlias = '" + jsEscape(alias) + "'; @post('/v1/plugins/system/methods/device-alias-remove')")
+				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("@post('/v1/plugins/system/methods/device-alias-remove', {payload: {uid: '" + jsEscape(dev.UID) + "', newAlias: '" + jsEscape(alias) + "'}})")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 19, Col: 164}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 19, Col: 173}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -126,9 +126,9 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
-			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs("evt.key === 'Enter' && ($uid = '" + jsEscape(dev.UID) + "', @post('/v1/plugins/system/methods/device-alias-add'), $editingDevice = ''); evt.key === 'Escape' && ($editingDevice = '')")
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs("evt.key === 'Enter' && (@post('/v1/plugins/system/methods/device-alias-add', {payload: {uid: '" + jsEscape(dev.UID) + "', newAlias: $newAlias}}), $editingDevice = ''); evt.key === 'Escape' && ($editingDevice = '')")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 24, Col: 209}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 24, Col: 241}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -205,9 +205,9 @@ func Sound(data soundSettingsData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var12 string
-		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`{"volume": %d, "muted": %s, "uid": "", "device_type": ""}`, data.Volume, strconv.FormatBool(data.Muted)))
+		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`{"volume": %d, "muted": %s}`, data.Volume, strconv.FormatBool(data.Muted)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 45, Col: 134}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 45, Col: 104}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {

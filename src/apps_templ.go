@@ -70,9 +70,9 @@ func Apps(apps []appRowView) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var4 string
-				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("$uid = '" + jsEscape(app.BundleID) + "'; $newAlias = '" + jsEscape(alias) + "'; @post('/v1/plugins/system/app_alias_remove')")
+				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("@post('/v1/plugins/system/app_alias_remove', {payload: {bundle_id: '" + jsEscape(app.BundleID) + "', newAlias: '" + jsEscape(alias) + "'}})")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 18, Col: 158}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 18, Col: 173}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
@@ -101,9 +101,9 @@ func Apps(apps []appRowView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("evt.key === 'Enter' && ($uid = '" + jsEscape(app.BundleID) + "', @post('/v1/plugins/system/app_alias_add'), $editingApp = ''); evt.key === 'Escape' && ($editingApp = '')")
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("evt.key === 'Enter' && (@post('/v1/plugins/system/app_alias_add', {payload: {bundle_id: '" + jsEscape(app.BundleID) + "', newAlias: $newAlias}}), $editingApp = ''); evt.key === 'Escape' && ($editingApp = '')")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 23, Col: 197}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 23, Col: 235}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {

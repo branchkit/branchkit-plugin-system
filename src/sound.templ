@@ -8,7 +8,7 @@ templ deviceList(devices []deviceView, deviceType string) {
 		<div class="settings-row" style="grid-template-columns: 2fr 100px;">
 			<div class="label">
 				<div style="display: flex; align-items: center; gap: 8px;">
-					<span style="cursor: pointer;" data-on:click={ "$uid = '" + jsEscape(dev.UID) + "'; $device_type = '" + deviceType + "'; @post('/v1/plugins/system/methods/set-device')" }>{ dev.Name }</span>
+					<span style="cursor: pointer;" data-on:click={ "@post('/v1/plugins/system/methods/set-device', {payload: {uid: '" + jsEscape(dev.UID) + "', device_type: '" + deviceType + "'}})" }>{ dev.Name }</span>
 				</div>
 				<div style="margin-top: 4px;">
 					<div class="alias-tags">
@@ -16,12 +16,12 @@ templ deviceList(devices []deviceView, deviceType string) {
 						for _, alias := range dev.Aliases {
 							<span class="alias-tag">
 								{ alias }
-								<button data-on:click={ "$uid = '" + jsEscape(dev.UID) + "'; $newAlias = '" + jsEscape(alias) + "'; @post('/v1/plugins/system/methods/device-alias-remove')" }>&#215;</button>
+								<button data-on:click={ "@post('/v1/plugins/system/methods/device-alias-remove', {payload: {uid: '" + jsEscape(dev.UID) + "', newAlias: '" + jsEscape(alias) + "'}})" }>&#215;</button>
 							</span>
 						}
 						<div data-show={ "$editingDevice === '" + jsEscape(dev.UID) + "'" }>
 							<input class="add-alias-input" type="text" data-bind:newAlias placeholder="e.g. headphones"
-								data-on:keydown={ "evt.key === 'Enter' && ($uid = '" + jsEscape(dev.UID) + "', @post('/v1/plugins/system/methods/device-alias-add'), $editingDevice = ''); evt.key === 'Escape' && ($editingDevice = '')" }
+								data-on:keydown={ "evt.key === 'Enter' && (@post('/v1/plugins/system/methods/device-alias-add', {payload: {uid: '" + jsEscape(dev.UID) + "', newAlias: $newAlias}}), $editingDevice = ''); evt.key === 'Escape' && ($editingDevice = '')" }
 								data-on:blur__debounce.150ms="$editingDevice = ''"/>
 						</div>
 						<div data-show={ "$editingDevice !== '" + jsEscape(dev.UID) + "'" }>
@@ -42,7 +42,7 @@ templ deviceList(devices []deviceView, deviceType string) {
 
 templ Sound(data soundSettingsData) {
 	<div id="settings-table-container" class="settings-table"
-		data-signals={ fmt.Sprintf(`{"volume": %d, "muted": %s, "uid": "", "device_type": ""}`, data.Volume, strconv.FormatBool(data.Muted)) }>
+		data-signals={ fmt.Sprintf(`{"volume": %d, "muted": %s}`, data.Volume, strconv.FormatBool(data.Muted)) }>
 		<div class="settings-row" style="grid-template-columns: 1fr 1fr;">
 			<div class="label">Volume</div>
 			<div style="text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
