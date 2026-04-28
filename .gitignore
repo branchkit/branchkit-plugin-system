@@ -1,3 +1,6 @@
 system-plugin
 system
 src/system
+src/system-go
+src/system-plugin
+.!*!*
