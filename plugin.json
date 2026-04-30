@@ -64,15 +64,25 @@
   "provides": {
     "collections": {
       "apps": {
-        "kind": "entity",
-        "description": "Installed applications with speakable names and aliases.",
-        "merge": "authoritative",
-        "key_field": "spoken",
-        "value_field": "bundle_id",
+        "preset": "named_entities",
         "fields": [
-          { "key": "spoken", "field_type": "string", "label": "Spoken name" },
-          { "key": "bundle_id", "field_type": "string", "label": "Bundle ID" }
-        ]
+          {
+            "key": "spoken",
+            "field_type": "string",
+            "label": "Spoken name"
+          },
+          {
+            "key": "bundle_id",
+            "field_type": "string",
+            "label": "Bundle ID"
+          }
+        ],
+        "feeds_matching": {
+          "type": "as_named_entities",
+          "key_field": "spoken",
+          "value_field": "bundle_id"
+        },
+        "description": "Installed applications with speakable names and aliases."
       }
     }
   },
