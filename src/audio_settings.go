@@ -14,20 +14,35 @@ import (
 // --- Device aliases persistence ---
 
 var (
-	deviceAliasesMu   sync.Mutex
-	deviceAliasesPath string
+	deviceAliasesMu sync.Mutex
 )
 
-func initDeviceAliases() {
-	deviceAliasesPath = filepath.Join(toolkit.PluginDir(), "device_aliases.json")
-}
-
-// loadDeviceAliases reads UID → aliases map from disk.
 func loadDeviceAliases() map[string][]string {
 	deviceAliasesMu.Lock()
 	defer deviceAliasesMu.Unlock()
 
-	data, err := os.ReadFile(deviceAliasesPath)
+	if plugin == nil {
+		return map[string][]string{}
+	}
+	rec, err := plugin.Get("plugin.system.device_aliases", "singleton")
+	if err != nil {
+		shared.Logf("system", "device aliases collection read error: %v", err)
+		return map[string][]string{}
+	}
+	if rec != nil {
+		var m map[string][]string
+		if err := json.Unmarshal(rec.Payload, &m); err != nil {
+			shared.Logf("system", "device aliases collection parse error: %v", err)
+			return map[string][]string{}
+		}
+		return m
+	}
+	return migrateDeviceAliasesFromFile()
+}
+
+func migrateDeviceAliasesFromFile() map[string][]string {
+	path := filepath.Join(toolkit.PluginDir(), "device_aliases.json")
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return map[string][]string{}
 	}
@@ -35,17 +50,17 @@ func loadDeviceAliases() map[string][]string {
 	if err := json.Unmarshal(data, &m); err != nil {
 		return map[string][]string{}
 	}
+	shared.Logf("system", "migrated device_aliases.json → plugin.system.device_aliases collection")
+	saveDeviceAliases(m)
 	return m
 }
 
 func saveDeviceAliases(m map[string][]string) {
-	data, err := json.MarshalIndent(m, "", "  ")
-	if err != nil {
-		shared.Logf("system", "save device aliases: %v", err)
+	if plugin == nil {
 		return
 	}
-	if err := os.WriteFile(deviceAliasesPath, data, 0644); err != nil {
-		shared.Logf("system", "write device aliases: %v", err)
+	if err := plugin.Put("plugin.system.device_aliases", "singleton", m); err != nil {
+		shared.Logf("system", "save device aliases: %v", err)
 	}
 }
 
@@ -63,8 +78,9 @@ func addDeviceAlias(uid, alias string) {
 		}
 	}
 	m[uid] = append(m[uid], alias)
-	data, _ := json.MarshalIndent(m, "", "  ")
-	_ = os.WriteFile(deviceAliasesPath, data, 0644)
+	if plugin != nil {
+		plugin.Put("plugin.system.device_aliases", "singleton", m)
+	}
 }
 
 func removeDeviceAlias(uid, alias string) {
@@ -84,8 +100,9 @@ func removeDeviceAlias(uid, alias string) {
 	} else {
 		m[uid] = kept
 	}
-	data, _ := json.MarshalIndent(m, "", "  ")
-	_ = os.WriteFile(deviceAliasesPath, data, 0644)
+	if plugin != nil {
+		plugin.Put("plugin.system.device_aliases", "singleton", m)
+	}
 }
 
 type soundSettingsData struct {

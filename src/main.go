@@ -202,7 +202,6 @@ func handleSetDevice(req *setDeviceRequest) (any, error) {
 
 func main() {
 	plugin = shared.NewPlugin()
-	initDeviceAliases()
 	initApps(plugin)
 
 	// Per-action handlers

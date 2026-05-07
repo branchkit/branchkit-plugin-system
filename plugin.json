@@ -83,6 +83,10 @@
           "value_field": "bundle_id"
         },
         "description": "Installed applications with speakable names and aliases."
+      },
+      "plugin.system.device_aliases": {
+        "preset": "data",
+        "description": "Audio device UID to spoken alias mappings."
       }
     }
   },
