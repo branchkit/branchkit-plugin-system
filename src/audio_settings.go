@@ -2,13 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 
 	"github.com/branchkit/plugin-sdk-go"
-	toolkit "github.com/branchkit/plugin-toolkit-go"
 )
 
 // --- Device aliases persistence ---
@@ -37,22 +34,7 @@ func loadDeviceAliases() map[string][]string {
 		}
 		return m
 	}
-	return migrateDeviceAliasesFromFile()
-}
-
-func migrateDeviceAliasesFromFile() map[string][]string {
-	path := filepath.Join(toolkit.PluginDir(), "device_aliases.json")
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return map[string][]string{}
-	}
-	var m map[string][]string
-	if err := json.Unmarshal(data, &m); err != nil {
-		return map[string][]string{}
-	}
-	shared.Logf("system", "migrated device_aliases.json → plugin.system.device_aliases collection")
-	saveDeviceAliases(m)
-	return m
+	return map[string][]string{}
 }
 
 func saveDeviceAliases(m map[string][]string) {
