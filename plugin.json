@@ -8,6 +8,7 @@
     "filesystem"
   ],
   "version": "1.0.0",
+  "min_api_version": "0.1.0",
   "description": "Application registry, app switching HUD, audio control, and system settings.",
   "author": "BranchKit",
   "run": "./system-plugin",
