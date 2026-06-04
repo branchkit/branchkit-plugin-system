@@ -87,6 +87,9 @@
       },
       "plugin.system.device_aliases": {
         "preset": "data",
+        "cardinality": "singleton",
+        "id_strategy": { "type": "singleton" },
+        "writers": "introducer_only",
         "description": "Audio device UID to spoken alias mappings."
       }
     }
