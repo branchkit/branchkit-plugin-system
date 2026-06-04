@@ -143,6 +143,15 @@ func syncDisabledFromOverrides(p *shared.Plugin) {
 
 // pushAppsCollection derives the flat collection entries and pushes them.
 // Pushes ALL apps (platform overrides handle disabling via removed entries).
+//
+// `apps` declares feeds_matching: as_named_entities with key_field "spoken"
+// — the lowercased alias is the record id the matcher addresses entries by.
+// Multiple aliases per bundle produce multiple records sharing the same
+// bundle_id payload field.
+//
+// Note: the legacy `WithLabel("Apps")` Settings UI section-header
+// declaration is dropped here. Section headers will derive from a future
+// manifest-level label field; in the interim the section renders as "apps".
 func pushAppsCollection(p *shared.Plugin) {
 	type entry struct {
 		Spoken   string `json:"spoken"`
@@ -150,19 +159,20 @@ func pushAppsCollection(p *shared.Plugin) {
 	}
 
 	appsMu.Lock()
-	var flat []entry
+	var records []toolkit.Record
 	for _, app := range apps {
 		for _, alias := range app.Aliases {
-			flat = append(flat, entry{
-				Spoken:   strings.ToLower(alias),
-				BundleID: app.BundleID,
+			spoken := strings.ToLower(alias)
+			records = append(records, toolkit.Record{
+				ID:      spoken,
+				Payload: entry{Spoken: spoken, BundleID: app.BundleID},
 			})
 		}
 	}
 	appsMu.Unlock()
 
-	if err := toolkit.PushCollection(p, "apps", flat, toolkit.WithLabel("Apps")); err != nil {
-		shared.Logf("system", "collection.push apps: %v", err)
+	if err := toolkit.ReplaceCollection(p, "apps", records); err != nil {
+		shared.Logf("system", "ReplaceCollection apps: %v", err)
 	}
 }
 
