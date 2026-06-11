@@ -197,13 +197,13 @@ func toggleApp(p *shared.Plugin, bundleID string) {
 		spoken := strings.ToLower(alias)
 		if nowEnabled {
 			// Re-enable: remove the override so plugin data takes effect
-			_ = p.Call("collection.override", map[string]any{
+			_ = p.Call("overrides.apply", map[string]any{
 				"collection": "apps", "action": "add",
 				"key": spoken, "value": bundleID,
 			}, nil)
 		} else {
 			// Disable: suppress each alias
-			_ = p.Call("collection.override", map[string]any{
+			_ = p.Call("overrides.apply", map[string]any{
 				"collection": "apps", "action": "remove", "key": spoken,
 			}, nil)
 		}
@@ -227,7 +227,7 @@ func addAppAlias(p *shared.Plugin, bundleID, alias string) {
 	appsMu.Unlock()
 
 	// Add via platform override
-	_ = p.Call("collection.override", map[string]any{
+	_ = p.Call("overrides.apply", map[string]any{
 		"collection": "apps", "action": "add",
 		"key": alias, "value": bundleID,
 	}, nil)
@@ -251,7 +251,7 @@ func removeAppAlias(p *shared.Plugin, bundleID, alias string) {
 	appsMu.Unlock()
 
 	// Remove via platform override
-	_ = p.Call("collection.override", map[string]any{
+	_ = p.Call("overrides.apply", map[string]any{
 		"collection": "apps", "action": "remove", "key": alias,
 	}, nil)
 }
