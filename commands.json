@@ -3,36 +3,42 @@
     "pattern": ["volume", "up"],
 
     "action": { "type": "system.volume_up" },
-    "category": "Audio"
+    "category": "Audio",
+    "description": "Raise the system output volume."
   },
   {
     "pattern": ["volume", "down"],
 
     "action": { "type": "system.volume_down" },
-    "category": "Audio"
+    "category": "Audio",
+    "description": "Lower the system output volume."
   },
   {
     "pattern": ["mute"],
 
     "action": { "type": "system.mute" },
-    "category": "Audio"
+    "category": "Audio",
+    "description": "Mute the system output."
   },
   {
     "pattern": ["unmute"],
 
     "action": { "type": "system.unmute" },
-    "category": "Audio"
+    "category": "Audio",
+    "description": "Unmute the system output."
   },
   {
     "pattern": [["set", "switch"], "output", "<text>"],
 
     "action": { "type": "system.set_output", "name": "{text}" },
-    "category": "Audio"
+    "category": "Audio",
+    "description": "Switch the audio output to a named device."
   },
   {
     "pattern": [["set", "switch"], "input", "<text>"],
 
     "action": { "type": "system.set_input", "name": "{text}" },
-    "category": "Audio"
+    "category": "Audio",
+    "description": "Switch the audio input to a named device."
   }
 ]
