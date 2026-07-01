@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"sort"
 	"strings"
 
@@ -227,7 +228,13 @@ func main() {
 
 	// Publish current audio device names as speakable collections once RPC is
 	// available (OnReady), so "set output/input <device>" matches real names.
+	// Re-push on hotplug so the collections track the live device set — the
+	// push is idempotent (ReplaceCollection diffs), so bursts and no-op
+	// changes (e.g. default-device moves) don't churn the grammar.
 	plugin.OnReady(func() { pushAudioDevicesCollections(plugin) })
+	plugin.On("_platform.audio_devices.changed", func(json.RawMessage) {
+		pushAudioDevicesCollections(plugin)
+	})
 
 	plugin.Run()
 }

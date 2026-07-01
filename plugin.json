@@ -118,6 +118,13 @@
       }
     }
   },
+  "consumes": {
+    "events": [
+      {
+        "pattern": "_platform.audio_devices.changed"
+      }
+    ]
+  },
   "collection_data": {
     "voice_commands": "commands.json"
   },

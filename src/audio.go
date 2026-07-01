@@ -59,7 +59,8 @@ func unmute() error {
 // the real device names (bounded, fully enumerated), instead of a `<text>` slot
 // that fuzzy-matches against the whole command union and can't hear a device
 // name whose words aren't already in it. Must run post-connect (RPC needed), so
-// it's wired from OnReady. Re-push on device changes is a follow-up.
+// it's wired from OnReady, and re-wired on `_platform.audio_devices.changed`
+// so hotplug keeps the collections current.
 func pushAudioDevicesCollections(p *shared.Plugin) {
 	resp, err := getAudioDevices(p)
 	if err != nil {
