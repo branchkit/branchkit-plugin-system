@@ -28,16 +28,16 @@
     "description": "Unmute the system output."
   },
   {
-    "pattern": [["set", "switch"], "output", "<text>"],
+    "pattern": [["set", "switch"], "output", "<name:audio_outputs>"],
 
-    "action": { "type": "system.set_output", "name": "{text}" },
+    "action": { "type": "system.set_output", "name": "{name}" },
     "category": "Audio",
     "description": "Switch the audio output to a named device."
   },
   {
-    "pattern": [["set", "switch"], "input", "<text>"],
+    "pattern": [["set", "switch"], "input", "<name:audio_inputs>"],
 
-    "action": { "type": "system.set_input", "name": "{text}" },
+    "action": { "type": "system.set_input", "name": "{name}" },
     "category": "Audio",
     "description": "Switch the audio input to a named device."
   }

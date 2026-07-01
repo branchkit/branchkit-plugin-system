@@ -225,5 +225,9 @@ func main() {
 	shared.HandleTyped(plugin, "app_alias_add", handleAppAliasAdd)
 	shared.HandleTyped(plugin, "app_alias_remove", handleAppAliasRemove)
 
+	// Publish current audio device names as speakable collections once RPC is
+	// available (OnReady), so "set output/input <device>" matches real names.
+	plugin.OnReady(func() { pushAudioDevicesCollections(plugin) })
+
 	plugin.Run()
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	shared "github.com/branchkit/plugin-sdk-go"
+	toolkit "github.com/branchkit/plugin-toolkit-go"
 )
 
 const volumeStep = 0.07 // ~7% per step
@@ -51,6 +52,45 @@ func mute() error {
 
 func unmute() error {
 	return plugin.Call("native.mute", shared.NativeMuteRequest{Muted: false}, nil)
+}
+
+// pushAudioDevicesCollections publishes current output/input device names as
+// speakable named-entity collections so "set output/input <device>" recognizes
+// the real device names (bounded, fully enumerated), instead of a `<text>` slot
+// that fuzzy-matches against the whole command union and can't hear a device
+// name whose words aren't already in it. Must run post-connect (RPC needed), so
+// it's wired from OnReady. Re-push on device changes is a follow-up.
+func pushAudioDevicesCollections(p *shared.Plugin) {
+	resp, err := getAudioDevices(p)
+	if err != nil {
+		shared.Logf("system", "pushAudioDevices: %v", err)
+		return
+	}
+	type entry struct {
+		Spoken string `json:"spoken"`
+	}
+	var outputs, inputs []toolkit.Record
+	seenOut, seenIn := map[string]bool{}, map[string]bool{}
+	for _, d := range resp.Devices {
+		spoken := strings.ToLower(strings.TrimSpace(d.Name))
+		if spoken == "" {
+			continue
+		}
+		if d.IsOutput && !seenOut[spoken] {
+			seenOut[spoken] = true
+			outputs = append(outputs, toolkit.Record{ID: spoken, Payload: entry{Spoken: spoken}})
+		}
+		if d.IsInput && !seenIn[spoken] {
+			seenIn[spoken] = true
+			inputs = append(inputs, toolkit.Record{ID: spoken, Payload: entry{Spoken: spoken}})
+		}
+	}
+	if err := toolkit.ReplaceCollection(p, "audio_outputs", outputs); err != nil {
+		shared.Logf("system", "ReplaceCollection audio_outputs: %v", err)
+	}
+	if err := toolkit.ReplaceCollection(p, "audio_inputs", inputs); err != nil {
+		shared.Logf("system", "ReplaceCollection audio_inputs: %v", err)
+	}
 }
 
 // getAudioDevices fetches audio devices from the actuator via RPC.

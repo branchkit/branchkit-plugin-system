@@ -85,6 +85,30 @@
         },
         "description": "Installed applications with speakable names and aliases."
       },
+      "audio_outputs": {
+        "preset": "named_entities",
+        "fields": [
+          { "key": "spoken", "field_type": "string", "label": "Device name" }
+        ],
+        "feeds_matching": {
+          "type": "as_named_entities",
+          "key_field": "spoken",
+          "value_field": "spoken"
+        },
+        "description": "Current audio output device names, speakable in 'set output <device>'."
+      },
+      "audio_inputs": {
+        "preset": "named_entities",
+        "fields": [
+          { "key": "spoken", "field_type": "string", "label": "Device name" }
+        ],
+        "feeds_matching": {
+          "type": "as_named_entities",
+          "key_field": "spoken",
+          "value_field": "spoken"
+        },
+        "description": "Current audio input device names, speakable in 'set input <device>'."
+      },
       "plugin.system.device_aliases": {
         "preset": "data",
         "cardinality": "singleton",
