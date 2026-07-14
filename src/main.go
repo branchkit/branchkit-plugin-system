@@ -213,6 +213,7 @@ func main() {
 	plugin.HandleAction("system.set_output", handleSetOutput)
 	plugin.HandleAction("system.set_input", handleSetInput)
 	plugin.HandleAction("system.launch", handleLaunch)
+	plugin.HandleAction("system.new_window", handleNewWindow)
 	plugin.HandleAction("system.open", handleOpen)
 
 	shared.HandleTyped(plugin, "render_hud", handleRenderHud)

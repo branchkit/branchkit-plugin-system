@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/branchkit/plugin-sdk-go"
 )
 
@@ -86,6 +88,39 @@ func handleLaunch(req *shared.OnActionRequest) (any, error) {
 		"new_instance": newInstance,
 	}, nil); err != nil {
 		shared.Logf("system", "launch: %v", err)
+	}
+	return nil, nil
+}
+
+// handleNewWindow opens a NEW window of an app on the CURRENT Space, without
+// switching to the app's existing window on another Space. `open -b` (launch)
+// activates the app, which raises its frontmost window — jumping Spaces when
+// that window lives elsewhere. AppleScript `make new window` instead creates a
+// fresh window on the active Space. Falls back to a normal launch for apps
+// with no scriptable window element.
+func handleNewWindow(req *shared.OnActionRequest) (any, error) {
+	var p NewWindowParams
+	if err := req.UnmarshalParams(&p); err != nil {
+		return nil, err
+	}
+	if p.BundleID == "" {
+		shared.Logf("system", "new_window: no bundle_id provided")
+		return nil, nil
+	}
+	// `application id "<bundle>"` targets by bundle id, so no app-name lookup.
+	script := fmt.Sprintf(`tell application id %q to make new window`, p.BundleID)
+	var res struct {
+		ExitCode int    `json:"exit_code"`
+		Stderr   string `json:"stderr"`
+	}
+	err := plugin.Call("native.run_applescript", map[string]string{"script": script}, &res)
+	if err != nil || res.ExitCode != 0 {
+		shared.Logf("system", "new_window: make-new-window failed for %s (err=%v exit=%d %s) — falling back to launch",
+			p.BundleID, err, res.ExitCode, res.Stderr)
+		plugin.Call("native.launch_app", map[string]any{
+			"bundle_id":    p.BundleID,
+			"new_instance": false,
+		}, nil)
 	}
 	return nil, nil
 }

@@ -13,6 +13,11 @@ type LaunchParams struct {
 type MuteParams struct {
 }
 
+// NewWindowParams is the params shape for action "system.new_window (New Window on Current Space)".
+type NewWindowParams struct {
+	BundleID string `json:"bundle_id"`
+}
+
 // OpenParams is the params shape for action "system.open (Open URL or File)".
 type OpenParams struct {
 	Target string `json:"target"`

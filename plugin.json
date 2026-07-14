@@ -48,6 +48,18 @@
         }
       ]
     },
+    "new_window": {
+      "label": "New Window on Current Space",
+      "fields": [
+        {
+          "key": "bundle_id",
+          "label": "Bundle ID",
+          "placeholder": "com.google.Chrome",
+          "field_type": "string",
+          "required": true
+        }
+      ]
+    },
     "open": {
       "label": "Open URL or File",
       "fields": [
