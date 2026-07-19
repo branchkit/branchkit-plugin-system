@@ -14,14 +14,14 @@
     "description": "Lower the system output volume."
   },
   {
-    "pattern": ["mute"],
+    "pattern": ["mute audio"],
 
     "action": { "type": "system.mute" },
     "category": "Audio",
     "description": "Mute the system output."
   },
   {
-    "pattern": ["unmute"],
+    "pattern": ["unmute audio"],
 
     "action": { "type": "system.unmute" },
     "category": "Audio",
