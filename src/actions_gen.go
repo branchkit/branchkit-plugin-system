@@ -5,8 +5,8 @@ package main
 
 // LaunchParams is the params shape for action "system.launch (Launch App)".
 type LaunchParams struct {
-	BundleID string `json:"bundle_id"`
-	NewInstance *bool `json:"new_instance,omitempty"`
+	BundleID    string `json:"bundle_id"`
+	NewInstance *bool  `json:"new_instance,omitempty"`
 }
 
 // MuteParams is the params shape for action "system.mute (Mute)".
@@ -44,4 +44,3 @@ type VolumeDownParams struct {
 // VolumeUpParams is the params shape for action "system.volume_up (Volume Up)".
 type VolumeUpParams struct {
 }
-
