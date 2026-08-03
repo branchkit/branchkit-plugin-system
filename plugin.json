@@ -5,7 +5,9 @@
     "apps",
     "apps.control",
     "audio",
-    "filesystem"
+    "filesystem",
+    "input",
+    "display"
   ],
   "version": "1.0.0",
   "min_api_version": "0.1.0",
@@ -127,6 +129,13 @@
         "id_strategy": { "type": "singleton" },
         "writers": "introducer_only",
         "description": "Audio device UID to spoken alias mappings."
+      },
+      "plugin.system.config": {
+        "preset": "data",
+        "cardinality": "singleton",
+        "id_strategy": { "type": "singleton" },
+        "writers": "introducer_only",
+        "description": "System plugin configuration (mouse follows focus)."
       }
     }
   },

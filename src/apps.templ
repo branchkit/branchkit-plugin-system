@@ -1,7 +1,26 @@
 package main
 
-templ Apps(apps []appRowView) {
-	<div id="settings-table-container" class="settings-table">
+templ Apps(apps []appRowView, mouseFollowsFocus bool) {
+	<div id="settings-table-container">
+		<div class="settings-table" style="margin-bottom: 16px;">
+			<div class="settings-row" style="grid-template-columns: 1fr 100px;">
+				<div class="label" title="After 'focus <app>' / 'switch <app>', warp the cursor to the app's window so scrolling lands there">Mouse follows focus</div>
+				<div class="row-actions">
+					if mouseFollowsFocus {
+						<span class="badge badge-core" style="cursor: pointer;"
+							data-on:click="@post('/v1/plugins/system/set_mouse_follows_focus', {payload: {enabled: false}})">
+							Enabled
+						</span>
+					} else {
+						<span class="badge badge-user" style="cursor: pointer;"
+							data-on:click="@post('/v1/plugins/system/set_mouse_follows_focus', {payload: {enabled: true}})">
+							Disabled
+						</span>
+					}
+				</div>
+			</div>
+		</div>
+		<div class="settings-table">
 		<div class="table-header" style="grid-template-columns: 1.5fr 2fr 100px;">
 			<div>Application</div>
 			<div>Aliases</div>
@@ -37,5 +56,6 @@ templ Apps(apps []appRowView) {
 				</div>
 			</div>
 		}
+		</div>
 	</div>
 }

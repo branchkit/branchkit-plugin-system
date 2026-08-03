@@ -279,7 +279,7 @@ func TestAppsTempl_RendersNonEmpty(t *testing.T) {
 	rows := []appRowView{
 		{Name: "Safari", BundleID: "com.apple.Safari", Aliases: []string{"browser"}, Status: "Enabled", BadgeClass: "badge-core"},
 	}
-	html := renderTempl(Apps(rows))
+	html := renderTempl(Apps(rows, false))
 	if html == "" {
 		t.Fatal("expected non-empty HTML from Apps templ")
 	}
@@ -292,7 +292,7 @@ func TestAppsTempl_RendersNonEmpty(t *testing.T) {
 }
 
 func TestAppsTempl_EmptyList(t *testing.T) {
-	html := renderTempl(Apps(nil))
+	html := renderTempl(Apps(nil, true))
 	if html == "" {
 		t.Fatal("expected non-empty HTML even with empty list")
 	}

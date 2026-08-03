@@ -192,20 +192,23 @@ func toggleApp(p *shared.Plugin, bundleID string) {
 	}
 	appsMu.Unlock()
 
-	// Add/remove each alias via platform override
+	// Suppress/restore each alias via platform override
 	for _, alias := range aliases {
 		spoken := strings.ToLower(alias)
 		if nowEnabled {
-			// Re-enable: remove the override so plugin data takes effect
-			_ = p.Call("overrides.apply", map[string]any{
-				"collection": "apps", "action": "add",
-				"key": spoken, "value": bundleID,
-			}, nil)
+			// Re-enable: clear the suppression so plugin data takes effect
+			if err := p.Call("overrides.apply", map[string]any{
+				"collection": "apps", "action": "restore", "id": spoken,
+			}, nil); err != nil {
+				shared.Logf("system", "app_toggle restore %q: %v", spoken, err)
+			}
 		} else {
 			// Disable: suppress each alias
-			_ = p.Call("overrides.apply", map[string]any{
-				"collection": "apps", "action": "remove", "key": spoken,
-			}, nil)
+			if err := p.Call("overrides.apply", map[string]any{
+				"collection": "apps", "action": "remove", "id": spoken,
+			}, nil); err != nil {
+				shared.Logf("system", "app_toggle remove %q: %v", spoken, err)
+			}
 		}
 	}
 }
@@ -227,10 +230,12 @@ func addAppAlias(p *shared.Plugin, bundleID, alias string) {
 	appsMu.Unlock()
 
 	// Add via platform override
-	_ = p.Call("overrides.apply", map[string]any{
+	if err := p.Call("overrides.apply", map[string]any{
 		"collection": "apps", "action": "add",
-		"key": alias, "value": bundleID,
-	}, nil)
+		"fields": map[string]string{"spoken": alias, "bundle_id": bundleID},
+	}, nil); err != nil {
+		shared.Logf("system", "alias add %q: %v", alias, err)
+	}
 }
 
 func removeAppAlias(p *shared.Plugin, bundleID, alias string) {
@@ -250,10 +255,13 @@ func removeAppAlias(p *shared.Plugin, bundleID, alias string) {
 	}
 	appsMu.Unlock()
 
-	// Remove via platform override
-	_ = p.Call("overrides.apply", map[string]any{
-		"collection": "apps", "action": "remove", "key": alias,
-	}, nil)
+	// Remove via platform override — "remove" filters the merged view, so it
+	// suppresses a plugin-shipped alias and drops a user-added one alike
+	if err := p.Call("overrides.apply", map[string]any{
+		"collection": "apps", "action": "remove", "id": alias,
+	}, nil); err != nil {
+		shared.Logf("system", "alias remove %q: %v", alias, err)
+	}
 }
 
 // getApps returns a snapshot of the current app list.
