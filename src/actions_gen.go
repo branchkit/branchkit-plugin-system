@@ -21,8 +21,8 @@ type MuteParams struct {
 }
 
 // HandleMute registers a typed handler for action "system.mute (Mute)".
-func HandleMute(p *shared.Plugin, fn func(MuteParams, *shared.OnActionRequest) (any, error)) {
-	shared.HandleActionTyped(p, "system.mute", fn)
+func HandleMute(p *shared.Plugin, fn shared.ActionHandlerFunc) {
+	p.HandleAction("system.mute", fn)
 }
 
 // NewWindowParams is the params shape for action "system.new_window (New Window on Current Space)".
@@ -70,8 +70,8 @@ type UnmuteParams struct {
 }
 
 // HandleUnmute registers a typed handler for action "system.unmute (Unmute)".
-func HandleUnmute(p *shared.Plugin, fn func(UnmuteParams, *shared.OnActionRequest) (any, error)) {
-	shared.HandleActionTyped(p, "system.unmute", fn)
+func HandleUnmute(p *shared.Plugin, fn shared.ActionHandlerFunc) {
+	p.HandleAction("system.unmute", fn)
 }
 
 // VolumeDownParams is the params shape for action "system.volume_down (Volume Down)".
@@ -79,8 +79,8 @@ type VolumeDownParams struct {
 }
 
 // HandleVolumeDown registers a typed handler for action "system.volume_down (Volume Down)".
-func HandleVolumeDown(p *shared.Plugin, fn func(VolumeDownParams, *shared.OnActionRequest) (any, error)) {
-	shared.HandleActionTyped(p, "system.volume_down", fn)
+func HandleVolumeDown(p *shared.Plugin, fn shared.ActionHandlerFunc) {
+	p.HandleAction("system.volume_down", fn)
 }
 
 // VolumeUpParams is the params shape for action "system.volume_up (Volume Up)".
@@ -88,6 +88,6 @@ type VolumeUpParams struct {
 }
 
 // HandleVolumeUp registers a typed handler for action "system.volume_up (Volume Up)".
-func HandleVolumeUp(p *shared.Plugin, fn func(VolumeUpParams, *shared.OnActionRequest) (any, error)) {
-	shared.HandleActionTyped(p, "system.volume_up", fn)
+func HandleVolumeUp(p *shared.Plugin, fn shared.ActionHandlerFunc) {
+	p.HandleAction("system.volume_up", fn)
 }

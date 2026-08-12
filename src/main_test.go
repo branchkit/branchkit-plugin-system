@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"strings"
 	"testing"
 
@@ -247,28 +246,28 @@ func TestHandleRenderSettings_UnknownTab(t *testing.T) {
 
 func TestHandleSetOutput_NoName(t *testing.T) {
 	req := &shared.OnActionRequest{Action: "system.set_output"}
-	if _, err := handleSetOutput(req); err != nil {
+	if _, err := handleSetOutput(SetOutputParams{}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func TestHandleSetInput_NoName(t *testing.T) {
 	req := &shared.OnActionRequest{Action: "system.set_input"}
-	if _, err := handleSetInput(req); err != nil {
+	if _, err := handleSetInput(SetInputParams{}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func TestHandleLaunch_NoBundleID(t *testing.T) {
-	req := &shared.OnActionRequest{Action: "system.launch", Params: json.RawMessage(`{}`)}
-	if _, err := handleLaunch(req); err != nil {
+	req := &shared.OnActionRequest{Action: "system.launch"}
+	if _, err := handleLaunch(LaunchParams{}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func TestHandleOpen_NoTarget(t *testing.T) {
-	req := &shared.OnActionRequest{Action: "system.open", Params: json.RawMessage(`{}`)}
-	if _, err := handleOpen(req); err != nil {
+	req := &shared.OnActionRequest{Action: "system.open"}
+	if _, err := handleOpen(OpenParams{}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
@@ -407,11 +406,8 @@ func TestHandleLaunch_EmptyBundleIDNoOp(t *testing.T) {
 	// The canonical key is "bundle_id" (matches the manifest and the
 	// generated LaunchParams struct). With an empty value, the handler
 	// logs and returns without making an RPC call.
-	req := &shared.OnActionRequest{
-		Action: "system.launch",
-		Params: json.RawMessage(`{"bundle_id": ""}`),
-	}
-	if _, err := handleLaunch(req); err != nil {
+	req := &shared.OnActionRequest{Action: "system.launch"}
+	if _, err := handleLaunch(LaunchParams{BundleID: ""}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }

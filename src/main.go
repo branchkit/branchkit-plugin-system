@@ -218,16 +218,18 @@ func main() {
 	plugin = shared.NewPlugin()
 	initApps(plugin)
 
-	// Per-action handlers
-	plugin.HandleAction("system.volume_up", handleVolumeUp)
-	plugin.HandleAction("system.volume_down", handleVolumeDown)
-	plugin.HandleAction("system.mute", handleMute)
-	plugin.HandleAction("system.unmute", handleUnmute)
-	plugin.HandleAction("system.set_output", handleSetOutput)
-	plugin.HandleAction("system.set_input", handleSetInput)
-	plugin.HandleAction("system.launch", handleLaunch)
-	plugin.HandleAction("system.new_window", handleNewWindow)
-	plugin.HandleAction("system.open", handleOpen)
+	// Per-action handlers. Registrars come from actions_gen.go, generated from
+	// plugin.json — so no action string is spelled here and a handler's params
+	// type cannot drift from what the manifest declares.
+	HandleVolumeUp(plugin, handleVolumeUp)
+	HandleVolumeDown(plugin, handleVolumeDown)
+	HandleMute(plugin, handleMute)
+	HandleUnmute(plugin, handleUnmute)
+	HandleSetOutput(plugin, handleSetOutput)
+	HandleSetInput(plugin, handleSetInput)
+	HandleLaunch(plugin, handleLaunch)
+	HandleNewWindow(plugin, handleNewWindow)
+	HandleOpen(plugin, handleOpen)
 
 	shared.HandleTyped(plugin, "render_hud", handleRenderHud)
 	shared.HandleTyped(plugin, "render_settings", handleRenderSettings)

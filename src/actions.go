@@ -42,11 +42,7 @@ func handleUnmute(_ *shared.OnActionRequest) (any, error) {
 // generated from plugin.json's action_types block. Edit that and re-run
 // `just gen-plugins` — do not hand-declare these structs here.
 
-func handleSetOutput(req *shared.OnActionRequest) (any, error) {
-	var p SetOutputParams
-	if err := req.UnmarshalParams(&p); err != nil {
-		return nil, err
-	}
+func handleSetOutput(p SetOutputParams, req *shared.OnActionRequest) (any, error) {
 	if p.Name == "" {
 		shared.Logf("system", "set_output: no device name provided")
 		return nil, nil
@@ -57,11 +53,7 @@ func handleSetOutput(req *shared.OnActionRequest) (any, error) {
 	return nil, nil
 }
 
-func handleSetInput(req *shared.OnActionRequest) (any, error) {
-	var p SetInputParams
-	if err := req.UnmarshalParams(&p); err != nil {
-		return nil, err
-	}
+func handleSetInput(p SetInputParams, req *shared.OnActionRequest) (any, error) {
 	if p.Name == "" {
 		shared.Logf("system", "set_input: no device name provided")
 		return nil, nil
@@ -72,11 +64,7 @@ func handleSetInput(req *shared.OnActionRequest) (any, error) {
 	return nil, nil
 }
 
-func handleLaunch(req *shared.OnActionRequest) (any, error) {
-	var p LaunchParams
-	if err := req.UnmarshalParams(&p); err != nil {
-		return nil, err
-	}
+func handleLaunch(p LaunchParams, req *shared.OnActionRequest) (any, error) {
 	if p.BundleID == "" {
 		shared.Logf("system", "launch: no bundle_id provided")
 		return nil, nil
@@ -186,11 +174,7 @@ func pickWarpTarget(wins []shared.WindowDetail, cursor *shared.NativeCursorRespo
 // window creation lives in the actuator (native.new_app_window); it reports
 // ok=false for apps with no scriptable window element, and we fall back to a
 // normal launch.
-func handleNewWindow(req *shared.OnActionRequest) (any, error) {
-	var p NewWindowParams
-	if err := req.UnmarshalParams(&p); err != nil {
-		return nil, err
-	}
+func handleNewWindow(p NewWindowParams, req *shared.OnActionRequest) (any, error) {
 	if p.BundleID == "" {
 		shared.Logf("system", "new_window: no bundle_id provided")
 		return nil, nil
@@ -212,11 +196,7 @@ func handleNewWindow(req *shared.OnActionRequest) (any, error) {
 	return nil, nil
 }
 
-func handleOpen(req *shared.OnActionRequest) (any, error) {
-	var p OpenParams
-	if err := req.UnmarshalParams(&p); err != nil {
-		return nil, err
-	}
+func handleOpen(p OpenParams, req *shared.OnActionRequest) (any, error) {
 	if p.Target == "" {
 		shared.Logf("system", "open: no target provided")
 		return nil, nil
