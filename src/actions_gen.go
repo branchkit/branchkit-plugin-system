@@ -3,14 +3,26 @@
 
 package main
 
+import shared "github.com/branchkit/plugin-sdk-go"
+
 // LaunchParams is the params shape for action "system.launch (Launch App)".
 type LaunchParams struct {
 	BundleID    string `json:"bundle_id"`
 	NewInstance *bool  `json:"new_instance,omitempty"`
 }
 
+// HandleLaunch registers a typed handler for action "system.launch (Launch App)".
+func HandleLaunch(p *shared.Plugin, fn func(LaunchParams, *shared.OnActionRequest) (any, error)) {
+	shared.HandleActionTyped(p, "system.launch", fn)
+}
+
 // MuteParams is the params shape for action "system.mute (Mute)".
 type MuteParams struct {
+}
+
+// HandleMute registers a typed handler for action "system.mute (Mute)".
+func HandleMute(p *shared.Plugin, fn func(MuteParams, *shared.OnActionRequest) (any, error)) {
+	shared.HandleActionTyped(p, "system.mute", fn)
 }
 
 // NewWindowParams is the params shape for action "system.new_window (New Window on Current Space)".
@@ -18,9 +30,19 @@ type NewWindowParams struct {
 	BundleID string `json:"bundle_id"`
 }
 
+// HandleNewWindow registers a typed handler for action "system.new_window (New Window on Current Space)".
+func HandleNewWindow(p *shared.Plugin, fn func(NewWindowParams, *shared.OnActionRequest) (any, error)) {
+	shared.HandleActionTyped(p, "system.new_window", fn)
+}
+
 // OpenParams is the params shape for action "system.open (Open URL or File)".
 type OpenParams struct {
 	Target string `json:"target"`
+}
+
+// HandleOpen registers a typed handler for action "system.open (Open URL or File)".
+func HandleOpen(p *shared.Plugin, fn func(OpenParams, *shared.OnActionRequest) (any, error)) {
+	shared.HandleActionTyped(p, "system.open", fn)
 }
 
 // SetInputParams is the params shape for action "system.set_input (Set Audio Input Device)".
@@ -28,19 +50,44 @@ type SetInputParams struct {
 	Name string `json:"name"`
 }
 
+// HandleSetInput registers a typed handler for action "system.set_input (Set Audio Input Device)".
+func HandleSetInput(p *shared.Plugin, fn func(SetInputParams, *shared.OnActionRequest) (any, error)) {
+	shared.HandleActionTyped(p, "system.set_input", fn)
+}
+
 // SetOutputParams is the params shape for action "system.set_output (Set Audio Output Device)".
 type SetOutputParams struct {
 	Name string `json:"name"`
+}
+
+// HandleSetOutput registers a typed handler for action "system.set_output (Set Audio Output Device)".
+func HandleSetOutput(p *shared.Plugin, fn func(SetOutputParams, *shared.OnActionRequest) (any, error)) {
+	shared.HandleActionTyped(p, "system.set_output", fn)
 }
 
 // UnmuteParams is the params shape for action "system.unmute (Unmute)".
 type UnmuteParams struct {
 }
 
+// HandleUnmute registers a typed handler for action "system.unmute (Unmute)".
+func HandleUnmute(p *shared.Plugin, fn func(UnmuteParams, *shared.OnActionRequest) (any, error)) {
+	shared.HandleActionTyped(p, "system.unmute", fn)
+}
+
 // VolumeDownParams is the params shape for action "system.volume_down (Volume Down)".
 type VolumeDownParams struct {
 }
 
+// HandleVolumeDown registers a typed handler for action "system.volume_down (Volume Down)".
+func HandleVolumeDown(p *shared.Plugin, fn func(VolumeDownParams, *shared.OnActionRequest) (any, error)) {
+	shared.HandleActionTyped(p, "system.volume_down", fn)
+}
+
 // VolumeUpParams is the params shape for action "system.volume_up (Volume Up)".
 type VolumeUpParams struct {
+}
+
+// HandleVolumeUp registers a typed handler for action "system.volume_up (Volume Up)".
+func HandleVolumeUp(p *shared.Plugin, fn func(VolumeUpParams, *shared.OnActionRequest) (any, error)) {
+	shared.HandleActionTyped(p, "system.volume_up", fn)
 }
