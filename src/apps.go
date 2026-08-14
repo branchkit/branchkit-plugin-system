@@ -196,16 +196,18 @@ func toggleApp(p *shared.Plugin, bundleID string) {
 	for _, alias := range aliases {
 		spoken := strings.ToLower(alias)
 		if nowEnabled {
-			// Re-enable: clear the suppression so plugin data takes effect
+			// Re-enable: clear the suppression so plugin data takes effect.
+			// tenant "_user": this is the user's settings-tab gesture, the
+			// plugin is transport — it must land in the user band, not ours.
 			if err := p.Call("overrides.apply", map[string]any{
-				"collection": "apps", "action": "restore", "id": spoken,
+				"collection": "apps", "action": "restore", "id": spoken, "tenant": "_user",
 			}, nil); err != nil {
 				shared.Logf("system", "app_toggle restore %q: %v", spoken, err)
 			}
 		} else {
 			// Disable: suppress each alias
 			if err := p.Call("overrides.apply", map[string]any{
-				"collection": "apps", "action": "remove", "id": spoken,
+				"collection": "apps", "action": "remove", "id": spoken, "tenant": "_user",
 			}, nil); err != nil {
 				shared.Logf("system", "app_toggle remove %q: %v", spoken, err)
 			}
@@ -229,9 +231,9 @@ func addAppAlias(p *shared.Plugin, bundleID, alias string) {
 	}
 	appsMu.Unlock()
 
-	// Add via platform override
+	// Add via platform override — a user gesture, so the user band.
 	if err := p.Call("overrides.apply", map[string]any{
-		"collection": "apps", "action": "add",
+		"collection": "apps", "action": "add", "tenant": "_user",
 		"fields": map[string]string{"spoken": alias, "bundle_id": bundleID},
 	}, nil); err != nil {
 		shared.Logf("system", "alias add %q: %v", alias, err)
@@ -256,9 +258,10 @@ func removeAppAlias(p *shared.Plugin, bundleID, alias string) {
 	appsMu.Unlock()
 
 	// Remove via platform override — "remove" filters the merged view, so it
-	// suppresses a plugin-shipped alias and drops a user-added one alike
+	// suppresses a plugin-shipped alias and drops a user-added one alike.
+	// A user gesture, so the user band.
 	if err := p.Call("overrides.apply", map[string]any{
-		"collection": "apps", "action": "remove", "id": alias,
+		"collection": "apps", "action": "remove", "id": alias, "tenant": "_user",
 	}, nil); err != nil {
 		shared.Logf("system", "alias remove %q: %v", alias, err)
 	}
