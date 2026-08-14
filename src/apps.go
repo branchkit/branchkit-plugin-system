@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	shared "github.com/branchkit/plugin-sdk-go"
 	toolkit "github.com/branchkit/plugin-toolkit-go"
@@ -35,7 +36,7 @@ var (
 // platform collection override system.
 func initApps(p *shared.Plugin) {
 	// 1. Scan installed apps via native method
-	scanned := scanInstalledApps(p)
+	scanned, scanErr := scanInstalledApps(p)
 
 	// 2. Load curated core aliases (shipped alongside plugin binary)
 	coreApps := loadAppsFile(filepath.Join(toolkit.PluginDir(), "core_apps.json"))
@@ -47,6 +48,25 @@ func initApps(p *shared.Plugin) {
 
 	pushAppsCollection(p)
 
+	// A failed scan is not a small collection — it is a WRONG one that nothing
+	// re-pushes. `apps` is written with a whole-scope replace, so the push above
+	// deletes every real app and leaves only the ~24 curated bundles from
+	// core_apps.json; "launch <anything else>" is then dead for the rest of the
+	// session. There is exactly one call site for pushAppsCollection and no
+	// OnReady or change subscription to bring it back, unlike the audio
+	// collections (main.go wires both for those).
+	//
+	// The window is not hypothetical: initApps runs before plugin.Run(), during
+	// actuator startup, which is exactly when the native side is most likely to
+	// be slow or unresponsive — and the RPC has a 10s timeout.
+	//
+	// So retry in the background rather than logging and giving up. Bounded,
+	// backing off, and it stops at the first success; a permanently broken
+	// native side degrades to today's behavior instead of spinning.
+	if scanErr != nil {
+		go retryAppScan(p)
+	}
+
 	// Sync enabled/disabled state from platform overrides.
 	// If a user previously disabled an app, the override has its aliases
 	// in the 'removed' map. Mark those apps as disabled in the internal model
@@ -54,14 +74,19 @@ func initApps(p *shared.Plugin) {
 	syncDisabledFromOverrides(p)
 }
 
-// scanInstalledApps calls native.installed_apps and returns AppEntry slice.
-func scanInstalledApps(p *shared.Plugin) []AppEntry {
+// scanInstalledApps calls native.installed_apps and returns the AppEntry slice.
+//
+// Returns the error rather than swallowing it, because "the scan failed" and
+// "you have no apps installed" are different answers and the caller acts on the
+// difference — the first needs a retry, the second does not. Returning a bare
+// nil for both is what made a transient failure look like a legitimate result.
+func scanInstalledApps(p *shared.Plugin) ([]AppEntry, error) {
 	var resp struct {
 		Apps []installedApp `json:"apps"`
 	}
 	if err := p.Call("native.installed_apps", struct{}{}, &resp); err != nil {
 		shared.Logf("system", "installed_apps: %v", err)
-		return nil
+		return nil, err
 	}
 	entries := make([]AppEntry, 0, len(resp.Apps))
 	for _, app := range resp.Apps {
@@ -73,7 +98,48 @@ func scanInstalledApps(p *shared.Plugin) []AppEntry {
 			Enabled:  true,
 		})
 	}
-	return entries
+	return entries, nil
+}
+
+// appScanRetryDelays is the backoff for retryAppScan. Bounded on purpose: a
+// permanently broken native side should settle into today's behavior (the
+// curated core set) rather than retrying forever. Front-loaded because the
+// failure this exists for is a slow actuator boot, which resolves in seconds.
+var appScanRetryDelays = []time.Duration{
+	2 * time.Second,
+	5 * time.Second,
+	15 * time.Second,
+	30 * time.Second,
+	60 * time.Second,
+}
+
+// retryAppScan re-runs the installed-apps scan after a failed one and re-pushes
+// on the first success. Runs in its own goroutine; stops at the first success or
+// when the backoff is exhausted.
+func retryAppScan(p *shared.Plugin) {
+	for i, delay := range appScanRetryDelays {
+		time.Sleep(delay)
+		scanned, err := scanInstalledApps(p)
+		if err != nil {
+			shared.Logf("system", "app scan retry %d/%d: %v", i+1, len(appScanRetryDelays), err)
+			continue
+		}
+		coreApps := loadAppsFile(filepath.Join(toolkit.PluginDir(), "core_apps.json"))
+		scanned = mergeAliases(scanned, coreApps)
+
+		appsMu.Lock()
+		apps = scanned
+		appsMu.Unlock()
+
+		pushAppsCollection(p)
+		// Re-apply user overrides: the replace above rewrote the collection, so
+		// the disabled set has to be reconciled against it again.
+		syncDisabledFromOverrides(p)
+		shared.Logf("system", "app scan retry %d/%d succeeded: %d apps",
+			i+1, len(appScanRetryDelays), len(scanned))
+		return
+	}
+	shared.Logf("system", "app scan never succeeded — staying on the curated core set")
 }
 
 // mergeAliases merges curated core aliases into the scanned list by bundle_id.
