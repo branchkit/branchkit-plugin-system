@@ -225,20 +225,27 @@ func pushAppsCollection(p *shared.Plugin) {
 	}
 
 	appsMu.Lock()
-	var records []toolkit.Record
+	var rows []entry
 	for _, app := range apps {
 		for _, alias := range app.Aliases {
 			spoken := strings.ToLower(alias)
-			records = append(records, toolkit.Record{
-				ID:      spoken,
-				Payload: entry{Spoken: spoken, BundleID: app.BundleID},
-			})
+			rows = append(rows, entry{Spoken: spoken, BundleID: app.BundleID})
 		}
 	}
 	appsMu.Unlock()
 
-	if err := toolkit.ReplaceCollection(p, "apps", records); err != nil {
-		shared.Logf("system", "ReplaceCollection apps: %v", err)
+	records := make([]shared.CollectionPutEntry, 0, len(rows))
+	for _, row := range rows {
+		raw, err := json.Marshal(row)
+		if err != nil {
+			shared.Logf("system", "apps: marshal %q: %v", row.Spoken, err)
+			return
+		}
+		records = append(records, shared.CollectionPutEntry{ID: row.Spoken, Payload: raw})
+	}
+
+	if _, err := p.Replace("apps", records, shared.ScopeCollection()); err != nil {
+		shared.Logf("system", "replace apps: %v", err)
 	}
 }
 

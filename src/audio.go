@@ -1,11 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	shared "github.com/branchkit/plugin-sdk-go"
-	toolkit "github.com/branchkit/plugin-toolkit-go"
 )
 
 const volumeStep = 0.07 // ~7% per step
@@ -70,27 +70,36 @@ func pushAudioDevicesCollections(p *shared.Plugin) {
 	type entry struct {
 		Spoken string `json:"spoken"`
 	}
-	var outputs, inputs []toolkit.Record
+	var outputs, inputs []shared.CollectionPutEntry
 	seenOut, seenIn := map[string]bool{}, map[string]bool{}
 	for _, d := range resp.Devices {
 		spoken := strings.ToLower(strings.TrimSpace(d.Name))
 		if spoken == "" {
 			continue
 		}
-		if d.IsOutput && !seenOut[spoken] {
+		newOut, newIn := d.IsOutput && !seenOut[spoken], d.IsInput && !seenIn[spoken]
+		if !newOut && !newIn {
+			continue
+		}
+		raw, err := json.Marshal(entry{Spoken: spoken})
+		if err != nil {
+			shared.Logf("system", "audio devices: marshal %q: %v", spoken, err)
+			return
+		}
+		if newOut {
 			seenOut[spoken] = true
-			outputs = append(outputs, toolkit.Record{ID: spoken, Payload: entry{Spoken: spoken}})
+			outputs = append(outputs, shared.CollectionPutEntry{ID: spoken, Payload: raw})
 		}
-		if d.IsInput && !seenIn[spoken] {
+		if newIn {
 			seenIn[spoken] = true
-			inputs = append(inputs, toolkit.Record{ID: spoken, Payload: entry{Spoken: spoken}})
+			inputs = append(inputs, shared.CollectionPutEntry{ID: spoken, Payload: raw})
 		}
 	}
-	if err := toolkit.ReplaceCollection(p, "audio_outputs", outputs); err != nil {
-		shared.Logf("system", "ReplaceCollection audio_outputs: %v", err)
+	if _, err := p.Replace("audio_outputs", outputs, shared.ScopeCollection()); err != nil {
+		shared.Logf("system", "replace audio_outputs: %v", err)
 	}
-	if err := toolkit.ReplaceCollection(p, "audio_inputs", inputs); err != nil {
-		shared.Logf("system", "ReplaceCollection audio_inputs: %v", err)
+	if _, err := p.Replace("audio_inputs", inputs, shared.ScopeCollection()); err != nil {
+		shared.Logf("system", "replace audio_inputs: %v", err)
 	}
 }
 
