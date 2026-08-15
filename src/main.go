@@ -147,10 +147,8 @@ type setMouseFollowsFocusRequest struct {
 }
 
 func handleSetMouseFollowsFocus(req *setMouseFollowsFocusRequest) (any, error) {
-	conf := LoadSystemConfig()
-	conf.MouseFollowsFocus = req.Enabled
-	if err := SaveSystemConfig(conf); err != nil {
-		shared.Logf("system", "config save error: %v", err)
+	if err := setUserConfigField("mouse_follows_focus", req.Enabled); err != nil {
+		shared.Logf("system", "config relay error: %v", err)
 	}
 	return map[string]string{"result": "ok"}, nil
 }
@@ -217,6 +215,7 @@ func handleSetDevice(req *setDeviceRequest) (any, error) {
 func main() {
 	plugin = shared.NewPlugin()
 	initApps(plugin)
+	initConfig(plugin)
 
 	// Per-action handlers. Registrars come from actions_gen.go, generated from
 	// plugin.json — so no action string is spelled here and a handler's params

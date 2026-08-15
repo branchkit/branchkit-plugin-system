@@ -131,11 +131,12 @@
         "description": "Audio device UID to spoken alias mappings."
       },
       "plugin.system.config": {
-        "preset": "data",
-        "cardinality": "singleton",
-        "id_strategy": { "type": "singleton" },
-        "writers": "introducer_only",
-        "description": "System plugin configuration (mouse follows focus)."
+        "preset": "settings",
+        "label": "System",
+        "description": "System plugin settings. Defaults live here; only your changes are stored.",
+        "fields": [
+          { "key": "mouse_follows_focus", "label": "Mouse follows focus", "field_type": "boolean", "default": false }
+        ]
       }
     }
   },
