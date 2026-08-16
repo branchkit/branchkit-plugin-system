@@ -144,6 +144,9 @@
     "events": [
       {
         "pattern": "_platform.audio_devices.changed"
+      },
+      {
+        "pattern": "_platform.system.did_wake"
       }
     ]
   },

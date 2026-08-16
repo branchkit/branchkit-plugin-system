@@ -252,6 +252,14 @@ func main() {
 	plugin.On("_platform.audio_devices.changed", func(json.RawMessage) {
 		pushAudioDevicesCollections(plugin)
 	})
+	// Devices can come and go while the machine is asleep — a dock unplugged,
+	// Bluetooth headphones taken out of range — and the CoreAudio property
+	// listener that feeds audio_devices.changed is not running to see it. Wake
+	// is the one moment the collections are guaranteed stale, so re-push.
+	// Same idempotent replace as hotplug: no churn when nothing moved.
+	plugin.On("_platform.system.did_wake", func(json.RawMessage) {
+		pushAudioDevicesCollections(plugin)
+	})
 
 	plugin.Run()
 }
