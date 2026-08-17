@@ -160,8 +160,7 @@
     "settings_tabs": [
       {
         "label": "Apps",
-        "key": "apps",
-        "embeds": ["plugin.system.config"]
+        "key": "apps"
       },
       {
         "label": "Sound",

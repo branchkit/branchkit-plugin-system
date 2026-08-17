@@ -1,21 +1,22 @@
 package main
 
 import (
+	"encoding/json"
+
 	"github.com/branchkit/plugin-sdk-go"
 )
 
 // SystemConfig rides the settings preset: plugin.json declares the fields
 // with defaults, the platform materializes the composed view, this plugin
-// only reads it (DESIGN_PLUGIN_SETTINGS_STORAGE.md).
+// only reads it (DESIGN_PLUGIN_SETTINGS_STORAGE.md). User gestures from the
+// Apps tab relay into the user band via overrides.apply — the pattern the
+// helloworld plugin's settings.go documents as the template to copy.
 //
-// It no longer WRITES it either. The Apps tab declares `plugin.system.config`
-// in `embeds`, so BranchKit renders the form itself above this plugin's markup
-// and the edit never transits this process (notes/DESIGN_POWERBOX.md) — which
-// is what makes it the user's decision on the record rather than this
-// plugin's claim about one. The mirror picks the change up from
-// `_platform.collection.updated`, newly subscribed in plugin.json: the relay's
-// explicit Refresh() was the only thing keeping this view fresh, so a change
-// made anywhere else (the Collections tab) was invisible here until restart.
+// The manifest subscribes to `_platform.collection.updated` so the mirror also
+// picks up a change made ANYWHERE else (the Collections tab, another window).
+// Before that subscription existed, the relay's explicit Refresh() below was
+// the only thing keeping this view fresh, and an edit made elsewhere was
+// invisible here until restart.
 type SystemConfig struct {
 	MouseFollowsFocus bool `json:"mouse_follows_focus"`
 }
@@ -40,4 +41,29 @@ func LoadSystemConfig() SystemConfig {
 		return configMirror.Get()
 	}
 	return DefaultSystemConfig()
+}
+
+// setUserConfigField relays one user gesture into the user band (plugins
+// never write settings; writers: platform_only).
+func setUserConfigField(key string, value any) error {
+	if plugin == nil {
+		return nil
+	}
+	raw, err := json.Marshal(map[string]any{key: value})
+	if err != nil {
+		return err
+	}
+	id := configCollection
+	tenant := "_user"
+	if _, err := plugin.OverridesApply(
+		"patch", configCollection, nil, raw, &id, nil, &tenant,
+	); err != nil {
+		return err
+	}
+	if configMirror != nil {
+		if err := configMirror.Refresh(); err != nil {
+			shared.Logf("system", "config refresh after relay failed: %v", err)
+		}
+	}
+	return nil
 }

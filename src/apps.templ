@@ -2,13 +2,26 @@ package main
 
 import shared "github.com/branchkit/plugin-sdk-go"
 
-// The settings toggle that used to head this tab is gone: `plugin.system.config`
-// is declared in `embeds`, so BranchKit renders its own form above this markup
-// (notes/DESIGN_POWERBOX.md). The difference is not cosmetic — a click there is
-// recorded as the user's decision, where this plugin relaying the same change
-// could only ever be its word for it.
-templ Apps(apps []appRowView) {
+templ Apps(apps []appRowView, mouseFollowsFocus bool) {
 	<div id="settings-table-container">
+		<div class="settings-table" style="margin-bottom: 16px;">
+			<div class="settings-row" style="grid-template-columns: 1fr 100px;">
+				<div class="label" title="After 'focus <app>' / 'switch <app>', warp the cursor to the app's window so scrolling lands there">Mouse follows focus</div>
+				<div class="row-actions">
+					if mouseFollowsFocus {
+						<span class="badge badge-core" style="cursor: pointer;"
+							data-on:click={ shared.MethodPost("set_mouse_follows_focus", "{enabled: false}") }>
+							Enabled
+						</span>
+					} else {
+						<span class="badge badge-user" style="cursor: pointer;"
+							data-on:click={ shared.MethodPost("set_mouse_follows_focus", "{enabled: true}") }>
+							Disabled
+						</span>
+					}
+				</div>
+			</div>
+		</div>
 		<div class="settings-table">
 		<div class="table-header" style="grid-template-columns: 1.5fr 2fr 100px;">
 			<div>Application</div>
