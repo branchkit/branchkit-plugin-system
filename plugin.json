@@ -147,6 +147,9 @@
       },
       {
         "pattern": "_platform.system.did_wake"
+      },
+      {
+        "pattern": "_platform.collection.updated"
       }
     ]
   },
@@ -157,7 +160,8 @@
     "settings_tabs": [
       {
         "label": "Apps",
-        "key": "apps"
+        "key": "apps",
+        "embeds": ["plugin.system.config"]
       },
       {
         "label": "Sound",

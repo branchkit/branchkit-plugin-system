@@ -113,7 +113,7 @@ func handleRenderSettings(req *shared.RenderSettingsRequest) (any, error) {
 		})
 	}
 
-	return shared.RenderSettingsResponse{HTML: renderTempl(Apps(rows, LoadSystemConfig().MouseFollowsFocus))}, nil
+	return shared.RenderSettingsResponse{HTML: renderTempl(Apps(rows))}, nil
 }
 
 // --- App settings action handlers ---
@@ -139,17 +139,6 @@ func handleAppAliasAdd(req *appAliasRequest) (any, error) {
 
 func handleAppAliasRemove(req *appAliasRequest) (any, error) {
 	removeAppAlias(plugin, req.BundleID, req.Alias)
-	return map[string]string{"result": "ok"}, nil
-}
-
-type setMouseFollowsFocusRequest struct {
-	Enabled bool `json:"enabled"`
-}
-
-func handleSetMouseFollowsFocus(req *setMouseFollowsFocusRequest) (any, error) {
-	if err := setUserConfigField("mouse_follows_focus", req.Enabled); err != nil {
-		shared.Logf("system", "config relay error: %v", err)
-	}
 	return map[string]string{"result": "ok"}, nil
 }
 
@@ -240,7 +229,6 @@ func main() {
 	shared.HandleTyped(plugin, "app_toggle", handleAppToggle)
 	shared.HandleTyped(plugin, "app_alias_add", handleAppAliasAdd)
 	shared.HandleTyped(plugin, "app_alias_remove", handleAppAliasRemove)
-	shared.HandleTyped(plugin, "set_mouse_follows_focus", handleSetMouseFollowsFocus)
 
 	// Publish current audio device names as speakable collections once RPC is
 	// available (OnReady), so "set output/input <device>" matches real names.
