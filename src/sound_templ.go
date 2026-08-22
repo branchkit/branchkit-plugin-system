@@ -8,6 +8,7 @@ package main
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
+import "github.com/branchkit/plugin-sdk-go"
 import "fmt"
 import "strconv"
 
@@ -38,9 +39,9 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var2 string
-			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("@post('/v1/plugins/system/methods/set-device', {payload: {uid: '" + jsEscape(dev.UID) + "', device_type: '" + deviceType + "'}})")
+			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("@post('" + branchkit.MethodURL("set-device") + "', {payload: {uid: '" + jsEscape(dev.UID) + "', device_type: '" + deviceType + "'}})")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 11, Col: 182}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 12, Col: 186}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -53,7 +54,7 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(dev.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 11, Col: 195}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 12, Col: 199}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -66,7 +67,7 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("set " + deviceType + " " + dev.VoiceHint)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 15, Col: 93}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 16, Col: 93}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -84,7 +85,7 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(alias)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 18, Col: 15}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 19, Col: 15}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -95,9 +96,9 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var6 string
-				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("@post('/v1/plugins/system/methods/device-alias-remove', {payload: {uid: '" + jsEscape(dev.UID) + "', newAlias: '" + jsEscape(alias) + "'}})")
+				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("@post('" + branchkit.MethodURL("device-alias-remove") + "', {payload: {uid: '" + jsEscape(dev.UID) + "', newAlias: '" + jsEscape(alias) + "'}})")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 19, Col: 173}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 20, Col: 177}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -115,7 +116,7 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs("$editingDevice === '" + jsEscape(dev.UID) + "'")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 22, Col: 71}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 23, Col: 71}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -126,9 +127,9 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
-			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs("evt.key === 'Enter' && (@post('/v1/plugins/system/methods/device-alias-add', {payload: {uid: '" + jsEscape(dev.UID) + "', newAlias: $newAlias}}), $editingDevice = ''); evt.key === 'Escape' && ($editingDevice = '')")
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs("evt.key === 'Enter' && (@post('" + branchkit.MethodURL("device-alias-add") + "', {payload: {uid: '" + jsEscape(dev.UID) + "', newAlias: $newAlias}}), $editingDevice = ''); evt.key === 'Escape' && ($editingDevice = '')")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 24, Col: 241}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 25, Col: 245}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -141,7 +142,7 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs("$editingDevice !== '" + jsEscape(dev.UID) + "'")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 27, Col: 71}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 28, Col: 71}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -154,7 +155,7 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs("evt.stopPropagation(); $editingDevice = '" + jsEscape(dev.UID) + "'; $newAlias = ''")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 29, Col: 109}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 30, Col: 109}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -207,7 +208,7 @@ func Sound(data soundSettingsData) templ.Component {
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`{"volume": %d, "muted": %s}`, data.Volume, strconv.FormatBool(data.Muted)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 45, Col: 104}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 46, Col: 104}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
@@ -218,9 +219,9 @@ func Sound(data soundSettingsData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var13 string
-		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("$volume = %d; @post('/v1/plugins/system/methods/set-volume')", data.VolumeMinus))
+		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("$volume = %d; @post('"+branchkit.MethodURL("set-volume")+"')", data.VolumeMinus))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 50, Col: 114}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 51, Col: 118}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
@@ -233,7 +234,7 @@ func Sound(data soundSettingsData) templ.Component {
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", data.Volume))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 51, Col: 122}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 52, Col: 122}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
@@ -244,9 +245,9 @@ func Sound(data soundSettingsData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var15 string
-		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("$volume = %d; @post('/v1/plugins/system/methods/set-volume')", data.VolumePlus))
+		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("$volume = %d; @post('"+branchkit.MethodURL("set-volume")+"')", data.VolumePlus))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 53, Col: 113}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 54, Col: 117}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
@@ -257,22 +258,74 @@ func Sound(data soundSettingsData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if data.Muted {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<button style=\"font-size: 13px; padding: 2px 10px; min-width: 40px; font-weight: bold;\" data-on:click=\"$muted = true; @post('/v1/plugins/system/methods/set-mute')\">On</button> <button style=\"font-size: 13px; padding: 2px 10px; min-width: 40px;\" data-on:click=\"$muted = false; @post('/v1/plugins/system/methods/set-mute')\">Off</button>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<button style=\"font-size: 13px; padding: 2px 10px; min-width: 40px; font-weight: bold;\" data-on:click=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var16 string
+			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs("$muted = true; " + branchkit.MethodPost("set-mute", ""))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 62, Col: 78}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\">On</button> <button style=\"font-size: 13px; padding: 2px 10px; min-width: 40px;\" data-on:click=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var17 string
+			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs("$muted = false; " + branchkit.MethodPost("set-mute", ""))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 64, Col: 79}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\">Off</button>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<button style=\"font-size: 13px; padding: 2px 10px; min-width: 40px;\" data-on:click=\"$muted = true; @post('/v1/plugins/system/methods/set-mute')\">On</button> <button style=\"font-size: 13px; padding: 2px 10px; min-width: 40px; font-weight: bold;\" data-on:click=\"$muted = false; @post('/v1/plugins/system/methods/set-mute')\">Off</button>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<button style=\"font-size: 13px; padding: 2px 10px; min-width: 40px;\" data-on:click=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var18 string
+			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs("$muted = true; " + branchkit.MethodPost("set-mute", ""))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 67, Col: 78}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\">On</button> <button style=\"font-size: 13px; padding: 2px 10px; min-width: 40px; font-weight: bold;\" data-on:click=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var19 string
+			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs("$muted = false; " + branchkit.MethodPost("set-mute", ""))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 69, Col: 79}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\">Off</button>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if len(data.Outputs) > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<div class=\"table-header\" style=\"grid-template-columns: 2fr 100px; margin-top: 16px;\"><div>Output Devices</div><div style=\"text-align: right;\">Status</div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<div class=\"table-header\" style=\"grid-template-columns: 2fr 100px; margin-top: 16px;\"><div>Output Devices</div><div style=\"text-align: right;\">Status</div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -282,7 +335,7 @@ func Sound(data soundSettingsData) templ.Component {
 			}
 		}
 		if len(data.Inputs) > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<div class=\"table-header\" style=\"grid-template-columns: 2fr 100px; margin-top: 16px;\"><div>Input Devices</div><div style=\"text-align: right;\">Status</div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<div class=\"table-header\" style=\"grid-template-columns: 2fr 100px; margin-top: 16px;\"><div>Input Devices</div><div style=\"text-align: right;\">Status</div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -291,7 +344,7 @@ func Sound(data soundSettingsData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "<div style=\"margin-top: 24px; padding: 12px 16px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 12px; color: #888;\"><div style=\"margin-bottom: 6px; font-weight: 600; color: #aaa;\">Voice Commands</div><div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px;\"><span><code>volume up</code> / <code>volume down</code></span> <span><code>mute</code> / <code>unmute</code></span> <span><code>set output &lt;name&gt;</code></span> <span><code>set input &lt;name&gt;</code></span></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<div style=\"margin-top: 24px; padding: 12px 16px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 12px; color: #888;\"><div style=\"margin-bottom: 6px; font-weight: 600; color: #aaa;\">Voice Commands</div><div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px;\"><span><code>volume up</code> / <code>volume down</code></span> <span><code>mute</code> / <code>unmute</code></span> <span><code>set output &lt;name&gt;</code></span> <span><code>set input &lt;name&gt;</code></span></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
