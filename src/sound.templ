@@ -41,7 +41,7 @@ templ deviceList(devices []deviceView, deviceType string) {
 }
 
 templ Sound(data soundSettingsData) {
-	<div id="settings-table-container" class="settings-table"
+	<div class="settings-table"
 		data-signals={ fmt.Sprintf(`{"volume": %d, "muted": %s}`, data.Volume, strconv.FormatBool(data.Muted)) }>
 		<div class="settings-row" style="grid-template-columns: 1fr 1fr;">
 			<div class="label">Volume</div>

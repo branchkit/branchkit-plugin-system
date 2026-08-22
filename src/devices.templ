@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 templ Devices(devices []hidDeviceView) {
-	<div id="settings-table-container" class="settings-table">
+	<div class="settings-table">
 		if len(devices) == 0 {
 			<div style="padding: 24px 16px; text-align: center; color: #888;">
 				No HID devices connected.
