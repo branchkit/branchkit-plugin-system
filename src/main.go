@@ -113,7 +113,17 @@ func handleRenderSettings(req *branchkit.RenderSettingsRequest) (any, error) {
 		})
 	}
 
-	return branchkit.RenderSettingsResponse{HTML: renderTempl(Apps(rows, LoadSystemConfig().MouseFollowsFocus))}, nil
+	// Read through, not just the cache: this render may be the one fired
+	// right after the mouse-follows-focus toggle's own write.
+	conf := LoadSystemConfig()
+	if configMirror != nil {
+		if fresh, err := configMirror.Load(); err == nil {
+			conf = fresh
+		} else {
+			branchkit.Logf("system", "config read-through failed: %v", err)
+		}
+	}
+	return branchkit.RenderSettingsResponse{HTML: renderTempl(Apps(rows, conf.MouseFollowsFocus))}, nil
 }
 
 // --- App settings action handlers ---

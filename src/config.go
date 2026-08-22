@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-
 	"github.com/branchkit/plugin-sdk-go"
 )
 
@@ -44,26 +42,11 @@ func LoadSystemConfig() SystemConfig {
 }
 
 // setUserConfigField relays one user gesture into the user band (plugins
-// never write settings; writers: platform_only).
+// never write settings; writers: platform_only). SetUser refreshes the
+// mirror in the same operation, so re-renders see the write immediately.
 func setUserConfigField(key string, value any) error {
-	if plugin == nil {
+	if configMirror == nil {
 		return nil
 	}
-	raw, err := json.Marshal(map[string]any{key: value})
-	if err != nil {
-		return err
-	}
-	id := configCollection
-	tenant := "_user"
-	if _, err := plugin.OverridesApply(
-		"patch", configCollection, nil, raw, &id, nil, &tenant,
-	); err != nil {
-		return err
-	}
-	if configMirror != nil {
-		if err := configMirror.Refresh(); err != nil {
-			branchkit.Logf("system", "config refresh after relay failed: %v", err)
-		}
-	}
-	return nil
+	return configMirror.SetUser(key, value)
 }
