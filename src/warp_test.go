@@ -6,16 +6,16 @@ import (
 	"github.com/branchkit/plugin-sdk-go"
 )
 
-func win(x, y, w, h int, focused, minimized bool) shared.WindowDetail {
-	return shared.WindowDetail{
-		Bounds:      shared.WindowBounds{X: x, Y: y, W: w, H: h},
+func win(x, y, w, h int, focused, minimized bool) branchkit.WindowDetail {
+	return branchkit.WindowDetail{
+		Bounds:      branchkit.WindowBounds{X: x, Y: y, W: w, H: h},
 		IsFocused:   focused,
 		IsMinimized: minimized,
 	}
 }
 
 func TestPickWarpTargetPrefersFocusedWindow(t *testing.T) {
-	wins := []shared.WindowDetail{
+	wins := []branchkit.WindowDetail{
 		win(0, 0, 100, 100, false, false),
 		win(500, 500, 200, 200, true, false),
 	}
@@ -26,7 +26,7 @@ func TestPickWarpTargetPrefersFocusedWindow(t *testing.T) {
 }
 
 func TestPickWarpTargetFallsBackToFirstVisible(t *testing.T) {
-	wins := []shared.WindowDetail{
+	wins := []branchkit.WindowDetail{
 		win(0, 0, 100, 100, false, true), // minimized — skipped
 		win(200, 0, 100, 100, false, false),
 	}
@@ -40,19 +40,19 @@ func TestPickWarpTargetNoWindows(t *testing.T) {
 	if got := pickWarpTarget(nil, nil); got != nil {
 		t.Fatalf("expected nil for no windows, got %v", got)
 	}
-	onlyMinimized := []shared.WindowDetail{win(0, 0, 100, 100, false, true)}
+	onlyMinimized := []branchkit.WindowDetail{win(0, 0, 100, 100, false, true)}
 	if got := pickWarpTarget(onlyMinimized, nil); got != nil {
 		t.Fatalf("expected nil for only-minimized windows, got %v", got)
 	}
 }
 
 func TestPickWarpTargetSkipsWhenCursorInsideTarget(t *testing.T) {
-	wins := []shared.WindowDetail{win(100, 100, 400, 300, true, false)}
-	inside := &shared.NativeCursorResponse{X: 150, Y: 150}
+	wins := []branchkit.WindowDetail{win(100, 100, 400, 300, true, false)}
+	inside := &branchkit.NativeCursorResponse{X: 150, Y: 150}
 	if got := pickWarpTarget(wins, inside); got != nil {
 		t.Fatalf("expected nil when cursor already inside target, got %v", got)
 	}
-	outside := &shared.NativeCursorResponse{X: 50, Y: 50}
+	outside := &branchkit.NativeCursorResponse{X: 50, Y: 50}
 	if got := pickWarpTarget(wins, outside); got == nil || got.X != 300 || got.Y != 250 {
 		t.Fatalf("expected warp to (300,250) when cursor outside, got %v", got)
 	}

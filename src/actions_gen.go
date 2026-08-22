@@ -3,7 +3,7 @@
 
 package main
 
-import shared "github.com/branchkit/plugin-sdk-go"
+import "github.com/branchkit/plugin-sdk-go"
 
 // LaunchParams is the params shape for action "system.launch (Launch App)".
 type LaunchParams struct {
@@ -12,8 +12,8 @@ type LaunchParams struct {
 }
 
 // HandleLaunch registers a typed handler for action "system.launch (Launch App)".
-func HandleLaunch(p *shared.Plugin, fn func(LaunchParams, *shared.OnActionRequest) (any, error)) {
-	shared.HandleActionTyped(p, "system.launch", fn)
+func HandleLaunch(p *branchkit.Plugin, fn func(LaunchParams, *branchkit.OnActionRequest) (any, error)) {
+	branchkit.HandleActionTyped(p, "system.launch", fn)
 }
 
 // MuteParams is the params shape for action "system.mute (Mute)".
@@ -21,7 +21,7 @@ type MuteParams struct {
 }
 
 // HandleMute registers a typed handler for action "system.mute (Mute)".
-func HandleMute(p *shared.Plugin, fn shared.ActionHandlerFunc) {
+func HandleMute(p *branchkit.Plugin, fn branchkit.ActionHandlerFunc) {
 	p.HandleAction("system.mute", fn)
 }
 
@@ -31,8 +31,8 @@ type NewWindowParams struct {
 }
 
 // HandleNewWindow registers a typed handler for action "system.new_window (New Window on Current Space)".
-func HandleNewWindow(p *shared.Plugin, fn func(NewWindowParams, *shared.OnActionRequest) (any, error)) {
-	shared.HandleActionTyped(p, "system.new_window", fn)
+func HandleNewWindow(p *branchkit.Plugin, fn func(NewWindowParams, *branchkit.OnActionRequest) (any, error)) {
+	branchkit.HandleActionTyped(p, "system.new_window", fn)
 }
 
 // OpenParams is the params shape for action "system.open (Open URL or File)".
@@ -41,8 +41,8 @@ type OpenParams struct {
 }
 
 // HandleOpen registers a typed handler for action "system.open (Open URL or File)".
-func HandleOpen(p *shared.Plugin, fn func(OpenParams, *shared.OnActionRequest) (any, error)) {
-	shared.HandleActionTyped(p, "system.open", fn)
+func HandleOpen(p *branchkit.Plugin, fn func(OpenParams, *branchkit.OnActionRequest) (any, error)) {
+	branchkit.HandleActionTyped(p, "system.open", fn)
 }
 
 // SetInputParams is the params shape for action "system.set_input (Set Audio Input Device)".
@@ -51,8 +51,8 @@ type SetInputParams struct {
 }
 
 // HandleSetInput registers a typed handler for action "system.set_input (Set Audio Input Device)".
-func HandleSetInput(p *shared.Plugin, fn func(SetInputParams, *shared.OnActionRequest) (any, error)) {
-	shared.HandleActionTyped(p, "system.set_input", fn)
+func HandleSetInput(p *branchkit.Plugin, fn func(SetInputParams, *branchkit.OnActionRequest) (any, error)) {
+	branchkit.HandleActionTyped(p, "system.set_input", fn)
 }
 
 // SetOutputParams is the params shape for action "system.set_output (Set Audio Output Device)".
@@ -61,8 +61,8 @@ type SetOutputParams struct {
 }
 
 // HandleSetOutput registers a typed handler for action "system.set_output (Set Audio Output Device)".
-func HandleSetOutput(p *shared.Plugin, fn func(SetOutputParams, *shared.OnActionRequest) (any, error)) {
-	shared.HandleActionTyped(p, "system.set_output", fn)
+func HandleSetOutput(p *branchkit.Plugin, fn func(SetOutputParams, *branchkit.OnActionRequest) (any, error)) {
+	branchkit.HandleActionTyped(p, "system.set_output", fn)
 }
 
 // UnmuteParams is the params shape for action "system.unmute (Unmute)".
@@ -70,7 +70,7 @@ type UnmuteParams struct {
 }
 
 // HandleUnmute registers a typed handler for action "system.unmute (Unmute)".
-func HandleUnmute(p *shared.Plugin, fn shared.ActionHandlerFunc) {
+func HandleUnmute(p *branchkit.Plugin, fn branchkit.ActionHandlerFunc) {
 	p.HandleAction("system.unmute", fn)
 }
 
@@ -79,7 +79,7 @@ type VolumeDownParams struct {
 }
 
 // HandleVolumeDown registers a typed handler for action "system.volume_down (Volume Down)".
-func HandleVolumeDown(p *shared.Plugin, fn shared.ActionHandlerFunc) {
+func HandleVolumeDown(p *branchkit.Plugin, fn branchkit.ActionHandlerFunc) {
 	p.HandleAction("system.volume_down", fn)
 }
 
@@ -88,6 +88,6 @@ type VolumeUpParams struct {
 }
 
 // HandleVolumeUp registers a typed handler for action "system.volume_up (Volume Up)".
-func HandleVolumeUp(p *shared.Plugin, fn shared.ActionHandlerFunc) {
+func HandleVolumeUp(p *branchkit.Plugin, fn branchkit.ActionHandlerFunc) {
 	p.HandleAction("system.volume_up", fn)
 }

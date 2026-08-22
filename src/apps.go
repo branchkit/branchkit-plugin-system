@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	shared "github.com/branchkit/plugin-sdk-go"
+	"github.com/branchkit/plugin-sdk-go"
 	toolkit "github.com/branchkit/plugin-toolkit-go"
 )
 
@@ -34,7 +34,7 @@ var (
 // initApps loads installed apps, merges curated aliases, and pushes the
 // flat collection. User overrides (aliases, disabled) are handled by the
 // platform collection override system.
-func initApps(p *shared.Plugin) {
+func initApps(p *branchkit.Plugin) {
 	// 1. Scan installed apps via native method
 	scanned, scanErr := scanInstalledApps(p)
 
@@ -80,12 +80,12 @@ func initApps(p *shared.Plugin) {
 // "you have no apps installed" are different answers and the caller acts on the
 // difference — the first needs a retry, the second does not. Returning a bare
 // nil for both is what made a transient failure look like a legitimate result.
-func scanInstalledApps(p *shared.Plugin) ([]AppEntry, error) {
+func scanInstalledApps(p *branchkit.Plugin) ([]AppEntry, error) {
 	var resp struct {
 		Apps []installedApp `json:"apps"`
 	}
 	if err := p.Call("native.installed_apps", struct{}{}, &resp); err != nil {
-		shared.Logf("system", "installed_apps: %v", err)
+		branchkit.Logf("system", "installed_apps: %v", err)
 		return nil, err
 	}
 	entries := make([]AppEntry, 0, len(resp.Apps))
@@ -116,12 +116,12 @@ var appScanRetryDelays = []time.Duration{
 // retryAppScan re-runs the installed-apps scan after a failed one and re-pushes
 // on the first success. Runs in its own goroutine; stops at the first success or
 // when the backoff is exhausted.
-func retryAppScan(p *shared.Plugin) {
+func retryAppScan(p *branchkit.Plugin) {
 	for i, delay := range appScanRetryDelays {
 		time.Sleep(delay)
 		scanned, err := scanInstalledApps(p)
 		if err != nil {
-			shared.Logf("system", "app scan retry %d/%d: %v", i+1, len(appScanRetryDelays), err)
+			branchkit.Logf("system", "app scan retry %d/%d: %v", i+1, len(appScanRetryDelays), err)
 			continue
 		}
 		coreApps := loadAppsFile(filepath.Join(toolkit.PluginDir(), "core_apps.json"))
@@ -135,11 +135,11 @@ func retryAppScan(p *shared.Plugin) {
 		// Re-apply user overrides: the replace above rewrote the collection, so
 		// the disabled set has to be reconciled against it again.
 		syncDisabledFromOverrides(p)
-		shared.Logf("system", "app scan retry %d/%d succeeded: %d apps",
+		branchkit.Logf("system", "app scan retry %d/%d succeeded: %d apps",
 			i+1, len(appScanRetryDelays), len(scanned))
 		return
 	}
-	shared.Logf("system", "app scan never succeeded — staying on the curated core set")
+	branchkit.Logf("system", "app scan never succeeded — staying on the curated core set")
 }
 
 // mergeAliases merges curated core aliases into the scanned list by bundle_id.
@@ -175,7 +175,7 @@ func containsLower(ss []string, target string) bool {
 
 // syncDisabledFromOverrides reads the platform's collection_overrides for the
 // apps collection and marks apps as disabled if ALL their aliases are removed.
-func syncDisabledFromOverrides(p *shared.Plugin) {
+func syncDisabledFromOverrides(p *branchkit.Plugin) {
 	// Read the current named_lists["apps"] — this has overrides already applied.
 	// Compare with our internal list to find apps whose aliases are all removed.
 	var resp struct {
@@ -218,7 +218,7 @@ func syncDisabledFromOverrides(p *shared.Plugin) {
 // Note: the legacy `WithLabel("Apps")` Settings UI section-header
 // declaration is dropped here. Section headers will derive from a future
 // manifest-level label field; in the interim the section renders as "apps".
-func pushAppsCollection(p *shared.Plugin) {
+func pushAppsCollection(p *branchkit.Plugin) {
 	type entry struct {
 		Spoken   string `json:"spoken"`
 		BundleID string `json:"bundle_id"`
@@ -234,24 +234,24 @@ func pushAppsCollection(p *shared.Plugin) {
 	}
 	appsMu.Unlock()
 
-	records := make([]shared.CollectionPutEntry, 0, len(rows))
+	records := make([]branchkit.CollectionPutEntry, 0, len(rows))
 	for _, row := range rows {
 		raw, err := json.Marshal(row)
 		if err != nil {
-			shared.Logf("system", "apps: marshal %q: %v", row.Spoken, err)
+			branchkit.Logf("system", "apps: marshal %q: %v", row.Spoken, err)
 			return
 		}
-		records = append(records, shared.CollectionPutEntry{ID: row.Spoken, Payload: raw})
+		records = append(records, branchkit.CollectionPutEntry{ID: row.Spoken, Payload: raw})
 	}
 
-	if _, err := p.Replace("apps", records, shared.ScopeCollection()); err != nil {
-		shared.Logf("system", "replace apps: %v", err)
+	if _, err := p.Replace("apps", records, branchkit.ScopeCollection()); err != nil {
+		branchkit.Logf("system", "replace apps: %v", err)
 	}
 }
 
 // --- Mutations (route through platform collection.override) ---
 
-func toggleApp(p *shared.Plugin, bundleID string) {
+func toggleApp(p *branchkit.Plugin, bundleID string) {
 	appsMu.Lock()
 	var aliases []string
 	var nowEnabled bool
@@ -275,20 +275,20 @@ func toggleApp(p *shared.Plugin, bundleID string) {
 			if err := p.Call("overrides.apply", map[string]any{
 				"collection": "apps", "action": "restore", "id": spoken, "tenant": "_user",
 			}, nil); err != nil {
-				shared.Logf("system", "app_toggle restore %q: %v", spoken, err)
+				branchkit.Logf("system", "app_toggle restore %q: %v", spoken, err)
 			}
 		} else {
 			// Disable: suppress each alias
 			if err := p.Call("overrides.apply", map[string]any{
 				"collection": "apps", "action": "remove", "id": spoken, "tenant": "_user",
 			}, nil); err != nil {
-				shared.Logf("system", "app_toggle remove %q: %v", spoken, err)
+				branchkit.Logf("system", "app_toggle remove %q: %v", spoken, err)
 			}
 		}
 	}
 }
 
-func addAppAlias(p *shared.Plugin, bundleID, alias string) {
+func addAppAlias(p *branchkit.Plugin, bundleID, alias string) {
 	alias = strings.TrimSpace(strings.ToLower(alias))
 	if alias == "" {
 		return
@@ -309,11 +309,11 @@ func addAppAlias(p *shared.Plugin, bundleID, alias string) {
 		"collection": "apps", "action": "add", "tenant": "_user",
 		"fields": map[string]string{"spoken": alias, "bundle_id": bundleID},
 	}, nil); err != nil {
-		shared.Logf("system", "alias add %q: %v", alias, err)
+		branchkit.Logf("system", "alias add %q: %v", alias, err)
 	}
 }
 
-func removeAppAlias(p *shared.Plugin, bundleID, alias string) {
+func removeAppAlias(p *branchkit.Plugin, bundleID, alias string) {
 	alias = strings.TrimSpace(strings.ToLower(alias))
 	appsMu.Lock()
 	for i := range apps {
@@ -336,7 +336,7 @@ func removeAppAlias(p *shared.Plugin, bundleID, alias string) {
 	if err := p.Call("overrides.apply", map[string]any{
 		"collection": "apps", "action": "remove", "id": alias, "tenant": "_user",
 	}, nil); err != nil {
-		shared.Logf("system", "alias remove %q: %v", alias, err)
+		branchkit.Logf("system", "alias remove %q: %v", alias, err)
 	}
 }
 
@@ -356,7 +356,7 @@ func loadAppsFile(path string) []AppEntry {
 	}
 	var entries []AppEntry
 	if err := json.Unmarshal(data, &entries); err != nil {
-		shared.Logf("system", "parse %s: %v", path, err)
+		branchkit.Logf("system", "parse %s: %v", path, err)
 		return nil
 	}
 	return entries

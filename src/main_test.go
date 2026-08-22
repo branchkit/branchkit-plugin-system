@@ -70,14 +70,14 @@ func TestVoiceHint_ExternalDevice(t *testing.T) {
 // --- matchesDevice ---
 
 func TestMatchesDevice_ByName(t *testing.T) {
-	d := shared.AudioDevice{Name: "MacBook Air Speakers", UID: "spk-1"}
+	d := branchkit.AudioDevice{Name: "MacBook Air Speakers", UID: "spk-1"}
 	if !matchesDevice(d, "speakers", nil) {
 		t.Error("expected match by name substring")
 	}
 }
 
 func TestMatchesDevice_ByAlias(t *testing.T) {
-	d := shared.AudioDevice{Name: "Sony WH-1000XM5", UID: "sony-1"}
+	d := branchkit.AudioDevice{Name: "Sony WH-1000XM5", UID: "sony-1"}
 	aliases := map[string][]string{"sony-1": {"headphones"}}
 	if !matchesDevice(d, "headphones", aliases) {
 		t.Error("expected match by alias")
@@ -85,14 +85,14 @@ func TestMatchesDevice_ByAlias(t *testing.T) {
 }
 
 func TestMatchesDevice_NoMatch(t *testing.T) {
-	d := shared.AudioDevice{Name: "AirPods Pro", UID: "airpods-1"}
+	d := branchkit.AudioDevice{Name: "AirPods Pro", UID: "airpods-1"}
 	if matchesDevice(d, "speakers", nil) {
 		t.Error("expected no match")
 	}
 }
 
 func TestMatchesDevice_NilAliases(t *testing.T) {
-	d := shared.AudioDevice{Name: "AirPods Pro", UID: "airpods-1"}
+	d := branchkit.AudioDevice{Name: "AirPods Pro", UID: "airpods-1"}
 	if matchesDevice(d, "airpods", nil) != true {
 		t.Error("expected match by name with nil aliases")
 	}
@@ -117,7 +117,7 @@ func TestHandleRenderHud_AppsMode(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	resp, ok := result.(shared.HudResponse)
+	resp, ok := result.(branchkit.HudResponse)
 	if !ok {
 		t.Fatalf("expected HudResponse, got %T", result)
 	}
@@ -150,7 +150,7 @@ func TestHandleRenderHud_DisabledAppsFiltered(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	resp := result.(shared.HudResponse)
+	resp := result.(branchkit.HudResponse)
 	if len(resp.Sections[0].Items) != 1 {
 		t.Errorf("expected disabled app filtered out, got %d items", len(resp.Sections[0].Items))
 	}
@@ -162,7 +162,7 @@ func TestHandleRenderHud_UnknownMode(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	resp := result.(shared.HudResponse)
+	resp := result.(branchkit.HudResponse)
 	if resp.Title != "Unknown" {
 		t.Errorf("expected 'Unknown' title for bad mode, got %q", resp.Title)
 	}
@@ -175,7 +175,7 @@ func TestHandleRenderHud_EmptyApps(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	resp := result.(shared.HudResponse)
+	resp := result.(branchkit.HudResponse)
 	if len(resp.Sections[0].Items) != 0 {
 		t.Errorf("expected 0 items for empty apps, got %d", len(resp.Sections[0].Items))
 	}
@@ -187,12 +187,12 @@ func TestHandleRenderSettings_AppsTab(t *testing.T) {
 	setTestApps([]AppEntry{
 		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true, Aliases: []string{"browser"}},
 	})
-	req := &shared.RenderSettingsRequest{TabKey: "apps"}
+	req := &branchkit.RenderSettingsRequest{TabKey: "apps"}
 	result, err := handleRenderSettings(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	resp := result.(shared.RenderSettingsResponse)
+	resp := result.(branchkit.RenderSettingsResponse)
 	if resp.HTML == "" {
 		t.Error("expected non-empty HTML for apps tab")
 	}
@@ -209,7 +209,7 @@ func TestHandleRenderSettings_AppsSearch(t *testing.T) {
 		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true},
 		{Name: "Finder", BundleID: "com.apple.finder", Enabled: true},
 	})
-	req := &shared.RenderSettingsRequest{
+	req := &branchkit.RenderSettingsRequest{
 		TabKey: "apps",
 		Search: "safari",
 	}
@@ -217,7 +217,7 @@ func TestHandleRenderSettings_AppsSearch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	resp := result.(shared.RenderSettingsResponse)
+	resp := result.(branchkit.RenderSettingsResponse)
 	if !strings.Contains(resp.HTML, "Safari") {
 		t.Error("expected Safari in filtered results")
 	}
@@ -227,12 +227,12 @@ func TestHandleRenderSettings_AppsSearch(t *testing.T) {
 }
 
 func TestHandleRenderSettings_UnknownTab(t *testing.T) {
-	req := &shared.RenderSettingsRequest{TabKey: "nonexistent"}
+	req := &branchkit.RenderSettingsRequest{TabKey: "nonexistent"}
 	result, err := handleRenderSettings(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	resp := result.(shared.RenderSettingsResponse)
+	resp := result.(branchkit.RenderSettingsResponse)
 	if resp.HTML != "" {
 		t.Errorf("expected empty HTML for unknown tab, got %q", resp.HTML)
 	}
@@ -245,28 +245,28 @@ func TestHandleRenderSettings_UnknownTab(t *testing.T) {
 // only cover plugin-local input validation paths.
 
 func TestHandleSetOutput_NoName(t *testing.T) {
-	req := &shared.OnActionRequest{Action: "system.set_output"}
+	req := &branchkit.OnActionRequest{Action: "system.set_output"}
 	if _, err := handleSetOutput(SetOutputParams{}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func TestHandleSetInput_NoName(t *testing.T) {
-	req := &shared.OnActionRequest{Action: "system.set_input"}
+	req := &branchkit.OnActionRequest{Action: "system.set_input"}
 	if _, err := handleSetInput(SetInputParams{}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func TestHandleLaunch_NoBundleID(t *testing.T) {
-	req := &shared.OnActionRequest{Action: "system.launch"}
+	req := &branchkit.OnActionRequest{Action: "system.launch"}
 	if _, err := handleLaunch(LaunchParams{}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func TestHandleOpen_NoTarget(t *testing.T) {
-	req := &shared.OnActionRequest{Action: "system.open"}
+	req := &branchkit.OnActionRequest{Action: "system.open"}
 	if _, err := handleOpen(OpenParams{}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -367,12 +367,12 @@ func TestAppRowView_DisabledStatus(t *testing.T) {
 	setTestApps([]AppEntry{
 		{Name: "Hidden", BundleID: "com.example.hidden", Enabled: false},
 	})
-	req := &shared.RenderSettingsRequest{TabKey: "apps"}
+	req := &branchkit.RenderSettingsRequest{TabKey: "apps"}
 	result, err := handleRenderSettings(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	resp := result.(shared.RenderSettingsResponse)
+	resp := result.(branchkit.RenderSettingsResponse)
 	if !strings.Contains(resp.HTML, "Disabled") {
 		t.Error("expected 'Disabled' status badge for disabled app")
 	}
@@ -383,7 +383,7 @@ func TestHandleRenderSettings_SearchByBundleID(t *testing.T) {
 		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true},
 		{Name: "Finder", BundleID: "com.apple.finder", Enabled: true},
 	})
-	req := &shared.RenderSettingsRequest{
+	req := &branchkit.RenderSettingsRequest{
 		TabKey: "apps",
 		Search: "com.apple.Safari",
 	}
@@ -391,7 +391,7 @@ func TestHandleRenderSettings_SearchByBundleID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	resp := result.(shared.RenderSettingsResponse)
+	resp := result.(branchkit.RenderSettingsResponse)
 	if !strings.Contains(resp.HTML, "Safari") {
 		t.Error("expected Safari matched by bundle ID search")
 	}
@@ -406,7 +406,7 @@ func TestHandleLaunch_EmptyBundleIDNoOp(t *testing.T) {
 	// The canonical key is "bundle_id" (matches the manifest and the
 	// generated LaunchParams struct). With an empty value, the handler
 	// logs and returns without making an RPC call.
-	req := &shared.OnActionRequest{Action: "system.launch"}
+	req := &branchkit.OnActionRequest{Action: "system.launch"}
 	if _, err := handleLaunch(LaunchParams{BundleID: ""}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

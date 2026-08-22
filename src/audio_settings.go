@@ -23,13 +23,13 @@ func loadDeviceAliases() map[string][]string {
 	}
 	rec, err := plugin.Get("plugin.system.device_aliases", "singleton")
 	if err != nil {
-		shared.Logf("system", "device aliases collection read error: %v", err)
+		branchkit.Logf("system", "device aliases collection read error: %v", err)
 		return map[string][]string{}
 	}
 	if rec != nil {
 		var m map[string][]string
 		if err := json.Unmarshal(rec.Payload, &m); err != nil {
-			shared.Logf("system", "device aliases collection parse error: %v", err)
+			branchkit.Logf("system", "device aliases collection parse error: %v", err)
 			return map[string][]string{}
 		}
 		return m
@@ -42,7 +42,7 @@ func saveDeviceAliases(m map[string][]string) {
 		return
 	}
 	if err := plugin.Put("plugin.system.device_aliases", "singleton", m); err != nil {
-		shared.Logf("system", "save device aliases: %v", err)
+		branchkit.Logf("system", "save device aliases: %v", err)
 	}
 }
 
@@ -118,16 +118,16 @@ func voiceHint(name string) string {
 	return lower
 }
 
-func renderSoundSettings(p *shared.Plugin) string {
+func renderSoundSettings(p *branchkit.Plugin) string {
 	vol, muted, err := getVolume()
 	if err != nil {
-		shared.Logf("system", "getVolume error: %v", err)
+		branchkit.Logf("system", "getVolume error: %v", err)
 	}
 
 	devList, err := getAudioDevices(p)
 	if err != nil {
-		shared.Logf("system", "GetAudioDevices error: %v", err)
-		devList = &shared.NativeAudioDevicesResponse{}
+		branchkit.Logf("system", "GetAudioDevices error: %v", err)
+		devList = &branchkit.NativeAudioDevicesResponse{}
 	}
 
 	aliases := loadDeviceAliases()

@@ -34,18 +34,18 @@ type appRowView struct {
 
 // --- Handlers ---
 
-var plugin *shared.Plugin
+var plugin *branchkit.Plugin
 
 func handleRenderHud(req *RenderHudRequest) (any, error) {
 	if req.HudMode != "apps" {
-		return shared.HudResponse{
+		return branchkit.HudResponse{
 			Title:    "Unknown",
-			Sections: []shared.HudSection{},
+			Sections: []branchkit.HudSection{},
 		}, nil
 	}
 
 	allApps := getApps()
-	items := []shared.HudItem{}
+	items := []branchkit.HudItem{}
 	for _, app := range allApps {
 		if !app.Enabled {
 			continue
@@ -55,7 +55,7 @@ func handleRenderHud(req *RenderHudRequest) (any, error) {
 			s := strings.Join(app.Aliases, ", ")
 			subtitle = &s
 		}
-		items = append(items, shared.HudItem{
+		items = append(items, branchkit.HudItem{
 			ID:       app.BundleID,
 			Title:    app.Name,
 			Subtitle: subtitle,
@@ -65,28 +65,28 @@ func handleRenderHud(req *RenderHudRequest) (any, error) {
 		return strings.ToLower(items[i].Title) < strings.ToLower(items[j].Title)
 	})
 
-	return shared.HudResponse{
+	return branchkit.HudResponse{
 		Title:  "Known Applications",
 		Footer: "Say 'switch <name>' or 'open <name>'",
-		Sections: []shared.HudSection{
+		Sections: []branchkit.HudSection{
 			{Title: "Applications", Items: items},
 		},
 	}, nil
 }
 
-func handleRenderSettings(req *shared.RenderSettingsRequest) (any, error) {
+func handleRenderSettings(req *branchkit.RenderSettingsRequest) (any, error) {
 	if req.TabKey == "sound" {
 		html := renderSoundSettings(plugin)
-		return shared.RenderSettingsResponse{HTML: html}, nil
+		return branchkit.RenderSettingsResponse{HTML: html}, nil
 	}
 
 	if req.TabKey == "devices" {
 		html := renderDevicesSettings(plugin)
-		return shared.RenderSettingsResponse{HTML: html}, nil
+		return branchkit.RenderSettingsResponse{HTML: html}, nil
 	}
 
 	if req.TabKey != "apps" {
-		return shared.RenderSettingsResponse{}, nil
+		return branchkit.RenderSettingsResponse{}, nil
 	}
 
 	allApps := getApps()
@@ -113,7 +113,7 @@ func handleRenderSettings(req *shared.RenderSettingsRequest) (any, error) {
 		})
 	}
 
-	return shared.RenderSettingsResponse{HTML: renderTempl(Apps(rows, LoadSystemConfig().MouseFollowsFocus))}, nil
+	return branchkit.RenderSettingsResponse{HTML: renderTempl(Apps(rows, LoadSystemConfig().MouseFollowsFocus))}, nil
 }
 
 // --- App settings action handlers ---
@@ -148,7 +148,7 @@ type setMouseFollowsFocusRequest struct {
 
 func handleSetMouseFollowsFocus(req *setMouseFollowsFocusRequest) (any, error) {
 	if err := setUserConfigField("mouse_follows_focus", req.Enabled); err != nil {
-		shared.Logf("system", "config relay error: %v", err)
+		branchkit.Logf("system", "config relay error: %v", err)
 	}
 	return map[string]string{"result": "ok"}, nil
 }
@@ -161,7 +161,7 @@ type setVolumeRequest struct {
 
 func handleSetVolume(req *setVolumeRequest) (any, error) {
 	if err := setVolume(float64(req.Volume) / 100.0); err != nil {
-		shared.Logf("system", "set-volume error: %v", err)
+		branchkit.Logf("system", "set-volume error: %v", err)
 	}
 	return map[string]string{"result": "ok"}, nil
 }
@@ -178,7 +178,7 @@ func handleSetMute(req *setMuteRequest) (any, error) {
 		err = unmute()
 	}
 	if err != nil {
-		shared.Logf("system", "set-mute error: %v", err)
+		branchkit.Logf("system", "set-mute error: %v", err)
 	}
 	return map[string]string{"result": "ok"}, nil
 }
@@ -205,7 +205,7 @@ type setDeviceRequest struct {
 
 func handleSetDevice(req *setDeviceRequest) (any, error) {
 	if err := setAudioDeviceViaRPC(plugin, req.UID, req.DeviceType); err != nil {
-		shared.Logf("system", "set-device error: %v", err)
+		branchkit.Logf("system", "set-device error: %v", err)
 	}
 	return map[string]string{"result": "ok"}, nil
 }
@@ -213,7 +213,7 @@ func handleSetDevice(req *setDeviceRequest) (any, error) {
 // --- Startup ---
 
 func main() {
-	plugin = shared.NewPlugin()
+	plugin = branchkit.NewPlugin()
 	initApps(plugin)
 	initConfig(plugin)
 
@@ -230,17 +230,17 @@ func main() {
 	HandleNewWindow(plugin, handleNewWindow)
 	HandleOpen(plugin, handleOpen)
 
-	shared.HandleTyped(plugin, "render_hud", handleRenderHud)
-	shared.HandleTyped(plugin, "render_settings", handleRenderSettings)
-	shared.HandleTyped(plugin, "set_volume", handleSetVolume)
-	shared.HandleTyped(plugin, "set_mute", handleSetMute)
-	shared.HandleTyped(plugin, "set_device", handleSetDevice)
-	shared.HandleTyped(plugin, "device_alias_add", handleDeviceAliasAdd)
-	shared.HandleTyped(plugin, "device_alias_remove", handleDeviceAliasRemove)
-	shared.HandleTyped(plugin, "app_toggle", handleAppToggle)
-	shared.HandleTyped(plugin, "app_alias_add", handleAppAliasAdd)
-	shared.HandleTyped(plugin, "app_alias_remove", handleAppAliasRemove)
-	shared.HandleTyped(plugin, "set_mouse_follows_focus", handleSetMouseFollowsFocus)
+	branchkit.HandleTyped(plugin, "render_hud", handleRenderHud)
+	branchkit.HandleTyped(plugin, "render_settings", handleRenderSettings)
+	branchkit.HandleTyped(plugin, "set_volume", handleSetVolume)
+	branchkit.HandleTyped(plugin, "set_mute", handleSetMute)
+	branchkit.HandleTyped(plugin, "set_device", handleSetDevice)
+	branchkit.HandleTyped(plugin, "device_alias_add", handleDeviceAliasAdd)
+	branchkit.HandleTyped(plugin, "device_alias_remove", handleDeviceAliasRemove)
+	branchkit.HandleTyped(plugin, "app_toggle", handleAppToggle)
+	branchkit.HandleTyped(plugin, "app_alias_add", handleAppAliasAdd)
+	branchkit.HandleTyped(plugin, "app_alias_remove", handleAppAliasRemove)
+	branchkit.HandleTyped(plugin, "set_mouse_follows_focus", handleSetMouseFollowsFocus)
 
 	// Publish current audio device names as speakable collections once RPC is
 	// available (OnReady), so "set output/input <device>" matches real names.

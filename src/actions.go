@@ -10,30 +10,30 @@ import (
 
 // --- Per-action handlers ---
 
-func handleVolumeUp(_ *shared.OnActionRequest) (any, error) {
+func handleVolumeUp(_ *branchkit.OnActionRequest) (any, error) {
 	if err := volumeUp(); err != nil {
-		shared.Logf("system", "volume_up: %v", err)
+		branchkit.Logf("system", "volume_up: %v", err)
 	}
 	return nil, nil
 }
 
-func handleVolumeDown(_ *shared.OnActionRequest) (any, error) {
+func handleVolumeDown(_ *branchkit.OnActionRequest) (any, error) {
 	if err := volumeDown(); err != nil {
-		shared.Logf("system", "volume_down: %v", err)
+		branchkit.Logf("system", "volume_down: %v", err)
 	}
 	return nil, nil
 }
 
-func handleMute(_ *shared.OnActionRequest) (any, error) {
+func handleMute(_ *branchkit.OnActionRequest) (any, error) {
 	if err := mute(); err != nil {
-		shared.Logf("system", "mute: %v", err)
+		branchkit.Logf("system", "mute: %v", err)
 	}
 	return nil, nil
 }
 
-func handleUnmute(_ *shared.OnActionRequest) (any, error) {
+func handleUnmute(_ *branchkit.OnActionRequest) (any, error) {
 	if err := unmute(); err != nil {
-		shared.Logf("system", "unmute: %v", err)
+		branchkit.Logf("system", "unmute: %v", err)
 	}
 	return nil, nil
 }
@@ -42,31 +42,31 @@ func handleUnmute(_ *shared.OnActionRequest) (any, error) {
 // generated from plugin.json's action_types block. Edit that and re-run
 // `just gen-plugins` — do not hand-declare these structs here.
 
-func handleSetOutput(p SetOutputParams, req *shared.OnActionRequest) (any, error) {
+func handleSetOutput(p SetOutputParams, req *branchkit.OnActionRequest) (any, error) {
 	if p.Name == "" {
-		shared.Logf("system", "set_output: no device name provided")
+		branchkit.Logf("system", "set_output: no device name provided")
 		return nil, nil
 	}
 	if err := setOutputDevice(plugin, p.Name); err != nil {
-		shared.Logf("system", "set_output: %v", err)
+		branchkit.Logf("system", "set_output: %v", err)
 	}
 	return nil, nil
 }
 
-func handleSetInput(p SetInputParams, req *shared.OnActionRequest) (any, error) {
+func handleSetInput(p SetInputParams, req *branchkit.OnActionRequest) (any, error) {
 	if p.Name == "" {
-		shared.Logf("system", "set_input: no device name provided")
+		branchkit.Logf("system", "set_input: no device name provided")
 		return nil, nil
 	}
 	if err := setInputDevice(plugin, p.Name); err != nil {
-		shared.Logf("system", "set_input: %v", err)
+		branchkit.Logf("system", "set_input: %v", err)
 	}
 	return nil, nil
 }
 
-func handleLaunch(p LaunchParams, req *shared.OnActionRequest) (any, error) {
+func handleLaunch(p LaunchParams, req *branchkit.OnActionRequest) (any, error) {
 	if p.BundleID == "" {
-		shared.Logf("system", "launch: no bundle_id provided")
+		branchkit.Logf("system", "launch: no bundle_id provided")
 		return nil, nil
 	}
 	newInstance := false
@@ -77,7 +77,7 @@ func handleLaunch(p LaunchParams, req *shared.OnActionRequest) (any, error) {
 		"bundle_id":    p.BundleID,
 		"new_instance": newInstance,
 	}, nil); err != nil {
-		shared.Logf("system", "launch: %v", err)
+		branchkit.Logf("system", "launch: %v", err)
 	}
 	if LoadSystemConfig().MouseFollowsFocus {
 		go warpCursorToApp(p.BundleID)
@@ -115,23 +115,23 @@ func warpCursorToApp(bundleID string) {
 
 	wins, err := plugin.NativeAppWindows(bundleID)
 	if err != nil {
-		shared.Logf("system", "warp: app_windows(%s): %v", bundleID, err)
+		branchkit.Logf("system", "warp: app_windows(%s): %v", bundleID, err)
 		return
 	}
-	var cursor *shared.NativeCursorResponse
+	var cursor *branchkit.NativeCursorResponse
 	if cur, err := plugin.NativeCursor(); err == nil {
 		cursor = cur
 	}
 	target := pickWarpTarget(wins, cursor)
 	if target == nil {
-		shared.Logf("system", "warp: %s skipped (no visible window, or cursor already inside)", bundleID)
+		branchkit.Logf("system", "warp: %s skipped (no visible window, or cursor already inside)", bundleID)
 		return
 	}
 	if err := plugin.NativeWarpCursor(target.X, target.Y); err != nil {
-		shared.Logf("system", "warp: warp_cursor: %v", err)
+		branchkit.Logf("system", "warp: warp_cursor: %v", err)
 		return
 	}
-	shared.Logf("system", "warp: %s → (%d,%d)", bundleID, target.X, target.Y)
+	branchkit.Logf("system", "warp: %s → (%d,%d)", bundleID, target.X, target.Y)
 }
 
 type warpPoint struct {
@@ -141,8 +141,8 @@ type warpPoint struct {
 // pickWarpTarget returns the center of the app's focused window (falling back
 // to its first non-minimized window), or nil when there is nothing to warp to
 // or the cursor is already inside the target window.
-func pickWarpTarget(wins []shared.WindowDetail, cursor *shared.NativeCursorResponse) *warpPoint {
-	var target *shared.WindowDetail
+func pickWarpTarget(wins []branchkit.WindowDetail, cursor *branchkit.NativeCursorResponse) *warpPoint {
+	var target *branchkit.WindowDetail
 	for i := range wins {
 		w := &wins[i]
 		if w.IsMinimized {
@@ -174,9 +174,9 @@ func pickWarpTarget(wins []shared.WindowDetail, cursor *shared.NativeCursorRespo
 // window creation lives in the actuator (native.new_app_window); it reports
 // ok=false for apps with no scriptable window element, and we fall back to a
 // normal launch.
-func handleNewWindow(p NewWindowParams, req *shared.OnActionRequest) (any, error) {
+func handleNewWindow(p NewWindowParams, req *branchkit.OnActionRequest) (any, error) {
 	if p.BundleID == "" {
-		shared.Logf("system", "new_window: no bundle_id provided")
+		branchkit.Logf("system", "new_window: no bundle_id provided")
 		return nil, nil
 	}
 	var res struct {
@@ -184,27 +184,27 @@ func handleNewWindow(p NewWindowParams, req *shared.OnActionRequest) (any, error
 	}
 	err := plugin.Call("native.new_app_window", map[string]string{"bundle_id": p.BundleID}, &res)
 	if err != nil || !res.OK {
-		shared.Logf("system", "new_window: %s not scriptable (err=%v) — falling back to launch",
+		branchkit.Logf("system", "new_window: %s not scriptable (err=%v) — falling back to launch",
 			p.BundleID, err)
 		if err := plugin.Call("native.launch_app", map[string]any{
 			"bundle_id":    p.BundleID,
 			"new_instance": false,
 		}, nil); err != nil {
-			shared.Logf("system", "new_window launch fallback: %v", err)
+			branchkit.Logf("system", "new_window launch fallback: %v", err)
 		}
 	}
 	return nil, nil
 }
 
-func handleOpen(p OpenParams, req *shared.OnActionRequest) (any, error) {
+func handleOpen(p OpenParams, req *branchkit.OnActionRequest) (any, error) {
 	if p.Target == "" {
-		shared.Logf("system", "open: no target provided")
+		branchkit.Logf("system", "open: no target provided")
 		return nil, nil
 	}
 	if err := plugin.Call("native.open_target", map[string]any{
 		"target": p.Target,
 	}, nil); err != nil {
-		shared.Logf("system", "open: %v", err)
+		branchkit.Logf("system", "open: %v", err)
 	}
 	return nil, nil
 }

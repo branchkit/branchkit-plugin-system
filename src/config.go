@@ -23,11 +23,11 @@ type SystemConfig struct {
 
 const configCollection = "plugin.system.config"
 
-var configMirror *shared.SettingsMirror[SystemConfig]
+var configMirror *branchkit.SettingsMirror[SystemConfig]
 
 // initConfig wires the typed mirror. Must run before plugin.Run().
-func initConfig(p *shared.Plugin) {
-	configMirror = shared.Settings[SystemConfig](p, configCollection)
+func initConfig(p *branchkit.Plugin) {
+	configMirror = branchkit.Settings[SystemConfig](p, configCollection)
 }
 
 // DefaultSystemConfig mirrors the manifest defaults — the pre-Ready
@@ -62,7 +62,7 @@ func setUserConfigField(key string, value any) error {
 	}
 	if configMirror != nil {
 		if err := configMirror.Refresh(); err != nil {
-			shared.Logf("system", "config refresh after relay failed: %v", err)
+			branchkit.Logf("system", "config refresh after relay failed: %v", err)
 		}
 	}
 	return nil

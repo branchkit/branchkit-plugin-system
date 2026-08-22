@@ -17,10 +17,10 @@ type hidDeviceView struct {
 	Seized    bool
 }
 
-func renderDevicesSettings(p *shared.Plugin) string {
+func renderDevicesSettings(p *branchkit.Plugin) string {
 	entries, err := p.NativeHidDevices()
 	if err != nil {
-		shared.Logf("system", "hid-devices error: %v", err)
+		branchkit.Logf("system", "hid-devices error: %v", err)
 		return renderTempl(Devices(nil))
 	}
 
