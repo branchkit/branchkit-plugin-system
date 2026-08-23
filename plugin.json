@@ -13,6 +13,13 @@
   "min_api_version": "0.1.0",
   "description": "Application registry, app switching HUD, audio control, and system settings.",
   "author": "BranchKit",
+  "dev": {
+    "build": [
+      ["templ", "generate"],
+      ["go", "build", "-ldflags=-s -w", "-o", "../system-plugin", "."]
+    ],
+    "build_dir": "src"
+  },
   "run": "./system-plugin",
   "action_prefix": "system",
   "action_types": {
