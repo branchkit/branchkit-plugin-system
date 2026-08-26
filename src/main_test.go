@@ -98,87 +98,11 @@ func TestMatchesDevice_NilAliases(t *testing.T) {
 	}
 }
 
-// --- handleRenderHud ---
-
 // setTestApps sets the internal app list for testing.
 func setTestApps(entries []AppEntry) {
 	appsMu.Lock()
 	apps = entries
 	appsMu.Unlock()
-}
-
-func TestHandleRenderHud_AppsMode(t *testing.T) {
-	setTestApps([]AppEntry{
-		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true, Aliases: []string{"browser"}},
-		{Name: "Finder", BundleID: "com.apple.finder", Enabled: true},
-	})
-	req := &RenderHudRequest{HudMode: "apps"}
-	result, err := handleRenderHud(req)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	resp, ok := result.(branchkit.HudResponse)
-	if !ok {
-		t.Fatalf("expected HudResponse, got %T", result)
-	}
-	if resp.Title != "Known Applications" {
-		t.Errorf("expected title 'Known Applications', got %q", resp.Title)
-	}
-	if len(resp.Sections) != 1 {
-		t.Fatalf("expected 1 section, got %d", len(resp.Sections))
-	}
-	items := resp.Sections[0].Items
-	if len(items) != 2 {
-		t.Fatalf("expected 2 items, got %d", len(items))
-	}
-	// Should be sorted alphabetically: Finder before Safari
-	if items[0].Title != "Finder" {
-		t.Errorf("expected Finder first (sorted), got %q", items[0].Title)
-	}
-	if items[1].Subtitle == nil || *items[1].Subtitle != "browser" {
-		t.Error("expected Safari subtitle to contain alias")
-	}
-}
-
-func TestHandleRenderHud_DisabledAppsFiltered(t *testing.T) {
-	setTestApps([]AppEntry{
-		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true},
-		{Name: "Hidden", BundleID: "com.example.hidden", Enabled: false},
-	})
-	req := &RenderHudRequest{HudMode: "apps"}
-	result, err := handleRenderHud(req)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	resp := result.(branchkit.HudResponse)
-	if len(resp.Sections[0].Items) != 1 {
-		t.Errorf("expected disabled app filtered out, got %d items", len(resp.Sections[0].Items))
-	}
-}
-
-func TestHandleRenderHud_UnknownMode(t *testing.T) {
-	req := &RenderHudRequest{HudMode: "nonexistent"}
-	result, err := handleRenderHud(req)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	resp := result.(branchkit.HudResponse)
-	if resp.Title != "Unknown" {
-		t.Errorf("expected 'Unknown' title for bad mode, got %q", resp.Title)
-	}
-}
-
-func TestHandleRenderHud_EmptyApps(t *testing.T) {
-	setTestApps(nil)
-	req := &RenderHudRequest{HudMode: "apps"}
-	result, err := handleRenderHud(req)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	resp := result.(branchkit.HudResponse)
-	if len(resp.Sections[0].Items) != 0 {
-		t.Errorf("expected 0 items for empty apps, got %d", len(resp.Sections[0].Items))
-	}
 }
 
 // --- handleRenderSettings (apps tab) ---

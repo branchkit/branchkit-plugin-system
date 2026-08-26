@@ -2,19 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"sort"
 	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/branchkit/plugin-sdk-go"
 	toolkit "github.com/branchkit/plugin-toolkit-go"
 )
-
-// --- Local view types (request/response types come from shared) ---
-
-type RenderHudRequest struct {
-	HudMode string `json:"hud_mode"`
-}
 
 // jsEscape wraps toolkit.JSEscape for use in templ files.
 func jsEscape(s string) string { return toolkit.JSEscape(s) }
@@ -35,44 +28,6 @@ type appRowView struct {
 // --- Handlers ---
 
 var plugin *branchkit.Plugin
-
-func handleRenderHud(req *RenderHudRequest) (any, error) {
-	if req.HudMode != "apps" {
-		return branchkit.HudResponse{
-			Title:    "Unknown",
-			Sections: []branchkit.HudSection{},
-		}, nil
-	}
-
-	allApps := getApps()
-	items := []branchkit.HudItem{}
-	for _, app := range allApps {
-		if !app.Enabled {
-			continue
-		}
-		var subtitle *string
-		if len(app.Aliases) > 0 {
-			s := strings.Join(app.Aliases, ", ")
-			subtitle = &s
-		}
-		items = append(items, branchkit.HudItem{
-			ID:       app.BundleID,
-			Title:    app.Name,
-			Subtitle: subtitle,
-		})
-	}
-	sort.Slice(items, func(i, j int) bool {
-		return strings.ToLower(items[i].Title) < strings.ToLower(items[j].Title)
-	})
-
-	return branchkit.HudResponse{
-		Title:  "Known Applications",
-		Footer: "Say 'switch <name>' or 'open <name>'",
-		Sections: []branchkit.HudSection{
-			{Title: "Applications", Items: items},
-		},
-	}, nil
-}
 
 func handleRenderSettings(req *branchkit.RenderSettingsRequest) (any, error) {
 	if req.TabKey == "sound" {
@@ -240,7 +195,6 @@ func main() {
 	HandleNewWindow(plugin, handleNewWindow)
 	HandleOpen(plugin, handleOpen)
 
-	branchkit.HandleTyped(plugin, "render_hud", handleRenderHud)
 	branchkit.HandleTyped(plugin, "render_settings", handleRenderSettings)
 	branchkit.HandleTyped(plugin, "set_volume", handleSetVolume)
 	branchkit.HandleTyped(plugin, "set_mute", handleSetMute)
