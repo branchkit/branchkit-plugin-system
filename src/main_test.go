@@ -231,10 +231,10 @@ func TestSoundTempl_RendersNonEmpty(t *testing.T) {
 		VolumePlus:  57,
 		Muted:       false,
 		Outputs: []deviceView{
-			{UID: "spk-1", Name: "MacBook Air Speakers", VoiceHint: "speakers", IsDefault: true, DeviceType: "output"},
+			{UID: "spk-1", Name: "MacBook Air Speakers", VoiceHint: "speakers", IsDefault: true},
 		},
 		Inputs: []deviceView{
-			{UID: "mic-1", Name: "MacBook Air Microphone", VoiceHint: "microphone", IsDefault: true, DeviceType: "input"},
+			{UID: "mic-1", Name: "MacBook Air Microphone", VoiceHint: "microphone", IsDefault: true},
 		},
 	}
 	html := renderTempl(Sound(data))

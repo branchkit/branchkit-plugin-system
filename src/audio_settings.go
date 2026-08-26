@@ -97,12 +97,11 @@ type soundSettingsData struct {
 }
 
 type deviceView struct {
-	UID        string
-	Name       string
-	VoiceHint  string // short name for voice command (fuzzy match)
-	IsDefault  bool
-	DeviceType string // "output" or "input"
-	Aliases    []string
+	UID       string
+	Name      string
+	VoiceHint string // short name for voice command (fuzzy match)
+	IsDefault bool
+	Aliases   []string
 }
 
 // voiceHint returns a short speakable name for a device.
@@ -138,22 +137,20 @@ func renderSoundSettings(p *branchkit.Plugin) string {
 		devAliases := aliases[d.UID]
 		if d.IsOutput {
 			outputs = append(outputs, deviceView{
-				UID:        d.UID,
-				Name:       d.Name,
-				VoiceHint:  hint,
-				IsDefault:  d.IsDefaultOutput,
-				DeviceType: "output",
-				Aliases:    devAliases,
+				UID:       d.UID,
+				Name:      d.Name,
+				VoiceHint: hint,
+				IsDefault: d.IsDefaultOutput,
+				Aliases:   devAliases,
 			})
 		}
 		if d.IsInput {
 			inputs = append(inputs, deviceView{
-				UID:        d.UID,
-				Name:       d.Name,
-				VoiceHint:  hint,
-				IsDefault:  d.IsDefaultInput,
-				DeviceType: "input",
-				Aliases:    devAliases,
+				UID:       d.UID,
+				Name:      d.Name,
+				VoiceHint: hint,
+				IsDefault: d.IsDefaultInput,
+				Aliases:   devAliases,
 			})
 		}
 	}
