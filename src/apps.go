@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/branchkit/plugin-sdk-go"
-	toolkit "github.com/branchkit/plugin-toolkit-go"
 )
 
 // AppEntry is the internal rich model for a known application.
@@ -39,7 +38,7 @@ func initApps(p *branchkit.Plugin) {
 	scanned, scanErr := scanInstalledApps(p)
 
 	// 2. Load curated core aliases (shipped alongside plugin binary)
-	coreApps := loadAppsFile(filepath.Join(toolkit.PluginDir(), "core_apps.json"))
+	coreApps := loadAppsFile(filepath.Join(branchkit.PluginDir(), "core_apps.json"))
 	scanned = mergeAliases(scanned, coreApps)
 
 	appsMu.Lock()
@@ -124,7 +123,7 @@ func retryAppScan(p *branchkit.Plugin) {
 			branchkit.Logf("system", "app scan retry %d/%d: %v", i+1, len(appScanRetryDelays), err)
 			continue
 		}
-		coreApps := loadAppsFile(filepath.Join(toolkit.PluginDir(), "core_apps.json"))
+		coreApps := loadAppsFile(filepath.Join(branchkit.PluginDir(), "core_apps.json"))
 		scanned = mergeAliases(scanned, coreApps)
 
 		appsMu.Lock()

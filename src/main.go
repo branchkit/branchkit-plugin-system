@@ -1,20 +1,47 @@
 package main
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/branchkit/plugin-sdk-go"
-	toolkit "github.com/branchkit/plugin-toolkit-go"
 )
 
-// jsEscape wraps toolkit.JSEscape for use in templ files.
-func jsEscape(s string) string { return toolkit.JSEscape(s) }
+// jsEscape escapes a string for safe embedding in JavaScript string literals
+// (single-quoted or double-quoted), for use in templ files. Handles
+// backslashes, quotes, and newlines.
+func jsEscape(s string) string {
+	var b strings.Builder
+	for _, c := range s {
+		switch c {
+		case '\\':
+			b.WriteString("\\\\")
+		case '\'':
+			b.WriteString("\\'")
+		case '"':
+			b.WriteString("\\\"")
+		case '\n':
+			b.WriteString("\\n")
+		case '\r':
+			b.WriteString("\\r")
+		default:
+			b.WriteRune(c)
+		}
+	}
+	return b.String()
+}
 
 // renderTempl renders a templ component to an HTML string.
 func renderTempl(c templ.Component) string {
-	return toolkit.RenderTempl("system", c)
+	var buf bytes.Buffer
+	if err := c.Render(context.Background(), &buf); err != nil {
+		branchkit.Logf("system", "templ render error: %v", err)
+		return ""
+	}
+	return buf.String()
 }
 
 type appRowView struct {
