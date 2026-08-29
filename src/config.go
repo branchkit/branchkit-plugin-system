@@ -6,7 +6,8 @@ import (
 
 // SystemConfig rides the settings preset: plugin.json declares the fields
 // with defaults, the platform materializes the composed view, this plugin
-// only reads it (DESIGN_PLUGIN_SETTINGS_STORAGE.md). User gestures from the
+// only reads it — a plugin never writes its own settings collection. User
+// gestures from the
 // Apps tab relay into the user band via overrides.apply — the pattern the
 // helloworld plugin's settings.go documents as the template to copy.
 //
