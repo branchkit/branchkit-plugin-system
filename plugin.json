@@ -13,6 +13,7 @@
   "min_api_version": "0.1.0",
   "description": "Application registry, app switching HUD, audio control, and system settings.",
   "author": "BranchKit",
+  "publisher": "github:branchkit",
   "dev": {
     "build": [
       ["templ", "generate"],
