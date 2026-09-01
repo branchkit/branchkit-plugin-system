@@ -93,12 +93,14 @@
           {
             "key": "spoken",
             "field_type": "string",
-            "label": "Spoken name"
+            "label": "Spoken name",
+            "required": true
           },
           {
             "key": "bundle_id",
             "field_type": "string",
-            "label": "Bundle ID"
+            "label": "Bundle ID",
+            "required": true
           }
         ],
         "feeds_matching": {
@@ -111,7 +113,9 @@
       "audio_outputs": {
         "preset": "named_entities",
         "fields": [
-          { "key": "spoken", "field_type": "string", "label": "Device name" }
+          { "key": "spoken", "field_type": "string", "label": "Device name",
+          "required": true
+        }
         ],
         "feeds_matching": {
           "type": "as_named_entities",
@@ -123,7 +127,9 @@
       "audio_inputs": {
         "preset": "named_entities",
         "fields": [
-          { "key": "spoken", "field_type": "string", "label": "Device name" }
+          { "key": "spoken", "field_type": "string", "label": "Device name",
+          "required": true
+        }
         ],
         "feeds_matching": {
           "type": "as_named_entities",
