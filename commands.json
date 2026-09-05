@@ -1,43 +1,79 @@
 [
   {
-    "pattern": ["volume", "up"],
-
-    "action": { "type": "system.volume_up" },
+    "pattern": [
+      "volume",
+      "up"
+    ],
+    "action": {
+      "type": "system.volume_up"
+    },
     "category": "Audio",
     "description": "Raise the system output volume."
   },
   {
-    "pattern": ["volume", "down"],
-
-    "action": { "type": "system.volume_down" },
+    "pattern": [
+      "volume",
+      "down"
+    ],
+    "action": {
+      "type": "system.volume_down"
+    },
     "category": "Audio",
     "description": "Lower the system output volume."
   },
   {
-    "pattern": ["mute audio"],
-
-    "action": { "type": "system.mute" },
+    "pattern": [
+      "mute audio"
+    ],
+    "action": {
+      "type": "system.mute"
+    },
     "category": "Audio",
     "description": "Mute the system output."
   },
   {
-    "pattern": ["unmute audio"],
-
-    "action": { "type": "system.unmute" },
+    "pattern": [
+      "unmute audio"
+    ],
+    "action": {
+      "type": "system.unmute"
+    },
     "category": "Audio",
     "description": "Unmute the system output."
   },
   {
-    "pattern": [["set", "switch"], "output", "<name:audio_outputs>"],
-
-    "action": { "type": "system.set_output", "name": "{name}" },
+    "pattern": [
+      [
+        "set",
+        "switch"
+      ],
+      "output",
+      "<name:audio_outputs>"
+    ],
+    "action": {
+      "type": "system.set_output",
+      "params": {
+        "name": "{name}"
+      }
+    },
     "category": "Audio",
     "description": "Switch the audio output to a named device."
   },
   {
-    "pattern": [["set", "switch"], "input", "<name:audio_inputs>"],
-
-    "action": { "type": "system.set_input", "name": "{name}" },
+    "pattern": [
+      [
+        "set",
+        "switch"
+      ],
+      "input",
+      "<name:audio_inputs>"
+    ],
+    "action": {
+      "type": "system.set_input",
+      "params": {
+        "name": "{name}"
+      }
+    },
     "category": "Audio",
     "description": "Switch the audio input to a named device."
   }
