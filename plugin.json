@@ -138,6 +138,18 @@
         },
         "description": "Current audio input device names, speakable in 'set input <device>'."
       },
+      "app_traits": {
+        "preset": "data",
+        "writers": "introducer_only",
+        "merge": "authoritative",
+        "id_strategy": { "type": "by_field", "field": "key" },
+        "fields": [
+          { "key": "key", "field_type": "string", "label": "Key", "required": true },
+          { "key": "trait", "field_type": "string", "label": "Trait", "required": true },
+          { "key": "bundle_id", "field_type": "string", "label": "Bundle ID", "required": true }
+        ],
+        "description": "What kind of application each app is — 'terminal' and 'chat' today. These are FACTS about applications; what a trait MEANS is the consumer's business, and a trait named for a consumer's policy (e.g. 'no_trailing_period') does not belong here. Called traits, not groups, because `group` already means a writer-owned replace-set label on a record envelope (see ScopeGroup) and one word for two things in one subsystem is a homonym nobody can undo later. NOT a stable surface yet: writes are closed and the trait names may change. The bare name is not a claim of stability — the platform reserves `plugin.*` for collections no other plugin may read, so anything shared has to be bare."
+      },
       "plugin.system.device_aliases": {
         "preset": "data",
         "cardinality": "singleton",

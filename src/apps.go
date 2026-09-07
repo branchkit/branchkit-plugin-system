@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -17,6 +18,19 @@ type AppEntry struct {
 	BundleID string   `json:"bundle_id"`
 	Aliases  []string `json:"aliases"`
 	Enabled  bool     `json:"enabled"`
+	// Traits are what KIND of application this is — "terminal", "chat".
+	// Facts about the app, in the same register as its spoken name; what a
+	// trait MEANS is the consuming plugin's business and never appears here.
+	// Only core_apps.json carries these; the native scan cannot know them.
+	//
+	// TRAITS, not groups: `group` is already taken in this subsystem, where it
+	// labels a writer-owned replace-set on a record envelope (ScopeGroup,
+	// storage.supports_record_groups). Two meanings for one word in one area is
+	// a homonym, and the second one is always the expensive one to undo.
+	Traits []string `json:"traits,omitempty"`
+	// Note documents an entry that nobody here has run — JSON has no comments,
+	// so unverified bundle identifiers say so in the data. Never read by code.
+	Note string `json:"note,omitempty"`
 }
 
 // installedApp matches the native.installed_apps response shape.
@@ -24,6 +38,17 @@ type installedApp struct {
 	Name     string `json:"name"`
 	BundleID string `json:"bundle_id"`
 }
+
+// appTraitsCollection is declared in plugin.json with writers:
+// introducer_only. See pushAppTraitsCollection for why it is closed.
+//
+// The name is BARE, not `plugin.system.`-prefixed, and that is forced rather
+// than chosen: `plugin.*` is a namespace the platform reserves for collections
+// no other plugin may read (validate/cross_plugin.rs), so a prefixed name is
+// unreachable from voice. There is no such thing as a shared-but-prefixed
+// collection — sharing and the prefix are mutually exclusive. Closed writes and
+// an unpublished name list carry the "not a stable surface" signal instead.
+const appTraitsCollection = "app_traits"
 
 var (
 	appsMu sync.Mutex
@@ -39,6 +64,7 @@ func initApps(p *branchkit.Plugin) {
 
 	// 2. Load curated core aliases (shipped alongside plugin binary)
 	coreApps := loadAppsFile(filepath.Join(branchkit.PluginDir(), "core_apps.json"))
+	appTraits := buildAppTraits(coreApps)
 	scanned = mergeAliases(scanned, coreApps)
 
 	appsMu.Lock()
@@ -46,6 +72,7 @@ func initApps(p *branchkit.Plugin) {
 	appsMu.Unlock()
 
 	pushAppsCollection(p)
+	pushAppTraitsCollection(p, appTraits)
 
 	// A failed scan is not a small collection — it is a WRONG one that nothing
 	// re-pushes. `apps` is written with a whole-scope replace, so the push above
@@ -124,6 +151,7 @@ func retryAppScan(p *branchkit.Plugin) {
 			continue
 		}
 		coreApps := loadAppsFile(filepath.Join(branchkit.PluginDir(), "core_apps.json"))
+		appTraits := buildAppTraits(coreApps)
 		scanned = mergeAliases(scanned, coreApps)
 
 		appsMu.Lock()
@@ -131,6 +159,11 @@ func retryAppScan(p *branchkit.Plugin) {
 		appsMu.Unlock()
 
 		pushAppsCollection(p)
+		// Traits do not depend on the scan, so this re-push is not about new
+		// data — it covers the case where the actuator was unresponsive at boot
+		// and BOTH pushes failed. A whole-scope replace of identical records is
+		// idempotent, so re-pushing costs nothing when the first one landed.
+		pushAppTraitsCollection(p, appTraits)
 		// Re-apply user overrides: the replace above rewrote the collection, so
 		// the disabled set has to be reconciled against it again.
 		syncDisabledFromOverrides(p)
@@ -156,11 +189,48 @@ func mergeAliases(scanned []AppEntry, core []AppEntry) []AppEntry {
 					scanned[i].Aliases = append(scanned[i].Aliases, lower)
 				}
 			}
-		} else {
+		} else if len(ca.Aliases) > 0 {
 			scanned = append(scanned, ca)
 		}
+		// A core entry with NO aliases and no matching scan result is
+		// TRAIT-ONLY: it exists to say "this bundle id is a terminal" and
+		// nothing else. Appending it would put a row in the Apps settings
+		// table for an application that is not installed, and (since the
+		// collection is keyed by spoken alias) contribute zero matcher
+		// entries anyway. Its traits are read straight from the core file by
+		// buildAppTraits, which does not consult this list.
 	}
 	return scanned
+}
+
+// buildAppTraits indexes bundle id → traits from the CURATED file only.
+//
+// Deliberately independent of the scan and of mergeAliases: the native scan
+// cannot know what kind of application something is, and trait-only entries
+// are excluded from the app list on purpose. Reading the core slice directly
+// keeps "which apps are installed" and "what kind of thing is this" from
+// having to agree about anything.
+func buildAppTraits(core []AppEntry) map[string][]string {
+	idx := make(map[string][]string, len(core))
+	for _, ca := range core {
+		if ca.BundleID == "" || len(ca.Traits) == 0 {
+			continue
+		}
+		seen := make(map[string]bool, len(ca.Traits))
+		out := make([]string, 0, len(ca.Traits))
+		for _, t := range ca.Traits {
+			t = strings.TrimSpace(strings.ToLower(t))
+			if t == "" || seen[t] {
+				continue
+			}
+			seen[t] = true
+			out = append(out, t)
+		}
+		if len(out) > 0 {
+			idx[ca.BundleID] = out
+		}
+	}
+	return idx
 }
 
 func containsLower(ss []string, target string) bool {
@@ -246,6 +316,60 @@ func pushAppsCollection(p *branchkit.Plugin) {
 	if _, err := p.Replace("apps", records, branchkit.ScopeCollection()); err != nil {
 		branchkit.Logf("system", "replace apps: %v", err)
 	}
+}
+
+// pushAppTraitsCollection publishes which traits each app has.
+//
+// ONE RECORD PER (trait, app) PAIR, keyed "<trait>:<bundle_id>", rather than
+// one record per app holding a list. Two reasons, and the first is structural:
+// the `apps` collection is keyed by SPOKEN ALIAS, so an app with three
+// aliases is three records — there is no per-app record for a list to live
+// on. The second is that a membership with its own record id is a thing the
+// platform override system can suppress individually, which is what a future
+// user-facing editor needs and what a nested array could never offer.
+//
+// Writers are closed (`introducer_only`) and the name carries the
+// `plugin.system.` prefix on purpose: today the voice plugin is the only
+// reader and this is not a published surface. Opening writes later is a
+// non-breaking widening; closing them later would not be.
+func pushAppTraitsCollection(p *branchkit.Plugin, traits map[string][]string) {
+	// `key` is the record id materialised as a field: the `data` preset has
+	// id_strategy `none` (records not addressable), and a whole-scope Replace
+	// needs addressable ids to diff against, so the manifest declares
+	// id_strategy by_field on this.
+	type entry struct {
+		Key      string `json:"key"`
+		Trait    string `json:"trait"`
+		BundleID string `json:"bundle_id"`
+	}
+
+	// Sorted for a stable replace: the diff the platform computes is over
+	// record ids, but a deterministic order keeps logs and tests readable.
+	bundles := make([]string, 0, len(traits))
+	for id := range traits {
+		bundles = append(bundles, id)
+	}
+	sort.Strings(bundles)
+
+	records := make([]branchkit.CollectionPutEntry, 0, len(traits))
+	for _, bundleID := range bundles {
+		for _, trait := range traits[bundleID] {
+			key := trait + ":" + bundleID
+			raw, err := json.Marshal(entry{Key: key, Trait: trait, BundleID: bundleID})
+			if err != nil {
+				branchkit.Logf("system", "app_traits: marshal %s/%s: %v", trait, bundleID, err)
+				return
+			}
+			records = append(records, branchkit.CollectionPutEntry{ID: key, Payload: raw})
+		}
+	}
+
+	if _, err := p.Replace(appTraitsCollection, records, branchkit.ScopeCollection()); err != nil {
+		branchkit.Logf("system", "replace %s: %v", appTraitsCollection, err)
+		return
+	}
+	branchkit.Logf("system", "app_traits: %d trait assignments across %d apps",
+		len(records), len(traits))
 }
 
 // --- Mutations (route through platform collection.override) ---
