@@ -219,7 +219,7 @@ func TestAppsTempl_EmptyList(t *testing.T) {
 	if html == "" {
 		t.Fatal("expected non-empty HTML even with empty list")
 	}
-	if !strings.Contains(html, "settings-table") {
+	if !strings.Contains(html, "<bk-table") {
 		t.Error("expected table container in output")
 	}
 }
