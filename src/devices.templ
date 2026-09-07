@@ -3,19 +3,19 @@ package main
 import "fmt"
 
 templ Devices(devices []hidDeviceView) {
-	<div class="settings-table">
+	<bk-table columns="2fr 1fr 1fr">
 		if len(devices) == 0 {
 			<div style="padding: 24px 16px; text-align: center; color: #888;">
 				No HID devices connected.
 			</div>
 		} else {
-			<div class="table-header" style="grid-template-columns: 2fr 1fr 1fr;">
+			<div class="table-header" >
 				<div>Device</div>
 				<div>Transport</div>
 				<div style="text-align: right;">Inputs</div>
 			</div>
 			for _, dev := range devices {
-				<div class="settings-row" style="grid-template-columns: 2fr 1fr 1fr;">
+				<div class="settings-row" >
 					<div class="label">
 						<span>{ dev.Name }</span>
 						<div style="margin-top: 2px; font-size: 11px; color: #666;">
@@ -38,5 +38,5 @@ templ Devices(devices []hidDeviceView) {
 				</div>
 			}
 		}
-	</div>
+	</bk-table>
 }

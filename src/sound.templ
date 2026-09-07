@@ -6,7 +6,7 @@ import "strconv"
 
 templ deviceList(devices []deviceView, deviceType string) {
 	for _, dev := range devices {
-		<div class="settings-row" style="grid-template-columns: 2fr 100px;">
+		<div class="settings-row">
 			<div class="label">
 				<div style="display: flex; align-items: center; gap: 8px;">
 					<span style="cursor: pointer;" data-on:click={ "@post('" + branchkit.MethodURL("set-device") + "', {payload: {uid: '" + jsEscape(dev.UID) + "', device_type: '" + deviceType + "'}})" }>{ dev.Name }</span>
@@ -42,9 +42,9 @@ templ deviceList(devices []deviceView, deviceType string) {
 }
 
 templ Sound(data soundSettingsData) {
-	<div class="settings-table"
+	<bk-table columns="1fr 1fr"
 		data-signals={ fmt.Sprintf(`{"volume": %d, "muted": %s}`, data.Volume, strconv.FormatBool(data.Muted)) }>
-		<div class="settings-row" style="grid-template-columns: 1fr 1fr;">
+		<div class="settings-row">
 			<div class="label">Volume</div>
 			<div style="text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
 				<button style="font-size: 13px; padding: 2px 10px; min-width: 28px;"
@@ -54,7 +54,7 @@ templ Sound(data soundSettingsData) {
 					data-on:click={ fmt.Sprintf("$volume = %d; @post('" + branchkit.MethodURL("set-volume") + "')", data.VolumePlus) }>+</button>
 			</div>
 		</div>
-		<div class="settings-row" style="grid-template-columns: 1fr 1fr;">
+		<div class="settings-row">
 			<div class="label">Mute</div>
 			<div style="text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
 				if data.Muted {
@@ -70,21 +70,26 @@ templ Sound(data soundSettingsData) {
 				}
 			</div>
 		</div>
-		if len(data.Outputs) > 0 {
-			<div class="table-header" style="grid-template-columns: 2fr 100px; margin-top: 16px;">
+	</bk-table>
+	if len(data.Outputs) > 0 {
+		<bk-table columns="2fr 100px" style="margin-top: 16px;">
+			<div class="table-header">
 				<div>Output Devices</div>
 				<div style="text-align: right;">Status</div>
 			</div>
 			@deviceList(data.Outputs, "output")
-		}
-		if len(data.Inputs) > 0 {
-			<div class="table-header" style="grid-template-columns: 2fr 100px; margin-top: 16px;">
+		</bk-table>
+	}
+	if len(data.Inputs) > 0 {
+		<bk-table columns="2fr 100px" style="margin-top: 16px;">
+			<div class="table-header">
 				<div>Input Devices</div>
 				<div style="text-align: right;">Status</div>
 			</div>
 			@deviceList(data.Inputs, "input")
-		}
-		<div style="margin-top: 24px; padding: 12px 16px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 12px; color: #888;">
+		</bk-table>
+	}
+	<div style="margin-top: 24px; padding: 12px 16px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 12px; color: #888;">
 			<div style="margin-bottom: 6px; font-weight: 600; color: #aaa;">Voice Commands</div>
 			<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px;">
 				<span><code>volume up</code> / <code>volume down</code></span>
@@ -92,6 +97,5 @@ templ Sound(data soundSettingsData) {
 				<span><code>set output &lt;name&gt;</code></span>
 				<span><code>set input &lt;name&gt;</code></span>
 			</div>
-		</div>
 	</div>
 }

@@ -31,7 +31,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div><div class=\"settings-table\" style=\"margin-bottom: 16px;\"><div class=\"settings-row\" style=\"grid-template-columns: 1fr 100px;\"><div class=\"label\" title=\"After 'focus <app>' / 'switch <app>', warp the cursor to the app's window so scrolling lands there\">Mouse follows focus</div><div class=\"row-actions\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div><bk-table columns=\"1fr 100px\" style=\"margin-bottom: 16px;\"><div class=\"settings-row\"><div class=\"label\" title=\"After 'focus <app>' / 'switch <app>', warp the cursor to the app's window so scrolling lands there\">Mouse follows focus</div><div class=\"row-actions\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -72,12 +72,12 @@ func Apps(apps []appRowView, mouseFollowsFocus bool) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></div></div><div class=\"settings-table\"><div class=\"table-header\" style=\"grid-template-columns: 1.5fr 2fr 100px;\"><div>Application</div><div>Aliases</div><div style=\"text-align: right;\">Status</div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></div></bk-table> <bk-table columns=\"1.5fr 2fr 100px\"><div class=\"table-header\"><div>Application</div><div>Aliases</div><div style=\"text-align: right;\">Status</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, app := range apps {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"settings-row\" style=\"grid-template-columns: 1.5fr 2fr 100px;\"><div class=\"label\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"settings-row\"><div class=\"label\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -231,7 +231,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</bk-table></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

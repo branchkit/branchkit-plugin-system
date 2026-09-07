@@ -34,7 +34,7 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		for _, dev := range devices {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"settings-row\" style=\"grid-template-columns: 2fr 100px;\"><div class=\"label\"><div style=\"display: flex; align-items: center; gap: 8px;\"><span style=\"cursor: pointer;\" data-on:click=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"settings-row\"><div class=\"label\"><div style=\"display: flex; align-items: center; gap: 8px;\"><span style=\"cursor: pointer;\" data-on:click=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -201,7 +201,7 @@ func Sound(data soundSettingsData) templ.Component {
 			templ_7745c5c3_Var11 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div class=\"settings-table\" data-signals=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<bk-table columns=\"1fr 1fr\" data-signals=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -214,7 +214,7 @@ func Sound(data soundSettingsData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\"><div class=\"settings-row\" style=\"grid-template-columns: 1fr 1fr;\"><div class=\"label\">Volume</div><div style=\"text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;\"><button style=\"font-size: 13px; padding: 2px 10px; min-width: 28px;\" data-on:click=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\"><div class=\"settings-row\"><div class=\"label\">Volume</div><div style=\"text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;\"><button style=\"font-size: 13px; padding: 2px 10px; min-width: 28px;\" data-on:click=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -253,7 +253,7 @@ func Sound(data soundSettingsData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\">+</button></div></div><div class=\"settings-row\" style=\"grid-template-columns: 1fr 1fr;\"><div class=\"label\">Mute</div><div style=\"text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\">+</button></div></div><div class=\"settings-row\"><div class=\"label\">Mute</div><div style=\"text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -320,12 +320,12 @@ func Sound(data soundSettingsData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</div></div></bk-table> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if len(data.Outputs) > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<div class=\"table-header\" style=\"grid-template-columns: 2fr 100px; margin-top: 16px;\"><div>Output Devices</div><div style=\"text-align: right;\">Status</div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<bk-table columns=\"2fr 100px\" style=\"margin-top: 16px;\"><div class=\"table-header\"><div>Output Devices</div><div style=\"text-align: right;\">Status</div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -333,9 +333,13 @@ func Sound(data soundSettingsData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "</bk-table> ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
 		if len(data.Inputs) > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<div class=\"table-header\" style=\"grid-template-columns: 2fr 100px; margin-top: 16px;\"><div>Input Devices</div><div style=\"text-align: right;\">Status</div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<bk-table columns=\"2fr 100px\" style=\"margin-top: 16px;\"><div class=\"table-header\"><div>Input Devices</div><div style=\"text-align: right;\">Status</div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -343,8 +347,12 @@ func Sound(data soundSettingsData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "</bk-table>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<div style=\"margin-top: 24px; padding: 12px 16px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 12px; color: #888;\"><div style=\"margin-bottom: 6px; font-weight: 600; color: #aaa;\">Voice Commands</div><div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px;\"><span><code>volume up</code> / <code>volume down</code></span> <span><code>mute</code> / <code>unmute</code></span> <span><code>set output &lt;name&gt;</code></span> <span><code>set input &lt;name&gt;</code></span></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<div style=\"margin-top: 24px; padding: 12px 16px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 12px; color: #888;\"><div style=\"margin-bottom: 6px; font-weight: 600; color: #aaa;\">Voice Commands</div><div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px;\"><span><code>volume up</code> / <code>volume down</code></span> <span><code>mute</code> / <code>unmute</code></span> <span><code>set output &lt;name&gt;</code></span> <span><code>set input &lt;name&gt;</code></span></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

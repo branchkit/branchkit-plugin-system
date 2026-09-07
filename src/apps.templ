@@ -4,8 +4,8 @@ import "github.com/branchkit/plugin-sdk-go"
 
 templ Apps(apps []appRowView, mouseFollowsFocus bool) {
 	<div>
-		<div class="settings-table" style="margin-bottom: 16px;">
-			<div class="settings-row" style="grid-template-columns: 1fr 100px;">
+		<bk-table columns="1fr 100px" style="margin-bottom: 16px;">
+			<div class="settings-row" >
 				<div class="label" title="After 'focus <app>' / 'switch <app>', warp the cursor to the app's window so scrolling lands there">Mouse follows focus</div>
 				<div class="row-actions">
 					if mouseFollowsFocus {
@@ -21,15 +21,15 @@ templ Apps(apps []appRowView, mouseFollowsFocus bool) {
 					}
 				</div>
 			</div>
-		</div>
-		<div class="settings-table">
-		<div class="table-header" style="grid-template-columns: 1.5fr 2fr 100px;">
+		</bk-table>
+		<bk-table columns="1.5fr 2fr 100px">
+		<div class="table-header" >
 			<div>Application</div>
 			<div>Aliases</div>
 			<div style="text-align: right;">Status</div>
 		</div>
 		for _, app := range apps {
-			<div class="settings-row" style="grid-template-columns: 1.5fr 2fr 100px;">
+			<div class="settings-row" >
 				<div class="label">{ app.Name }</div>
 				<div class="value">
 					<div class="alias-tags">
@@ -58,6 +58,6 @@ templ Apps(apps []appRowView, mouseFollowsFocus bool) {
 				</div>
 			</div>
 		}
-		</div>
+		</bk-table>
 	</div>
 }
