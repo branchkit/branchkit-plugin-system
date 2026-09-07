@@ -9,13 +9,13 @@ templ Devices(devices []hidDeviceView) {
 				No HID devices connected.
 			</div>
 		} else {
-			<div class="table-header" >
+			<div class="table-header">
 				<div>Device</div>
 				<div>Transport</div>
 				<div style="text-align: right;">Inputs</div>
 			</div>
 			for _, dev := range devices {
-				<div class="settings-row" >
+				<div class="settings-row">
 					<div class="label">
 						<span>{ dev.Name }</span>
 						<div style="margin-top: 2px; font-size: 11px; color: #666;">
