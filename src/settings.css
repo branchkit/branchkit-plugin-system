@@ -6,7 +6,7 @@
 /* Nothing plugged in. Padded and centred so the message sits in the table's
    frame rather than hugging its top-left corner. */
 .devices-empty {
-    padding: var(--space-5) var(--space-4);
+    padding: var(--size-1) var(--size--1);
     text-align: center;
     color: var(--text-dim);
 }
@@ -14,13 +14,13 @@
 /* Vendor:product under the device name — an identifier, secondary to the name
    it qualifies. */
 .device-ids {
-    margin-top: var(--space-0);
+    margin-top: var(--size--7);
     font-size: var(--text-xs);
     color: var(--color-muted);
 }
 
 /* "Claimed", trailing the vendor:product it applies to. */
-.device-claimed { margin-left: var(--space-2); }
+.device-claimed { margin-left: var(--size--4); }
 
 /* The Inputs column: button and axis counts, right-aligned to meet its
    header. */
@@ -33,12 +33,12 @@
 /* --- Apps ---------------------------------------------------------------- */
 
 /* The single preference row above the apps table. */
-.apps-prefs { margin-bottom: var(--space-4); }
+.apps-prefs { margin-bottom: var(--size--1); }
 
 /* What aliases and traits are, and why the difference matters — read once,
    then ignored, so it sits below the body size. */
 .apps-intro {
-    padding: 0 0 var(--space-2);
+    padding: 0 0 var(--size--4);
     font-size: var(--text-xs);
     color: var(--text-secondary);
 }
@@ -53,9 +53,9 @@
 .sound-device-name-row {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: var(--size--4);
 }
-.sound-device-hints { margin-top: var(--space-1); }
+.sound-device-hints { margin-top: var(--size--6); }
 /* What to say to select this device. */
 .sound-device-cmd {
     font-size: var(--text-xs);
@@ -74,24 +74,24 @@
     text-align: center;
 }
 
-.sound-table { margin-top: var(--space-4); }
+.sound-table { margin-top: var(--size--1); }
 
 /* The phrase list under the tables. */
 .sound-hints {
-    margin-top: var(--space-5);
-    padding: var(--space-3) var(--space-4);
+    margin-top: var(--size-1);
+    padding: var(--size--2) var(--size--1);
     background: var(--scrim-1);
     border-radius: var(--radius-lg);
     font-size: var(--text-xs);
     color: var(--text-dim);
 }
 .sound-hints-title {
-    margin-bottom: var(--space-2);
+    margin-bottom: var(--size--4);
     font-weight: 600;
     color: var(--text-secondary);
 }
 .sound-hints-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-1) var(--space-5);
+    gap: var(--size--6) var(--size-1);
 }
