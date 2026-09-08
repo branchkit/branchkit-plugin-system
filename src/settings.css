@@ -1,0 +1,31 @@
+/* The system plugin's settings tabs. One stylesheet for all three; sections
+   below are per tab. Shipped through RenderSettingsResponse.CSS. */
+
+/* --- Devices ------------------------------------------------------------- */
+
+/* Nothing plugged in. Padded and centred so the message sits in the table's
+   frame rather than hugging its top-left corner. */
+.devices-empty {
+    padding: 24px 16px;
+    text-align: center;
+    color: #888;
+}
+
+/* Vendor:product under the device name — an identifier, secondary to the name
+   it qualifies. */
+.device-ids {
+    margin-top: 2px;
+    font-size: 11px;
+    color: #666;
+}
+
+/* "Claimed", trailing the vendor:product it applies to. */
+.device-claimed { margin-left: 6px; }
+
+/* The Inputs column: button and axis counts, right-aligned to meet its
+   header. */
+.device-inputs {
+    text-align: right;
+    font-size: 12px;
+    color: #999;
+}

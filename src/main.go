@@ -3,12 +3,16 @@ package main
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"encoding/json"
 	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/branchkit/plugin-sdk-go"
 )
+
+//go:embed settings.css
+var systemCSS string
 
 // jsEscape escapes a string for safe embedding in JavaScript string literals
 // (single-quoted or double-quoted), for use in templ files. Handles
@@ -60,12 +64,12 @@ var plugin *branchkit.Plugin
 func handleRenderSettings(req *branchkit.RenderSettingsRequest) (any, error) {
 	if req.TabKey == "sound" {
 		html := renderSoundSettings(plugin)
-		return branchkit.RenderSettingsResponse{HTML: html}, nil
+		return branchkit.RenderSettingsResponse{HTML: html, CSS: &systemCSS}, nil
 	}
 
 	if req.TabKey == "devices" {
 		html := renderDevicesSettings(plugin)
-		return branchkit.RenderSettingsResponse{HTML: html}, nil
+		return branchkit.RenderSettingsResponse{HTML: html, CSS: &systemCSS}, nil
 	}
 
 	if req.TabKey != "apps" {
@@ -110,6 +114,7 @@ func handleRenderSettings(req *branchkit.RenderSettingsRequest) (any, error) {
 	}
 	return branchkit.RenderSettingsResponse{
 		HTML: renderTempl(Apps(rows, conf.MouseFollowsFocus, traits)),
+		CSS:  &systemCSS,
 	}, nil
 }
 
