@@ -29,3 +29,20 @@
     font-size: 12px;
     color: #999;
 }
+
+/* --- Apps ---------------------------------------------------------------- */
+
+/* The single preference row above the apps table. */
+.apps-prefs { margin-bottom: 16px; }
+
+/* What aliases and traits are, and why the difference matters — read once,
+   then ignored, so it sits below the body size. */
+.apps-intro {
+    padding: 0 0 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* The "+" that opens the alias or trait editor. Larger than the icon buttons
+   around it because it is a target rather than a glyph. */
+.apps-add-btn { font-size: 16px; }

@@ -31,12 +31,12 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div><bk-table columns=\"1fr 100px\" style=\"margin-bottom: 16px;\"><div class=\"settings-row\"><div class=\"label\" title=\"After 'focus <app>' / 'switch <app>', warp the cursor to the app's window so scrolling lands there\">Mouse follows focus</div><div class=\"row-actions\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div><bk-table columns=\"1fr 100px\" class=\"apps-prefs\"><div class=\"settings-row\"><div class=\"label\" title=\"After 'focus <app>' / 'switch <app>', warp the cursor to the app's window so scrolling lands there\">Mouse follows focus</div><div class=\"row-actions\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if mouseFollowsFocus {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<span class=\"badge badge-core\" style=\"cursor: pointer;\" data-on:click=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<span class=\"badge badge-core clickable\" data-on:click=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -54,7 +54,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<span class=\"badge badge-user\" style=\"cursor: pointer;\" data-on:click=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<span class=\"badge badge-user clickable\" data-on:click=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -72,7 +72,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></div></bk-table><div style=\"padding: 0 0 8px; font-size: 12px; color: var(--text-secondary, #888);\"><b>Aliases</b> are what you can say to launch an app — yours alone. <b>Traits</b> are what the app IS, and every plugin reads them: changing one changes how the app is treated everywhere, not just here.</div><bk-table columns=\"1.3fr 1.5fr 1.5fr 90px\"><div class=\"table-header\"><div>Application</div><div>Aliases</div><div>Traits</div><div style=\"text-align: right;\">Status</div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></div></bk-table><div class=\"apps-intro\"><b>Aliases</b> are what you can say to launch an app — yours alone. <b>Traits</b> are what the app IS, and every plugin reads them: changing one changes how the app is treated everywhere, not just here.</div><bk-table columns=\"1.3fr 1.5fr 1.5fr 90px\"><div class=\"table-header\"><div>Application</div><div>Aliases</div><div>Traits</div><div class=\"align-right\">Status</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -165,7 +165,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\"><button class=\"icon-btn\" style=\"opacity: 1; font-size: 16px;\" title=\"Add alias\" data-on:click=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\"><button class=\"icon-btn apps-add-btn\" title=\"Add alias\" data-on:click=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -341,7 +341,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\"><button class=\"icon-btn\" style=\"opacity: 1; font-size: 16px;\" title=\"Add a trait\" data-on:click=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\"><button class=\"icon-btn apps-add-btn\" title=\"Add a trait\" data-on:click=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -358,7 +358,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var23 = []any{"badge " + app.BadgeClass}
+			var templ_7745c5c3_Var23 = []any{"badge clickable " + app.BadgeClass}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var23...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -376,7 +376,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "\" style=\"cursor: pointer;\" data-on:click=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "\" data-on:click=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
