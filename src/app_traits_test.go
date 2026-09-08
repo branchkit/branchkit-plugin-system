@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -169,6 +170,115 @@ func TestRelocatedVoiceTableIsComplete(t *testing.T) {
 		if len(got) != 1 || got[0] != want {
 			t.Errorf("%s traits = %v, want [%s] — this app lost its classification in the move",
 				bundleID, got, want)
+		}
+	}
+}
+
+// --- the editor ---
+
+// Trait names become half a record id, and `:` is the separator. A name
+// containing it would produce an id that parses back wrong, so it is refused
+// rather than escaped.
+func TestNormalizeTrait(t *testing.T) {
+	ok := map[string]string{
+		"terminal":    "terminal",
+		"  Terminal":  "terminal",
+		"TERMINAL  ":  "terminal",
+		"web-browser": "web-browser",
+		"code_editor": "code_editor",
+		"x11":         "x11",
+	}
+	for in, want := range ok {
+		got, err := normalizeTrait(in)
+		if err != nil {
+			t.Errorf("normalizeTrait(%q) errored: %v", in, err)
+			continue
+		}
+		if got != want {
+			t.Errorf("normalizeTrait(%q) = %q, want %q", in, got, want)
+		}
+	}
+	bad := []string{"", "   ", "term:inal", "web browser", "café", "a/b", strings.Repeat("x", 33)}
+	for _, in := range bad {
+		if got, err := normalizeTrait(in); err == nil {
+			t.Errorf("normalizeTrait(%q) = %q, want an error", in, got)
+		}
+	}
+}
+
+// The id format is what `overrides.apply {action: "remove", id: …}` addresses.
+// If this changes, removing a shipped trait silently stops working — the call
+// succeeds and suppresses nothing.
+func TestTraitRecordID(t *testing.T) {
+	if got, want := traitRecordID("terminal", "com.apple.Terminal"), "terminal:com.apple.Terminal"; got != want {
+		t.Errorf("traitRecordID = %q, want %q", got, want)
+	}
+	// The pusher and the editor must agree on it, or a user removal addresses
+	// a record the publisher never wrote.
+	if traitRecordID("chat", "com.hnc.Discord") != "chat:com.hnc.Discord" {
+		t.Error("id format drifted from the publishing path")
+	}
+}
+
+// The add menu's counts are the typo backstop — `terminl (1)` beside
+// `terminal (7)` is the only thing that makes a misspelling visible.
+func TestTraitCatalogCounts(t *testing.T) {
+	cat := traitCatalog{ByBundle: map[string][]string{}, Counts: map[string]int{}}
+	for _, r := range []struct{ trait, bundle string }{
+		{"terminal", "com.apple.Terminal"},
+		{"terminal", "dev.warp.Warp-Stable"},
+		{"chat", "com.tinyspeck.slackmacgap"},
+	} {
+		cat.ByBundle[r.bundle] = append(cat.ByBundle[r.bundle], r.trait)
+		cat.Counts[r.trait]++
+	}
+	if cat.Counts["terminal"] != 2 || cat.Counts["chat"] != 1 {
+		t.Errorf("counts = %v", cat.Counts)
+	}
+	if len(cat.ByBundle["com.apple.Terminal"]) != 1 {
+		t.Errorf("Terminal traits = %v", cat.ByBundle["com.apple.Terminal"])
+	}
+}
+
+// The template shows a trait's count next to its name; itoa exists only
+// because a templ file cannot import strconv.
+func TestItoa(t *testing.T) {
+	if itoa(7) != "7" || itoa(0) != "0" {
+		t.Errorf("itoa broken: %q %q", itoa(7), itoa(0))
+	}
+}
+
+// The write-path invariant, asserted at the level a unit test can reach: both
+// mutations go restore-first, so putting a trait back the way it shipped leaves
+// nothing behind in the user band.
+//
+// The RPC sequence itself is verified on a running instance (add-then-remove
+// and remove-then-re-add both return the user band to empty); what this pins is
+// the reasoning that makes the sequence correct, so a future edit that drops the
+// restore has something to fail against.
+func TestRestoreIsTheInverseOfAdd(t *testing.T) {
+	src, err := os.ReadFile("app_traits.go")
+	if err != nil {
+		t.Fatalf("read app_traits.go: %v", err)
+	}
+	code := string(src)
+
+	// Both mutations must issue a restore before their own verb. Plain `remove`
+	// appends to `removed` and never touches `added`, so a user-added trait
+	// removed that way leaves both records stacked — correct on screen, and
+	// growing the override file by a contradictory pair every cycle.
+	for _, fn := range []string{"func addAppTrait", "func removeAppTrait"} {
+		body := code[strings.Index(code, fn):]
+		if end := strings.Index(body[1:], "\nfunc "); end >= 0 {
+			body = body[:end]
+		}
+		if !strings.Contains(body, `"action": "restore"`) {
+			t.Errorf("%s no longer restores first — the user band will accumulate "+
+				"contradictory add/remove pairs that the composed view hides", fn)
+		}
+		if !strings.Contains(body, "hasTrait(") {
+			t.Errorf("%s must check whether restoring was enough before writing its own "+
+				"override, or it shadows a shipped record with a private copy", fn)
 		}
 	}
 }

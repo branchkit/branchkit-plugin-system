@@ -48,6 +48,7 @@ type appRowView struct {
 	Name       string
 	BundleID   string
 	Aliases    []string
+	Traits     []string
 	Status     string
 	BadgeClass string
 }
@@ -72,6 +73,7 @@ func handleRenderSettings(req *branchkit.RenderSettingsRequest) (any, error) {
 	}
 
 	allApps := getApps()
+	traits := loadTraitCatalog(plugin)
 	search := strings.ToLower(req.Search)
 	var rows []appRowView
 	for _, app := range allApps {
@@ -90,6 +92,7 @@ func handleRenderSettings(req *branchkit.RenderSettingsRequest) (any, error) {
 			Name:       app.Name,
 			BundleID:   app.BundleID,
 			Aliases:    app.Aliases,
+			Traits:     traits.ByBundle[app.BundleID],
 			Status:     status,
 			BadgeClass: badgeClass,
 		})
@@ -105,7 +108,9 @@ func handleRenderSettings(req *branchkit.RenderSettingsRequest) (any, error) {
 			branchkit.Logf("system", "config read-through failed: %v", err)
 		}
 	}
-	return branchkit.RenderSettingsResponse{HTML: renderTempl(Apps(rows, conf.MouseFollowsFocus))}, nil
+	return branchkit.RenderSettingsResponse{
+		HTML: renderTempl(Apps(rows, conf.MouseFollowsFocus, traits)),
+	}, nil
 }
 
 // --- App settings action handlers ---
@@ -131,6 +136,30 @@ func handleAppAliasAdd(req *appAliasRequest) (any, error) {
 
 func handleAppAliasRemove(req *appAliasRequest) (any, error) {
 	removeAppAlias(plugin, req.BundleID, req.Alias)
+	return map[string]string{"result": "ok"}, nil
+}
+
+// appTraitRequest carries one trait edit from the Apps settings tab.
+type appTraitRequest struct {
+	BundleID string `json:"bundle_id"`
+	Trait    string `json:"trait"`
+}
+
+// The trait handlers RETURN their error, unlike their alias counterparts which
+// log and report success. A rejected trait name is something the user just
+// typed and needs to see; an alias add can only fail on a transport error
+// nobody could act on.
+func handleAppTraitAdd(req *appTraitRequest) (any, error) {
+	if err := addAppTrait(plugin, req.BundleID, req.Trait); err != nil {
+		return nil, err
+	}
+	return map[string]string{"result": "ok"}, nil
+}
+
+func handleAppTraitRemove(req *appTraitRequest) (any, error) {
+	if err := removeAppTrait(plugin, req.BundleID, req.Trait); err != nil {
+		return nil, err
+	}
 	return map[string]string{"result": "ok"}, nil
 }
 
@@ -231,6 +260,8 @@ func main() {
 	branchkit.HandleTyped(plugin, "app_toggle", handleAppToggle)
 	branchkit.HandleTyped(plugin, "app_alias_add", handleAppAliasAdd)
 	branchkit.HandleTyped(plugin, "app_alias_remove", handleAppAliasRemove)
+	branchkit.HandleTyped(plugin, "app_trait_add", handleAppTraitAdd)
+	branchkit.HandleTyped(plugin, "app_trait_remove", handleAppTraitRemove)
 	branchkit.HandleTyped(plugin, "set_mouse_follows_focus", handleSetMouseFollowsFocus)
 
 	// Publish current audio device names as speakable collections once RPC is

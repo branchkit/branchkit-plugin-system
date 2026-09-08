@@ -2,7 +2,7 @@ package main
 
 import "github.com/branchkit/plugin-sdk-go"
 
-templ Apps(apps []appRowView, mouseFollowsFocus bool) {
+templ Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) {
 	<div>
 		<bk-table columns="1fr 100px" style="margin-bottom: 16px;">
 			<div class="settings-row">
@@ -22,10 +22,16 @@ templ Apps(apps []appRowView, mouseFollowsFocus bool) {
 				</div>
 			</div>
 		</bk-table>
-		<bk-table columns="1.5fr 2fr 100px">
+		<div style="padding: 0 0 8px; font-size: 12px; color: var(--text-secondary, #888);">
+			<b>Aliases</b> are what you can say to launch an app — yours alone.
+			<b>Traits</b> are what the app IS, and every plugin reads them: changing one
+			changes how the app is treated everywhere, not just here.
+		</div>
+		<bk-table columns="1.3fr 1.5fr 1.5fr 90px">
 		<div class="table-header">
 			<div>Application</div>
 			<div>Aliases</div>
+			<div>Traits</div>
 			<div style="text-align: right;">Status</div>
 		</div>
 		for _, app := range apps {
@@ -47,6 +53,41 @@ templ Apps(apps []appRowView, mouseFollowsFocus bool) {
 						<div data-show={ "$editingApp !== '" + jsEscape(app.BundleID) + "'" }>
 							<button class="icon-btn" style="opacity: 1; font-size: 16px;" title="Add alias"
 								data-on:click={ "$editingApp = '" + jsEscape(app.BundleID) + "'; $newAlias = ''" }>+</button>
+						</div>
+					</div>
+				</div>
+				<div class="value">
+					<div class="alias-tags">
+						for _, trait := range app.Traits {
+							<span class="alias-tag" title={ "This app is a '" + trait + "'. Removing it changes what every plugin believes about this app, not just dictation." }>
+								{ trait }
+								<button data-on:click={ branchkit.MethodPost("app_trait_remove", "{bundle_id: '"+jsEscape(app.BundleID)+"', trait: '"+jsEscape(trait)+"'}") }>&#215;</button>
+							</span>
+						}
+						// State 2 — pick from what exists. A select, not a text box:
+						// trait names are SHARED between apps, so a typo does not fail
+						// loudly the way a mistyped alias does. It points at nothing,
+						// silently, forever.
+						<div data-show={ "$traitPick === '" + jsEscape(app.BundleID) + "'" }>
+							<select class="add-alias-input"
+								data-on:change={ "evt.target.value === '__new__' ? ($traitNew = '" + jsEscape(app.BundleID) + "', $traitPick = '', $newTrait = '') : (evt.target.value && (" + traitAddPost(app.BundleID, "evt.target.value") + "), $traitPick = '')" }>
+								<option value="">Add trait…</option>
+								for _, name := range traits.Names {
+									<option value={ name }>{ name } ({ itoa(traits.Counts[name]) })</option>
+								}
+								<option value="__new__">New trait…</option>
+							</select>
+						</div>
+						// State 3 — inventing a name is one step further than picking one.
+						<div data-show={ "$traitNew === '" + jsEscape(app.BundleID) + "'" }>
+							<input class="add-alias-input" type="text" data-bind="newTrait" placeholder="New trait…"
+								data-on:keydown={ "evt.key === 'Enter' && (" + traitAddPost(app.BundleID, "$newTrait") + ", $traitNew = ''); evt.key === 'Escape' && ($traitNew = '')" }
+								data-on:blur__debounce.200ms="$traitNew = ''"/>
+						</div>
+						// State 1 — resting.
+						<div data-show={ "$traitPick !== '" + jsEscape(app.BundleID) + "' && $traitNew !== '" + jsEscape(app.BundleID) + "'" }>
+							<button class="icon-btn" style="opacity: 1; font-size: 16px;" title="Add a trait"
+								data-on:click={ "$traitPick = '" + jsEscape(app.BundleID) + "'" }>+</button>
 						</div>
 					</div>
 				</div>

@@ -200,9 +200,16 @@ func TestHandleOpen_NoTarget(t *testing.T) {
 
 func TestAppsTempl_RendersNonEmpty(t *testing.T) {
 	rows := []appRowView{
-		{Name: "Safari", BundleID: "com.apple.Safari", Aliases: []string{"browser"}, Status: "Enabled", BadgeClass: "badge-core"},
+		{Name: "Safari", BundleID: "com.apple.Safari", Aliases: []string{"browser"},
+			Traits: []string{"terminal"}, Status: "Enabled", BadgeClass: "badge-core"},
 	}
-	html := renderTempl(Apps(rows, false))
+	cat := traitCatalog{
+		ByBundle: map[string][]string{"com.apple.Safari": {"terminal"}},
+		Counts:   map[string]int{"terminal": 7, "chat": 7},
+		Names:    []string{"chat", "terminal"},
+		Loaded:   true,
+	}
+	html := renderTempl(Apps(rows, false, cat))
 	if html == "" {
 		t.Fatal("expected non-empty HTML from Apps templ")
 	}
@@ -212,10 +219,38 @@ func TestAppsTempl_RendersNonEmpty(t *testing.T) {
 	if !strings.Contains(html, "browser") {
 		t.Error("expected alias in rendered output")
 	}
+	if !strings.Contains(html, "app_trait_remove") {
+		t.Error("expected a trait chip with its remove button")
+	}
+	// The add menu carries counts — the only thing that makes a misspelled
+	// trait visible next to the one it was meant to be.
+	if !strings.Contains(html, "terminal") || !strings.Contains(html, "(7)") {
+		t.Error("expected trait options labelled with their app counts")
+	}
+	if !strings.Contains(html, "__new__") {
+		t.Error("expected the 'New trait…' escape hatch in the menu")
+	}
+	// The chip tooltip names the trait, which means templ must INTERPOLATE it.
+	// A `title="… { trait } …"` plain-string attribute renders the braces
+	// literally, and nothing else in the suite would have noticed — the page
+	// looks right until you hover it. Found exactly that way.
+	if strings.Contains(html, "{ trait }") {
+		t.Error("tooltip rendered the templ expression literally — use title={ \"…\" + trait } for attribute interpolation")
+	}
+	// templ escapes the apostrophes, so match the escaped form — the point is
+	// that "terminal" appears INSIDE the tooltip, not that braces are absent.
+	if !strings.Contains(html, "This app is a &#39;terminal&#39;") {
+		t.Error("expected the trait name interpolated into the chip tooltip")
+	}
+	// The tooltip is where the fact-vs-opinion distinction is stated, and
+	// DESIGN_APP_TRAITS.md makes that an obligation rather than a nicety.
+	if !strings.Contains(html, "not just dictation") {
+		t.Error("tooltip must say a trait change reaches every plugin, not only dictation")
+	}
 }
 
 func TestAppsTempl_EmptyList(t *testing.T) {
-	html := renderTempl(Apps(nil, true))
+	html := renderTempl(Apps(nil, true, traitCatalog{}))
 	if html == "" {
 		t.Fatal("expected non-empty HTML even with empty list")
 	}
