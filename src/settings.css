@@ -15,7 +15,7 @@
    it qualifies. */
 .device-ids {
     margin-top: 2px;
-    font-size: 11px;
+    font-size: var(--text-xs);
     color: var(--color-muted);
 }
 
@@ -26,7 +26,7 @@
    header. */
 .device-inputs {
     text-align: right;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--text-secondary);
 }
 
@@ -39,14 +39,14 @@
    then ignored, so it sits below the body size. */
 .apps-intro {
     padding: 0 0 8px;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--text-secondary);
 }
 
 /* The "+" that opens an alias, trait or device-alias editor. Larger than the
    icon buttons around it because it is a target rather than a glyph. Named for
    the job rather than the tab, since the sound tab wants the same button. */
-.add-btn { font-size: 16px; }
+.add-btn { font-size: var(--text-base); }
 
 /* --- Sound --------------------------------------------------------------- */
 
@@ -58,7 +58,7 @@
 .sound-device-hints { margin-top: 4px; }
 /* What to say to select this device. */
 .sound-device-cmd {
-    font-size: 11px;
+    font-size: var(--text-xs);
     color: var(--color-muted);
 }
 
@@ -82,7 +82,7 @@
     padding: 12px 16px;
     background: var(--scrim-1);
     border-radius: var(--radius-lg);
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--text-dim);
 }
 .sound-hints-title {
