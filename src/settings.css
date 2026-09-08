@@ -14,13 +14,13 @@
 /* Vendor:product under the device name — an identifier, secondary to the name
    it qualifies. */
 .device-ids {
-    margin-top: 2px;
+    margin-top: var(--space-0);
     font-size: var(--text-xs);
     color: var(--color-muted);
 }
 
 /* "Claimed", trailing the vendor:product it applies to. */
-.device-claimed { margin-left: 6px; }
+.device-claimed { margin-left: var(--space-2); }
 
 /* The Inputs column: button and axis counts, right-aligned to meet its
    header. */
@@ -33,7 +33,7 @@
 /* --- Apps ---------------------------------------------------------------- */
 
 /* The single preference row above the apps table. */
-.apps-prefs { margin-bottom: 16px; }
+.apps-prefs { margin-bottom: var(--space-4); }
 
 /* What aliases and traits are, and why the difference matters — read once,
    then ignored, so it sits below the body size. */
@@ -53,9 +53,9 @@
 .sound-device-name-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
 }
-.sound-device-hints { margin-top: 4px; }
+.sound-device-hints { margin-top: var(--space-1); }
 /* What to say to select this device. */
 .sound-device-cmd {
     font-size: var(--text-xs);
@@ -74,11 +74,11 @@
     text-align: center;
 }
 
-.sound-table { margin-top: 16px; }
+.sound-table { margin-top: var(--space-4); }
 
 /* The phrase list under the tables. */
 .sound-hints {
-    margin-top: 24px;
+    margin-top: var(--space-5);
     padding: var(--space-3) var(--space-4);
     background: var(--scrim-1);
     border-radius: var(--radius-lg);
@@ -86,12 +86,12 @@
     color: var(--text-dim);
 }
 .sound-hints-title {
-    margin-bottom: 6px;
+    margin-bottom: var(--space-2);
     font-weight: 600;
     color: var(--text-secondary);
 }
 .sound-hints-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4px 24px;
+    gap: var(--space-1) var(--space-5);
 }
