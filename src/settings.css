@@ -6,7 +6,7 @@
 /* Nothing plugged in. Padded and centred so the message sits in the table's
    frame rather than hugging its top-left corner. */
 .devices-empty {
-    padding: 24px 16px;
+    padding: var(--space-5) var(--space-4);
     text-align: center;
     color: var(--text-dim);
 }
@@ -38,7 +38,7 @@
 /* What aliases and traits are, and why the difference matters — read once,
    then ignored, so it sits below the body size. */
 .apps-intro {
-    padding: 0 0 8px;
+    padding: 0 0 var(--space-2);
     font-size: var(--text-xs);
     color: var(--text-secondary);
 }
@@ -79,7 +79,7 @@
 /* The phrase list under the tables. */
 .sound-hints {
     margin-top: 24px;
-    padding: 12px 16px;
+    padding: var(--space-3) var(--space-4);
     background: var(--scrim-1);
     border-radius: var(--radius-lg);
     font-size: var(--text-xs);
