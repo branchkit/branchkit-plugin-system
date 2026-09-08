@@ -69,7 +69,7 @@
 /* The number between the stepper's buttons. Fixed gutter and monospace so it
    does not shuffle the buttons as the value changes width. */
 .sound-volume-readout {
-    font-family: 'SF Mono', monospace;
+    font-family: var(--font-code);
     min-width: 40px;
     text-align: center;
 }
