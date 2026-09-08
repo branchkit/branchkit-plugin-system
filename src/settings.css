@@ -15,7 +15,7 @@
    it qualifies. */
 .device-ids {
     margin-top: var(--size--7);
-    font-size: var(--text-xs);
+    font-size: var(--font-size--2);
     color: var(--color-muted);
 }
 
@@ -26,7 +26,7 @@
    header. */
 .device-inputs {
     text-align: right;
-    font-size: var(--text-xs);
+    font-size: var(--font-size--2);
     color: var(--text-secondary);
 }
 
@@ -39,14 +39,14 @@
    then ignored, so it sits below the body size. */
 .apps-intro {
     padding: 0 0 var(--size--4);
-    font-size: var(--text-xs);
+    font-size: var(--font-size--2);
     color: var(--text-secondary);
 }
 
 /* The "+" that opens an alias, trait or device-alias editor. Larger than the
    icon buttons around it because it is a target rather than a glyph. Named for
    the job rather than the tab, since the sound tab wants the same button. */
-.add-btn { font-size: var(--text-base); }
+.add-btn { font-size: var(--font-size-0); }
 
 /* --- Sound --------------------------------------------------------------- */
 
@@ -58,7 +58,7 @@
 .sound-device-hints { margin-top: var(--size--6); }
 /* What to say to select this device. */
 .sound-device-cmd {
-    font-size: var(--text-xs);
+    font-size: var(--font-size--2);
     color: var(--color-muted);
 }
 
@@ -69,7 +69,7 @@
 /* The number between the stepper's buttons. Fixed gutter and monospace so it
    does not shuffle the buttons as the value changes width. */
 .sound-volume-readout {
-    font-family: var(--font-code);
+    font-family: var(--font-mono);
     min-width: 40px;
     text-align: center;
 }
@@ -81,8 +81,8 @@
     margin-top: var(--size-1);
     padding: var(--size--2) var(--size--1);
     background: var(--scrim-1);
-    border-radius: var(--radius-lg);
-    font-size: var(--text-xs);
+    border-radius: var(--border-radius-2);
+    font-size: var(--font-size--2);
     color: var(--text-dim);
 }
 .sound-hints-title {
