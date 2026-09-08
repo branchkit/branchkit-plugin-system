@@ -352,7 +352,7 @@ func Sound(data soundSettingsData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<div style=\"margin-top: 24px; padding: 12px 16px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 12px; color: #888;\"><div style=\"margin-bottom: 6px; font-weight: 600; color: #aaa;\">Voice Commands</div><div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px;\"><span><code>volume up</code> / <code>volume down</code></span> <span><code>mute</code> / <code>unmute</code></span> <span><code>set output &lt;name&gt;</code></span> <span><code>set input &lt;name&gt;</code></span></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<div style=\"margin-top: 24px; padding: 12px 16px; background: var(--scrim-1); border-radius: 8px; font-size: 12px; color: #888;\"><div style=\"margin-bottom: 6px; font-weight: 600; color: #aaa;\">Voice Commands</div><div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px;\"><span><code>volume up</code> / <code>volume down</code></span> <span><code>mute</code> / <code>unmute</code></span> <span><code>set output &lt;name&gt;</code></span> <span><code>set input &lt;name&gt;</code></span></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
