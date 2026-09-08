@@ -51,7 +51,7 @@ templ Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) {
 								data-on:blur__debounce.200ms="$editingApp = ''"/>
 						</div>
 						<div data-show={ "$editingApp !== '" + jsEscape(app.BundleID) + "'" }>
-							<button class="icon-btn apps-add-btn" title="Add alias"
+							<button class="icon-btn add-btn" title="Add alias"
 								data-on:click={ "$editingApp = '" + jsEscape(app.BundleID) + "'; $newAlias = ''" }>+</button>
 						</div>
 					</div>
@@ -86,7 +86,7 @@ templ Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) {
 						</div>
 						// State 1 — resting.
 						<div data-show={ "$traitPick !== '" + jsEscape(app.BundleID) + "' && $traitNew !== '" + jsEscape(app.BundleID) + "'" }>
-							<button class="icon-btn apps-add-btn" title="Add a trait"
+							<button class="icon-btn add-btn" title="Add a trait"
 								data-on:click={ "$traitPick = '" + jsEscape(app.BundleID) + "'" }>+</button>
 						</div>
 					</div>

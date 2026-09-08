@@ -34,14 +34,14 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		for _, dev := range devices {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"settings-row\"><div class=\"label\"><div style=\"display: flex; align-items: center; gap: 8px;\"><span style=\"cursor: pointer;\" data-on:click=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"settings-row\"><div class=\"label\"><div class=\"sound-device-name-row\"><span class=\"clickable\" data-on:click=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("@post('" + branchkit.MethodURL("set-device") + "', {payload: {uid: '" + jsEscape(dev.UID) + "', device_type: '" + deviceType + "'}})")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 12, Col: 186}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 12, Col: 179}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -54,20 +54,20 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(dev.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 12, Col: 199}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 12, Col: 192}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</span></div><div style=\"margin-top: 4px;\"><div class=\"alias-tags\"><code style=\"font-size: 11px; color: #666;\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</span></div><div class=\"sound-device-hints\"><div class=\"alias-tags\"><code class=\"sound-device-cmd\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("set " + deviceType + " " + dev.VoiceHint)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 16, Col: 93}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 16, Col: 80}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -148,7 +148,7 @@ func deviceList(devices []deviceView, deviceType string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\"><button class=\"icon-btn\" style=\"opacity: 1; font-size: 16px;\" title=\"Add alias\" data-on:click=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\"><button class=\"icon-btn add-btn\" title=\"Add alias\" data-on:click=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -214,7 +214,7 @@ func Sound(data soundSettingsData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\"><div class=\"settings-row\"><div class=\"label\">Volume</div><div style=\"text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;\"><button style=\"font-size: 13px; padding: 2px 10px; min-width: 28px;\" data-on:click=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\"><div class=\"settings-row\"><div class=\"label\">Volume</div><div class=\"value-cell sound-stepper\"><button class=\"segmented-btn\" data-on:click=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -227,20 +227,20 @@ func Sound(data soundSettingsData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\">&#8722;</button> <span style=\"font-family: 'SF Mono', monospace; min-width: 40px; text-align: center;\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\">&#8722;</button> <span class=\"sound-volume-readout\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", data.Volume))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 52, Col: 122}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `sound.templ`, Line: 52, Col: 71}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "%</span> <button style=\"font-size: 13px; padding: 2px 10px; min-width: 28px;\" data-on:click=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "%</span> <button class=\"segmented-btn\" data-on:click=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -253,12 +253,12 @@ func Sound(data soundSettingsData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\">+</button></div></div><div class=\"settings-row\"><div class=\"label\">Mute</div><div style=\"text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\">+</button></div></div><div class=\"settings-row\"><div class=\"label\">Mute</div><div class=\"value-cell sound-toggle\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if data.Muted {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<button style=\"font-size: 13px; padding: 2px 10px; min-width: 40px; font-weight: bold;\" data-on:click=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<button class=\"segmented-btn is-active\" data-on:click=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -271,7 +271,7 @@ func Sound(data soundSettingsData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\">On</button> <button style=\"font-size: 13px; padding: 2px 10px; min-width: 40px;\" data-on:click=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\">On</button> <button class=\"segmented-btn\" data-on:click=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -289,7 +289,7 @@ func Sound(data soundSettingsData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<button style=\"font-size: 13px; padding: 2px 10px; min-width: 40px;\" data-on:click=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<button class=\"segmented-btn\" data-on:click=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -302,7 +302,7 @@ func Sound(data soundSettingsData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\">On</button> <button style=\"font-size: 13px; padding: 2px 10px; min-width: 40px; font-weight: bold;\" data-on:click=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\">On</button> <button class=\"segmented-btn is-active\" data-on:click=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -325,7 +325,7 @@ func Sound(data soundSettingsData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if len(data.Outputs) > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<bk-table columns=\"2fr 100px\" style=\"margin-top: 16px;\"><div class=\"table-header\"><div>Output Devices</div><div style=\"text-align: right;\">Status</div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<bk-table columns=\"2fr 100px\" class=\"sound-table\"><div class=\"table-header\"><div>Output Devices</div><div class=\"align-right\">Status</div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -339,7 +339,7 @@ func Sound(data soundSettingsData) templ.Component {
 			}
 		}
 		if len(data.Inputs) > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<bk-table columns=\"2fr 100px\" style=\"margin-top: 16px;\"><div class=\"table-header\"><div>Input Devices</div><div style=\"text-align: right;\">Status</div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<bk-table columns=\"2fr 100px\" class=\"sound-table\"><div class=\"table-header\"><div>Input Devices</div><div class=\"align-right\">Status</div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -352,7 +352,7 @@ func Sound(data soundSettingsData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<div style=\"margin-top: 24px; padding: 12px 16px; background: var(--scrim-1); border-radius: 8px; font-size: 12px; color: #888;\"><div style=\"margin-bottom: 6px; font-weight: 600; color: #aaa;\">Voice Commands</div><div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px;\"><span><code>volume up</code> / <code>volume down</code></span> <span><code>mute</code> / <code>unmute</code></span> <span><code>set output &lt;name&gt;</code></span> <span><code>set input &lt;name&gt;</code></span></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<div class=\"sound-hints\"><div class=\"sound-hints-title\">Voice Commands</div><div class=\"sound-hints-grid\"><span><code>volume up</code> / <code>volume down</code></span> <span><code>mute</code> / <code>unmute</code></span> <span><code>set output &lt;name&gt;</code></span> <span><code>set input &lt;name&gt;</code></span></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

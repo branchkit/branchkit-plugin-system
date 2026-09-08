@@ -8,12 +8,12 @@ templ deviceList(devices []deviceView, deviceType string) {
 	for _, dev := range devices {
 		<div class="settings-row">
 			<div class="label">
-				<div style="display: flex; align-items: center; gap: 8px;">
-					<span style="cursor: pointer;" data-on:click={ "@post('" + branchkit.MethodURL("set-device") + "', {payload: {uid: '" + jsEscape(dev.UID) + "', device_type: '" + deviceType + "'}})" }>{ dev.Name }</span>
+				<div class="sound-device-name-row">
+					<span class="clickable" data-on:click={ "@post('" + branchkit.MethodURL("set-device") + "', {payload: {uid: '" + jsEscape(dev.UID) + "', device_type: '" + deviceType + "'}})" }>{ dev.Name }</span>
 				</div>
-				<div style="margin-top: 4px;">
+				<div class="sound-device-hints">
 					<div class="alias-tags">
-						<code style="font-size: 11px; color: #666;">{ "set " + deviceType + " " + dev.VoiceHint }</code>
+						<code class="sound-device-cmd">{ "set " + deviceType + " " + dev.VoiceHint }</code>
 						for _, alias := range dev.Aliases {
 							<span class="alias-tag">
 								{ alias }
@@ -26,7 +26,7 @@ templ deviceList(devices []deviceView, deviceType string) {
 								data-on:blur__debounce.150ms="$editingDevice = ''"/>
 						</div>
 						<div data-show={ "$editingDevice !== '" + jsEscape(dev.UID) + "'" }>
-							<button class="icon-btn" style="opacity: 1; font-size: 16px;" title="Add alias"
+							<button class="icon-btn add-btn" title="Add alias"
 								data-on:click={ "evt.stopPropagation(); $editingDevice = '" + jsEscape(dev.UID) + "'; $newAlias = ''" }>+</button>
 						</div>
 					</div>
@@ -46,52 +46,52 @@ templ Sound(data soundSettingsData) {
 		data-signals={ fmt.Sprintf(`{"volume": %d, "muted": %s}`, data.Volume, strconv.FormatBool(data.Muted)) }>
 		<div class="settings-row">
 			<div class="label">Volume</div>
-			<div style="text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
-				<button style="font-size: 13px; padding: 2px 10px; min-width: 28px;"
+			<div class="value-cell sound-stepper">
+				<button class="segmented-btn"
 					data-on:click={ fmt.Sprintf("$volume = %d; @post('" + branchkit.MethodURL("set-volume") + "')", data.VolumeMinus) }>&#8722;</button>
-				<span style="font-family: 'SF Mono', monospace; min-width: 40px; text-align: center;">{ fmt.Sprintf("%d", data.Volume) }%</span>
-				<button style="font-size: 13px; padding: 2px 10px; min-width: 28px;"
+				<span class="sound-volume-readout">{ fmt.Sprintf("%d", data.Volume) }%</span>
+				<button class="segmented-btn"
 					data-on:click={ fmt.Sprintf("$volume = %d; @post('" + branchkit.MethodURL("set-volume") + "')", data.VolumePlus) }>+</button>
 			</div>
 		</div>
 		<div class="settings-row">
 			<div class="label">Mute</div>
-			<div style="text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+			<div class="value-cell sound-toggle">
 				if data.Muted {
-					<button style="font-size: 13px; padding: 2px 10px; min-width: 40px; font-weight: bold;"
+					<button class="segmented-btn is-active"
 						data-on:click={ "$muted = true; " + branchkit.MethodPost("set-mute", "") }>On</button>
-					<button style="font-size: 13px; padding: 2px 10px; min-width: 40px;"
+					<button class="segmented-btn"
 						data-on:click={ "$muted = false; " + branchkit.MethodPost("set-mute", "") }>Off</button>
 				} else {
-					<button style="font-size: 13px; padding: 2px 10px; min-width: 40px;"
+					<button class="segmented-btn"
 						data-on:click={ "$muted = true; " + branchkit.MethodPost("set-mute", "") }>On</button>
-					<button style="font-size: 13px; padding: 2px 10px; min-width: 40px; font-weight: bold;"
+					<button class="segmented-btn is-active"
 						data-on:click={ "$muted = false; " + branchkit.MethodPost("set-mute", "") }>Off</button>
 				}
 			</div>
 		</div>
 	</bk-table>
 	if len(data.Outputs) > 0 {
-		<bk-table columns="2fr 100px" style="margin-top: 16px;">
+		<bk-table columns="2fr 100px" class="sound-table">
 			<div class="table-header">
 				<div>Output Devices</div>
-				<div style="text-align: right;">Status</div>
+				<div class="align-right">Status</div>
 			</div>
 			@deviceList(data.Outputs, "output")
 		</bk-table>
 	}
 	if len(data.Inputs) > 0 {
-		<bk-table columns="2fr 100px" style="margin-top: 16px;">
+		<bk-table columns="2fr 100px" class="sound-table">
 			<div class="table-header">
 				<div>Input Devices</div>
-				<div style="text-align: right;">Status</div>
+				<div class="align-right">Status</div>
 			</div>
 			@deviceList(data.Inputs, "input")
 		</bk-table>
 	}
-	<div style="margin-top: 24px; padding: 12px 16px; background: var(--scrim-1); border-radius: 8px; font-size: 12px; color: #888;">
-			<div style="margin-bottom: 6px; font-weight: 600; color: #aaa;">Voice Commands</div>
-			<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px;">
+	<div class="sound-hints">
+			<div class="sound-hints-title">Voice Commands</div>
+			<div class="sound-hints-grid">
 				<span><code>volume up</code> / <code>volume down</code></span>
 				<span><code>mute</code> / <code>unmute</code></span>
 				<span><code>set output &lt;name&gt;</code></span>

@@ -43,6 +43,55 @@
     color: var(--text-secondary);
 }
 
-/* The "+" that opens the alias or trait editor. Larger than the icon buttons
-   around it because it is a target rather than a glyph. */
-.apps-add-btn { font-size: 16px; }
+/* The "+" that opens an alias, trait or device-alias editor. Larger than the
+   icon buttons around it because it is a target rather than a glyph. Named for
+   the job rather than the tab, since the sound tab wants the same button. */
+.add-btn { font-size: 16px; }
+
+/* --- Sound --------------------------------------------------------------- */
+
+.sound-device-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.sound-device-hints { margin-top: 4px; }
+/* What to say to select this device. */
+.sound-device-cmd {
+    font-size: 11px;
+    color: #666;
+}
+
+/* Two segmented controls with different button widths: a bare +/- stepper and
+   an On/Off pair. Both use .segmented-btn and set the width on the cell. */
+.sound-stepper { --segmented-min: 28px; }
+.sound-toggle { --segmented-min: 40px; }
+/* The number between the stepper's buttons. Fixed gutter and monospace so it
+   does not shuffle the buttons as the value changes width. */
+.sound-volume-readout {
+    font-family: 'SF Mono', monospace;
+    min-width: 40px;
+    text-align: center;
+}
+
+.sound-table { margin-top: 16px; }
+
+/* The phrase list under the tables. */
+.sound-hints {
+    margin-top: 24px;
+    padding: 12px 16px;
+    background: var(--scrim-1);
+    border-radius: 8px;
+    font-size: 12px;
+    color: #888;
+}
+.sound-hints-title {
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #aaa;
+}
+.sound-hints-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 24px;
+}
