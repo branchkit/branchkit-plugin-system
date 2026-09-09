@@ -8,7 +8,7 @@
 .devices-empty {
     padding: var(--size-1) var(--size--1);
     text-align: center;
-    color: var(--text-dim);
+    color: var(--_ink-dim);
 }
 
 /* Vendor:product under the device name — an identifier, secondary to the name
@@ -16,7 +16,7 @@
 .device-ids {
     margin-top: var(--size--7);
     font-size: var(--font-size--2);
-    color: var(--color-muted);
+    color: var(--_ink-dim);
 }
 
 /* "Claimed", trailing the vendor:product it applies to. */
@@ -27,7 +27,7 @@
 .device-inputs {
     text-align: right;
     font-size: var(--font-size--2);
-    color: var(--text-secondary);
+    color: var(--_ink-dim);
 }
 
 /* --- Apps ---------------------------------------------------------------- */
@@ -40,7 +40,7 @@
 .apps-intro {
     padding: 0 0 var(--size--4);
     font-size: var(--font-size--2);
-    color: var(--text-secondary);
+    color: var(--_ink-dim);
 }
 
 /* The "+" that opens an alias, trait or device-alias editor. Larger than the
@@ -59,7 +59,7 @@
 /* What to say to select this device. */
 .sound-device-cmd {
     font-size: var(--font-size--2);
-    color: var(--color-muted);
+    color: var(--_ink-dim);
 }
 
 /* Two segmented controls with different button widths: a bare +/- stepper and
@@ -83,12 +83,12 @@
     background: var(--scrim-1);
     border-radius: var(--border-radius-2);
     font-size: var(--font-size--2);
-    color: var(--text-dim);
+    color: var(--_ink-dim);
 }
 .sound-hints-title {
     margin-bottom: var(--size--4);
     font-weight: 600;
-    color: var(--text-secondary);
+    color: var(--_ink-dim);
 }
 .sound-hints-grid {
     display: grid;
