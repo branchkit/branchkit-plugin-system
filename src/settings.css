@@ -6,7 +6,7 @@
 /* Nothing plugged in. Padded and centred so the message sits in the table's
    frame rather than hugging its top-left corner. */
 .devices-empty {
-    padding: var(--size-1) var(--size--1);
+    padding: var(--size-3) var(--size-0);
     text-align: center;
     color: var(--_ink-dim);
 }
@@ -14,13 +14,13 @@
 /* Vendor:product under the device name — an identifier, secondary to the name
    it qualifies. */
 .device-ids {
-    margin-top: var(--size--7);
+    margin-top: var(--size--2);
     font-size: var(--font-size--2);
     color: var(--_ink-dim);
 }
 
 /* "Claimed", trailing the vendor:product it applies to. */
-.device-claimed { margin-left: var(--size--4); }
+.device-claimed { margin-left: var(--size--2); }
 
 /* The Inputs column: button and axis counts, right-aligned to meet its
    header. */
@@ -33,12 +33,12 @@
 /* --- Apps ---------------------------------------------------------------- */
 
 /* The single preference row above the apps table. */
-.apps-prefs { margin-bottom: var(--size--1); }
+.apps-prefs { margin-bottom: var(--size-0); }
 
 /* What aliases and traits are, and why the difference matters — read once,
    then ignored, so it sits below the body size. */
 .apps-intro {
-    padding: 0 0 var(--size--4);
+    padding: 0 0 var(--size--2);
     font-size: var(--font-size--2);
     color: var(--_ink-dim);
 }
@@ -53,9 +53,9 @@
 .sound-device-name-row {
     display: flex;
     align-items: center;
-    gap: var(--size--4);
+    gap: var(--size--2);
 }
-.sound-device-hints { margin-top: var(--size--6); }
+.sound-device-hints { margin-top: var(--size--2); }
 /* What to say to select this device. */
 .sound-device-cmd {
     font-size: var(--font-size--2);
@@ -74,26 +74,26 @@
     text-align: center;
 }
 
-.sound-table { margin-top: var(--size--1); }
+.sound-table { margin-top: var(--size-0); }
 
 /* The phrase list under the tables. */
 .sound-hints {
-    margin-top: var(--size-1);
-    padding: var(--size--2) var(--size--1);
+    margin-top: var(--size-3);
+    padding: var(--size--2) var(--size-0);
     background: var(--neutral-2);
     --_ink: var(--neutral-2-on);
     --_ink-dim: var(--neutral-2-dim);
-    border-radius: var(--border-radius-2);
+    border-radius: var(--border-radius-3);
     font-size: var(--font-size--2);
     color: var(--_ink-dim);
 }
 .sound-hints-title {
-    margin-bottom: var(--size--4);
+    margin-bottom: var(--size--2);
     font-weight: 600;
     color: var(--_ink-dim);
 }
 .sound-hints-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--size--6) var(--size-1);
+    gap: var(--size--2) var(--size-3);
 }
