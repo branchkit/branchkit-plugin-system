@@ -80,7 +80,9 @@
 .sound-hints {
     margin-top: var(--size-1);
     padding: var(--size--2) var(--size--1);
-    background: var(--scrim-1);
+    background: var(--neutral-2);
+    --_ink: var(--neutral-2-on);
+    --_ink-dim: var(--neutral-2-dim);
     border-radius: var(--border-radius-2);
     font-size: var(--font-size--2);
     color: var(--_ink-dim);
