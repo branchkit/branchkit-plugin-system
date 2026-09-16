@@ -73,7 +73,7 @@ type appToggleRequest struct {
 
 func (h *Host) handleAppToggle(req *appToggleRequest) (any, error) {
 	h.toggleApp(h.plugin, req.BundleID)
-	return map[string]string{"result": "ok"}, nil
+	return nil, nil
 }
 
 type appAliasRequest struct {
@@ -83,12 +83,12 @@ type appAliasRequest struct {
 
 func (h *Host) handleAppAliasAdd(req *appAliasRequest) (any, error) {
 	h.addAppAlias(h.plugin, req.BundleID, req.Alias)
-	return map[string]string{"result": "ok"}, nil
+	return nil, nil
 }
 
 func (h *Host) handleAppAliasRemove(req *appAliasRequest) (any, error) {
 	h.removeAppAlias(h.plugin, req.BundleID, req.Alias)
-	return map[string]string{"result": "ok"}, nil
+	return nil, nil
 }
 
 // appTraitRequest carries one trait edit from the Apps settings tab.
@@ -105,14 +105,14 @@ func (h *Host) handleAppTraitAdd(req *appTraitRequest) (any, error) {
 	if err := addAppTrait(h.plugin, req.BundleID, req.Trait); err != nil {
 		return nil, err
 	}
-	return map[string]string{"result": "ok"}, nil
+	return nil, nil
 }
 
 func (h *Host) handleAppTraitRemove(req *appTraitRequest) (any, error) {
 	if err := removeAppTrait(h.plugin, req.BundleID, req.Trait); err != nil {
 		return nil, err
 	}
-	return map[string]string{"result": "ok"}, nil
+	return nil, nil
 }
 
 type setMouseFollowsFocusRequest struct {
@@ -123,7 +123,7 @@ func (h *Host) handleSetMouseFollowsFocus(req *setMouseFollowsFocusRequest) (any
 	if err := h.setUserConfigField("mouse_follows_focus", req.Enabled); err != nil {
 		branchkit.Logf("system", "config relay error: %v", err)
 	}
-	return map[string]string{"result": "ok"}, nil
+	return nil, nil
 }
 
 // --- Sound settings hook handlers ---
@@ -136,7 +136,7 @@ func (h *Host) handleSetVolume(req *setVolumeRequest) (any, error) {
 	if err := h.setVolume(float64(req.Volume) / 100.0); err != nil {
 		branchkit.Logf("system", "set-volume error: %v", err)
 	}
-	return map[string]string{"result": "ok"}, nil
+	return nil, nil
 }
 
 type setMuteRequest struct {
@@ -153,7 +153,7 @@ func (h *Host) handleSetMute(req *setMuteRequest) (any, error) {
 	if err != nil {
 		branchkit.Logf("system", "set-mute error: %v", err)
 	}
-	return map[string]string{"result": "ok"}, nil
+	return nil, nil
 }
 
 type deviceAliasRequest struct {
@@ -163,12 +163,12 @@ type deviceAliasRequest struct {
 
 func (h *Host) handleDeviceAliasAdd(req *deviceAliasRequest) (any, error) {
 	h.addDeviceAlias(req.UID, req.Alias)
-	return map[string]string{"result": "ok"}, nil
+	return nil, nil
 }
 
 func (h *Host) handleDeviceAliasRemove(req *deviceAliasRequest) (any, error) {
 	h.removeDeviceAlias(req.UID, req.Alias)
-	return map[string]string{"result": "ok"}, nil
+	return nil, nil
 }
 
 type setDeviceRequest struct {
@@ -180,7 +180,7 @@ func (h *Host) handleSetDevice(req *setDeviceRequest) (any, error) {
 	if err := setAudioDeviceViaRPC(h.plugin, req.UID, req.DeviceType); err != nil {
 		branchkit.Logf("system", "set-device error: %v", err)
 	}
-	return map[string]string{"result": "ok"}, nil
+	return nil, nil
 }
 
 // --- Startup ---
