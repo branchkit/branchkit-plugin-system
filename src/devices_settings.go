@@ -24,7 +24,6 @@ func renderDevicesSettings(p *branchkit.Plugin) (string, error) {
 		return branchkit.RenderComponent(Devices(nil))
 	}
 
-
 	var views []hidDeviceView
 	for _, e := range entries {
 		views = append(views, hidDeviceView{
@@ -44,4 +43,3 @@ func renderDevicesSettings(p *branchkit.Plugin) (string, error) {
 
 	return branchkit.RenderComponent(Devices(views))
 }
-

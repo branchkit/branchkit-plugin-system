@@ -176,4 +176,3 @@ func renderSoundSettings(p *branchkit.Plugin) (string, error) {
 
 	return branchkit.RenderComponent(Sound(data))
 }
-
