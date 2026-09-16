@@ -8,35 +8,8 @@ import (
 	"github.com/branchkit/plugin-sdk-go"
 )
 
-
 //go:embed settings.css
 var systemCSS string
-
-// jsEscape escapes a string for safe embedding in JavaScript string literals
-// (single-quoted or double-quoted), for use in templ files. Handles
-// backslashes, quotes, and newlines.
-func jsEscape(s string) string {
-	var b strings.Builder
-	for _, c := range s {
-		switch c {
-		case '\\':
-			b.WriteString("\\\\")
-		case '\'':
-			b.WriteString("\\'")
-		case '"':
-			b.WriteString("\\\"")
-		case '\n':
-			b.WriteString("\\n")
-		case '\r':
-			b.WriteString("\\r")
-		default:
-			b.WriteRune(c)
-		}
-	}
-	return b.String()
-}
-
-
 
 type appRowView struct {
 	Name       string
@@ -93,7 +66,6 @@ func renderAppsTab(req *branchkit.RenderSettingsRequest) (string, error) {
 	conf := LoadSystemConfig()
 	return branchkit.RenderComponent(Apps(rows, conf.MouseFollowsFocus, traits))
 }
-
 
 // --- App settings action handlers ---
 

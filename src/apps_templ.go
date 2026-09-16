@@ -9,6 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "github.com/branchkit/plugin-sdk-go"
+import "github.com/branchkit/plugin-sdk-go/ui"
 
 func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -43,7 +44,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(branchkit.MethodPost("set_mouse_follows_focus", "{enabled: false}"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 13, Col: 90}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 14, Col: 90}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -61,7 +62,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(branchkit.MethodPost("set_mouse_follows_focus", "{enabled: true}"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 18, Col: 89}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 19, Col: 89}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -84,7 +85,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(app.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 39, Col: 33}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 40, Col: 33}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -102,7 +103,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(alias)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 44, Col: 15}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 45, Col: 15}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -113,9 +114,9 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var6 string
-				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(branchkit.MethodPost("app_alias_remove", "{bundle_id: '"+jsEscape(app.BundleID)+"', newAlias: '"+jsEscape(alias)+"'}"))
+				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(branchkit.MethodPost("app_alias_remove", ui.Args("bundle_id", app.BundleID, "newAlias", alias)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 45, Col: 150}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 46, Col: 127}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -131,9 +132,9 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
-			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs("$editingApp === '" + jsEscape(app.BundleID) + "'")
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs("$editingApp === " + ui.JS(app.BundleID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 48, Col: 73}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 49, Col: 63}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -144,9 +145,9 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
-			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs("evt.key === 'Enter' && (" + branchkit.MethodPost("app_alias_add", "{bundle_id: '"+jsEscape(app.BundleID)+"', newAlias: $newAlias}") + ", $editingApp = ''); evt.key === 'Escape' && ($editingApp = '')")
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs("evt.key === 'Enter' && (" + branchkit.MethodPost("app_alias_add", ui.Args("bundle_id", app.BundleID, "newAlias", ui.Expr("$newAlias"))) + ", $editingApp = ''); evt.key === 'Escape' && ($editingApp = '')")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 50, Col: 226}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 51, Col: 230}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -157,9 +158,9 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var9 string
-			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs("$editingApp !== '" + jsEscape(app.BundleID) + "'")
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs("$editingApp !== " + ui.JS(app.BundleID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 53, Col: 73}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 54, Col: 63}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -170,9 +171,9 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var10 string
-			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs("$editingApp = '" + jsEscape(app.BundleID) + "'; $newAlias = ''")
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs("$editingApp = " + ui.JS(app.BundleID) + "; $newAlias = ''")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 55, Col: 88}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 56, Col: 83}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -190,7 +191,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				var templ_7745c5c3_Var11 string
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs("This app is a '" + trait + "'. Removing it changes what every plugin believes about this app, not just dictation.")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 62, Col: 154}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 63, Col: 154}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
@@ -203,7 +204,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(trait)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 63, Col: 15}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 64, Col: 15}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
@@ -214,9 +215,9 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var13 string
-				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(branchkit.MethodPost("app_trait_remove", "{bundle_id: '"+jsEscape(app.BundleID)+"', trait: '"+jsEscape(trait)+"'}"))
+				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(branchkit.MethodPost("app_trait_remove", ui.Args("bundle_id", app.BundleID, "trait", trait)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 64, Col: 147}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 65, Col: 124}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {
@@ -232,9 +233,9 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var14 string
-			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs("$traitPick === '" + jsEscape(app.BundleID) + "'")
+			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs("$traitPick === " + ui.JS(app.BundleID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 71, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 72, Col: 62}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
@@ -245,9 +246,9 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var15 string
-			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs("evt.target.value === '__new__' ? ($traitNew = '" + jsEscape(app.BundleID) + "', $traitPick = '', $newTrait = '') : (evt.target.value && (" + traitAddPost(app.BundleID, "evt.target.value") + "), $traitPick = '')")
+			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs("evt.target.value === '__new__' ? ($traitNew = " + ui.JS(app.BundleID) + ", $traitPick = '', $newTrait = '') : (evt.target.value && (" + traitAddPost(app.BundleID, "evt.target.value") + "), $traitPick = '')")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 73, Col: 237}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 74, Col: 232}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -265,7 +266,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				var templ_7745c5c3_Var16 string
 				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 76, Col: 29}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 77, Col: 29}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 				if templ_7745c5c3_Err != nil {
@@ -278,7 +279,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				var templ_7745c5c3_Var17 string
 				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 76, Col: 38}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 77, Col: 38}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 				if templ_7745c5c3_Err != nil {
@@ -291,7 +292,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				var templ_7745c5c3_Var18 string
 				templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(itoa(traits.Counts[name]))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 76, Col: 69}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 77, Col: 69}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 				if templ_7745c5c3_Err != nil {
@@ -307,9 +308,9 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var19 string
-			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs("$traitNew === '" + jsEscape(app.BundleID) + "'")
+			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs("$traitNew === " + ui.JS(app.BundleID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 82, Col: 71}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 83, Col: 61}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -322,7 +323,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 			var templ_7745c5c3_Var20 string
 			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs("evt.key === 'Enter' && (" + traitAddPost(app.BundleID, "$newTrait") + ", $traitNew = ''); evt.key === 'Escape' && ($traitNew = '')")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 84, Col: 158}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 85, Col: 158}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {
@@ -333,9 +334,9 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var21 string
-			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs("$traitPick !== '" + jsEscape(app.BundleID) + "' && $traitNew !== '" + jsEscape(app.BundleID) + "'")
+			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs("$traitPick !== " + ui.JS(app.BundleID) + " && $traitNew !== " + ui.JS(app.BundleID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 88, Col: 122}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 89, Col: 107}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 			if templ_7745c5c3_Err != nil {
@@ -346,9 +347,9 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var22 string
-			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs("$traitPick = '" + jsEscape(app.BundleID) + "'")
+			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs("$traitPick = " + ui.JS(app.BundleID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 90, Col: 71}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 91, Col: 61}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
@@ -381,9 +382,9 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var25 string
-			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(branchkit.MethodPost("app_toggle", "{bundle_id: '"+jsEscape(app.BundleID)+"'}"))
+			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(branchkit.MethodPost("app_toggle", ui.Args("bundle_id", app.BundleID)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 96, Col: 101}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 97, Col: 92}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {
@@ -396,7 +397,7 @@ func Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) templ.
 			var templ_7745c5c3_Var26 string
 			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(app.Status)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 97, Col: 18}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `apps.templ`, Line: 98, Col: 18}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 			if templ_7745c5c3_Err != nil {

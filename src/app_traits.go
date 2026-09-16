@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	branchkit "github.com/branchkit/plugin-sdk-go"
+	"github.com/branchkit/plugin-sdk-go/ui"
 )
 
 // The trait EDITOR — reading traits back with the user's edits applied, and
@@ -83,14 +84,11 @@ func loadTraitCatalog(p *branchkit.Plugin) traitCatalog {
 	return cat
 }
 
-// traitAddPost builds the Datastar @post for adding a trait, where the trait
-// name is a JS EXPRESSION rather than a literal — `evt.target.value` from the
-// select, or `$newTrait` from the text input. MethodPost cannot express that
-// (it takes a payload string), so the two call sites share this instead of
-// hand-writing the same @post twice.
+// traitAddPost builds the @post for adding a trait, where the trait name is
+// a JS EXPRESSION rather than a literal — `evt.target.value` from the select,
+// or `$newTrait` from the text input — so the two call sites share it.
 func traitAddPost(bundleID, traitExpr string) string {
-	return fmt.Sprintf("@post('%s', {payload: {bundle_id: '%s', trait: %s}})",
-		branchkit.MethodURL("app_trait_add"), jsEscape(bundleID), traitExpr)
+	return branchkit.MethodPost("app_trait_add", ui.Args("bundle_id", bundleID, "trait", ui.Expr(traitExpr)))
 }
 
 // itoa keeps strconv out of the template, which cannot import.

@@ -1,6 +1,7 @@
 package main
 
 import "github.com/branchkit/plugin-sdk-go"
+import "github.com/branchkit/plugin-sdk-go/ui"
 import "fmt"
 import "strconv"
 
@@ -9,7 +10,7 @@ templ deviceList(devices []deviceView, deviceType string) {
 		<div class="settings-row">
 			<div class="label">
 				<div class="sound-device-name-row">
-					<span class="clickable" data-on:click={ "@post('" + branchkit.MethodURL("set-device") + "', {payload: {uid: '" + jsEscape(dev.UID) + "', device_type: '" + deviceType + "'}})" }>{ dev.Name }</span>
+					<span class="clickable" data-on:click={ branchkit.MethodPost("set-device", ui.Args("uid", dev.UID, "device_type", deviceType)) }>{ dev.Name }</span>
 				</div>
 				<div class="sound-device-hints">
 					<div class="alias-tags">
@@ -17,17 +18,17 @@ templ deviceList(devices []deviceView, deviceType string) {
 						for _, alias := range dev.Aliases {
 							<span class="alias-tag">
 								{ alias }
-								<button data-on:click={ "@post('" + branchkit.MethodURL("device-alias-remove") + "', {payload: {uid: '" + jsEscape(dev.UID) + "', newAlias: '" + jsEscape(alias) + "'}})" }>&#215;</button>
+								<button data-on:click={ branchkit.MethodPost("device-alias-remove", ui.Args("uid", dev.UID, "newAlias", alias)) }>&#215;</button>
 							</span>
 						}
-						<div data-show={ "$editingDevice === '" + jsEscape(dev.UID) + "'" }>
+						<div data-show={ "$editingDevice === " + ui.JS(dev.UID) }>
 							<input class="add-alias-input" type="text" data-bind="newAlias" placeholder="e.g. headphones"
-								data-on:keydown={ "evt.key === 'Enter' && (@post('" + branchkit.MethodURL("device-alias-add") + "', {payload: {uid: '" + jsEscape(dev.UID) + "', newAlias: $newAlias}}), $editingDevice = ''); evt.key === 'Escape' && ($editingDevice = '')" }
+								data-on:keydown={ "evt.key === 'Enter' && (" + branchkit.MethodPost("device-alias-add", ui.Args("uid", dev.UID, "newAlias", ui.Expr("$newAlias"))) + ", $editingDevice = ''); evt.key === 'Escape' && ($editingDevice = '')" }
 								data-on:blur__debounce.150ms="$editingDevice = ''"/>
 						</div>
-						<div data-show={ "$editingDevice !== '" + jsEscape(dev.UID) + "'" }>
+						<div data-show={ "$editingDevice !== " + ui.JS(dev.UID) }>
 							<button class="icon-btn add-btn" title="Add alias"
-								data-on:click={ "evt.stopPropagation(); $editingDevice = '" + jsEscape(dev.UID) + "'; $newAlias = ''" }>+</button>
+								data-on:click={ "evt.stopPropagation(); $editingDevice = " + ui.JS(dev.UID) + "; $newAlias = ''" }>+</button>
 						</div>
 					</div>
 				</div>

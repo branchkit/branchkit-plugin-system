@@ -1,6 +1,7 @@
 package main
 
 import "github.com/branchkit/plugin-sdk-go"
+import "github.com/branchkit/plugin-sdk-go/ui"
 
 templ Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) {
 	<div>
@@ -42,17 +43,17 @@ templ Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) {
 						for _, alias := range app.Aliases {
 							<span class="alias-tag">
 								{ alias }
-								<button data-on:click={ branchkit.MethodPost("app_alias_remove", "{bundle_id: '"+jsEscape(app.BundleID)+"', newAlias: '"+jsEscape(alias)+"'}") }>&#215;</button>
+								<button data-on:click={ branchkit.MethodPost("app_alias_remove", ui.Args("bundle_id", app.BundleID, "newAlias", alias)) }>&#215;</button>
 							</span>
 						}
-						<div data-show={ "$editingApp === '" + jsEscape(app.BundleID) + "'" }>
+						<div data-show={ "$editingApp === " + ui.JS(app.BundleID) }>
 							<input class="add-alias-input" type="text" data-bind="newAlias" placeholder="Add alias…"
-								data-on:keydown={ "evt.key === 'Enter' && (" + branchkit.MethodPost("app_alias_add", "{bundle_id: '"+jsEscape(app.BundleID)+"', newAlias: $newAlias}") + ", $editingApp = ''); evt.key === 'Escape' && ($editingApp = '')" }
+								data-on:keydown={ "evt.key === 'Enter' && (" + branchkit.MethodPost("app_alias_add", ui.Args("bundle_id", app.BundleID, "newAlias", ui.Expr("$newAlias"))) + ", $editingApp = ''); evt.key === 'Escape' && ($editingApp = '')" }
 								data-on:blur__debounce.200ms="$editingApp = ''"/>
 						</div>
-						<div data-show={ "$editingApp !== '" + jsEscape(app.BundleID) + "'" }>
+						<div data-show={ "$editingApp !== " + ui.JS(app.BundleID) }>
 							<button class="icon-btn add-btn" title="Add alias"
-								data-on:click={ "$editingApp = '" + jsEscape(app.BundleID) + "'; $newAlias = ''" }>+</button>
+								data-on:click={ "$editingApp = " + ui.JS(app.BundleID) + "; $newAlias = ''" }>+</button>
 						</div>
 					</div>
 				</div>
@@ -61,16 +62,16 @@ templ Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) {
 						for _, trait := range app.Traits {
 							<span class="alias-tag" title={ "This app is a '" + trait + "'. Removing it changes what every plugin believes about this app, not just dictation." }>
 								{ trait }
-								<button data-on:click={ branchkit.MethodPost("app_trait_remove", "{bundle_id: '"+jsEscape(app.BundleID)+"', trait: '"+jsEscape(trait)+"'}") }>&#215;</button>
+								<button data-on:click={ branchkit.MethodPost("app_trait_remove", ui.Args("bundle_id", app.BundleID, "trait", trait)) }>&#215;</button>
 							</span>
 						}
 						// State 2 — pick from what exists. A select, not a text box:
 						// trait names are SHARED between apps, so a typo does not fail
 						// loudly the way a mistyped alias does. It points at nothing,
 						// silently, forever.
-						<div data-show={ "$traitPick === '" + jsEscape(app.BundleID) + "'" }>
+						<div data-show={ "$traitPick === " + ui.JS(app.BundleID) }>
 							<select class="add-alias-input"
-								data-on:change={ "evt.target.value === '__new__' ? ($traitNew = '" + jsEscape(app.BundleID) + "', $traitPick = '', $newTrait = '') : (evt.target.value && (" + traitAddPost(app.BundleID, "evt.target.value") + "), $traitPick = '')" }>
+								data-on:change={ "evt.target.value === '__new__' ? ($traitNew = " + ui.JS(app.BundleID) + ", $traitPick = '', $newTrait = '') : (evt.target.value && (" + traitAddPost(app.BundleID, "evt.target.value") + "), $traitPick = '')" }>
 								<option value="">Add trait…</option>
 								for _, name := range traits.Names {
 									<option value={ name }>{ name } ({ itoa(traits.Counts[name]) })</option>
@@ -79,21 +80,21 @@ templ Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) {
 							</select>
 						</div>
 						// State 3 — inventing a name is one step further than picking one.
-						<div data-show={ "$traitNew === '" + jsEscape(app.BundleID) + "'" }>
+						<div data-show={ "$traitNew === " + ui.JS(app.BundleID) }>
 							<input class="add-alias-input" type="text" data-bind="newTrait" placeholder="New trait…"
 								data-on:keydown={ "evt.key === 'Enter' && (" + traitAddPost(app.BundleID, "$newTrait") + ", $traitNew = ''); evt.key === 'Escape' && ($traitNew = '')" }
 								data-on:blur__debounce.200ms="$traitNew = ''"/>
 						</div>
 						// State 1 — resting.
-						<div data-show={ "$traitPick !== '" + jsEscape(app.BundleID) + "' && $traitNew !== '" + jsEscape(app.BundleID) + "'" }>
+						<div data-show={ "$traitPick !== " + ui.JS(app.BundleID) + " && $traitNew !== " + ui.JS(app.BundleID) }>
 							<button class="icon-btn add-btn" title="Add a trait"
-								data-on:click={ "$traitPick = '" + jsEscape(app.BundleID) + "'" }>+</button>
+								data-on:click={ "$traitPick = " + ui.JS(app.BundleID) }>+</button>
 						</div>
 					</div>
 				</div>
 				<div class="row-actions">
 					<span class={ "badge clickable " + app.BadgeClass }
-						data-on:click={ branchkit.MethodPost("app_toggle", "{bundle_id: '"+jsEscape(app.BundleID)+"'}") }>
+						data-on:click={ branchkit.MethodPost("app_toggle", ui.Args("bundle_id", app.BundleID)) }>
 						{ app.Status }
 					</span>
 				</div>

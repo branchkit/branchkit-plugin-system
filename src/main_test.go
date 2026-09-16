@@ -7,36 +7,6 @@ import (
 	"github.com/branchkit/plugin-sdk-go"
 )
 
-// --- jsEscape ---
-
-func TestJsEscape_Backslash(t *testing.T) {
-	got := jsEscape(`a\b`)
-	if got != `a\\b` {
-		t.Errorf("expected a\\\\b, got %q", got)
-	}
-}
-
-func TestJsEscape_SingleQuote(t *testing.T) {
-	got := jsEscape("it's")
-	if got != `it\'s` {
-		t.Errorf("expected it\\'s, got %q", got)
-	}
-}
-
-func TestJsEscape_Both(t *testing.T) {
-	got := jsEscape(`it's a\path`)
-	want := `it\'s a\\path`
-	if got != want {
-		t.Errorf("expected %q, got %q", want, got)
-	}
-}
-
-func TestJsEscape_Empty(t *testing.T) {
-	if got := jsEscape(""); got != "" {
-		t.Errorf("expected empty, got %q", got)
-	}
-}
-
 // --- voiceHint ---
 
 func TestVoiceHint_MacBookAir(t *testing.T) {
