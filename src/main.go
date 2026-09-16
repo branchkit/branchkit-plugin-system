@@ -1,15 +1,13 @@
 package main
 
 import (
-	"bytes"
-	"context"
 	_ "embed"
 	"encoding/json"
 	"strings"
 
-	"github.com/a-h/templ"
 	"github.com/branchkit/plugin-sdk-go"
 )
+
 
 //go:embed settings.css
 var systemCSS string
@@ -38,15 +36,7 @@ func jsEscape(s string) string {
 	return b.String()
 }
 
-// renderTempl renders a templ component to an HTML string.
-func renderTempl(c templ.Component) string {
-	var buf bytes.Buffer
-	if err := c.Render(context.Background(), &buf); err != nil {
-		branchkit.Logf("system", "templ render error: %v", err)
-		return ""
-	}
-	return buf.String()
-}
+
 
 type appRowView struct {
 	Name       string
@@ -61,22 +51,17 @@ type appRowView struct {
 
 var plugin *branchkit.Plugin
 
-func handleRenderSettings(req *branchkit.RenderSettingsRequest) (any, error) {
-	if req.TabKey == "sound" {
-		html := renderSoundSettings(plugin)
-		return branchkit.RenderSettingsResponse{HTML: html, CSS: &systemCSS}, nil
-	}
+func renderSoundTab(_ *branchkit.RenderSettingsRequest) (string, error) {
+	return renderSoundSettings(plugin)
+}
 
-	if req.TabKey == "devices" {
-		html := renderDevicesSettings(plugin)
-		return branchkit.RenderSettingsResponse{HTML: html, CSS: &systemCSS}, nil
-	}
+func renderDevicesTab(_ *branchkit.RenderSettingsRequest) (string, error) {
+	return renderDevicesSettings(plugin)
+}
 
-	if req.TabKey != "apps" {
-		return branchkit.RenderSettingsResponse{}, nil
-	}
-
+func renderAppsTab(req *branchkit.RenderSettingsRequest) (string, error) {
 	allApps := getApps()
+
 	traits := loadTraitCatalog(plugin)
 	search := strings.ToLower(req.Search)
 	var rows []appRowView
@@ -102,21 +87,13 @@ func handleRenderSettings(req *branchkit.RenderSettingsRequest) (any, error) {
 		})
 	}
 
-	// Read through, not just the cache: this render may be the one fired
-	// right after the mouse-follows-focus toggle's own write.
+	// The SDK's render hook has already refreshed the config mirror, so
+	// this read is current even when the render is the one fired right
+	// after the mouse-follows-focus toggle's own write.
 	conf := LoadSystemConfig()
-	if configMirror != nil {
-		if fresh, err := configMirror.Load(); err == nil {
-			conf = fresh
-		} else {
-			branchkit.Logf("system", "config read-through failed: %v", err)
-		}
-	}
-	return branchkit.RenderSettingsResponse{
-		HTML: renderTempl(Apps(rows, conf.MouseFollowsFocus, traits)),
-		CSS:  &systemCSS,
-	}, nil
+	return branchkit.RenderComponent(Apps(rows, conf.MouseFollowsFocus, traits))
 }
+
 
 // --- App settings action handlers ---
 
@@ -256,7 +233,11 @@ func main() {
 	HandleNewWindow(plugin, handleNewWindow)
 	HandleOpen(plugin, handleOpen)
 
-	branchkit.HandleTyped(plugin, "render_settings", handleRenderSettings)
+	plugin.SettingsCSS(systemCSS)
+	plugin.SettingsTab("apps", renderAppsTab)
+	plugin.SettingsTab("sound", renderSoundTab)
+	plugin.SettingsTab("devices", renderDevicesTab)
+
 	branchkit.HandleTyped(plugin, "set_volume", handleSetVolume)
 	branchkit.HandleTyped(plugin, "set_mute", handleSetMute)
 	branchkit.HandleTyped(plugin, "set_device", handleSetDevice)

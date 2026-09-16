@@ -105,25 +105,24 @@ func setTestApps(entries []AppEntry) {
 	appsMu.Unlock()
 }
 
-// --- handleRenderSettings (apps tab) ---
+// --- renderAppsTab ---
 
 func TestHandleRenderSettings_AppsTab(t *testing.T) {
 	setTestApps([]AppEntry{
 		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true, Aliases: []string{"browser"}},
 	})
 	req := &branchkit.RenderSettingsRequest{TabKey: "apps"}
-	result, err := handleRenderSettings(req)
+	html, err := renderAppsTab(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	resp := result.(branchkit.RenderSettingsResponse)
-	if resp.HTML == "" {
+	if html == "" {
 		t.Error("expected non-empty HTML for apps tab")
 	}
-	if !strings.Contains(resp.HTML, "Safari") {
+	if !strings.Contains(html, "Safari") {
 		t.Error("expected app name in rendered HTML")
 	}
-	if !strings.Contains(resp.HTML, "browser") {
+	if !strings.Contains(html, "browser") {
 		t.Error("expected alias in rendered HTML")
 	}
 }
@@ -137,28 +136,15 @@ func TestHandleRenderSettings_AppsSearch(t *testing.T) {
 		TabKey: "apps",
 		Search: "safari",
 	}
-	result, err := handleRenderSettings(req)
+	html, err := renderAppsTab(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	resp := result.(branchkit.RenderSettingsResponse)
-	if !strings.Contains(resp.HTML, "Safari") {
+	if !strings.Contains(html, "Safari") {
 		t.Error("expected Safari in filtered results")
 	}
-	if strings.Contains(resp.HTML, "Finder") {
+	if strings.Contains(html, "Finder") {
 		t.Error("expected Finder to be filtered out by search")
-	}
-}
-
-func TestHandleRenderSettings_UnknownTab(t *testing.T) {
-	req := &branchkit.RenderSettingsRequest{TabKey: "nonexistent"}
-	result, err := handleRenderSettings(req)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	resp := result.(branchkit.RenderSettingsResponse)
-	if resp.HTML != "" {
-		t.Errorf("expected empty HTML for unknown tab, got %q", resp.HTML)
 	}
 }
 
@@ -209,7 +195,7 @@ func TestAppsTempl_RendersNonEmpty(t *testing.T) {
 		Names:    []string{"chat", "terminal"},
 		Loaded:   true,
 	}
-	html := renderTempl(Apps(rows, false, cat))
+	html := mustRender(t, Apps(rows, false, cat))
 	if html == "" {
 		t.Fatal("expected non-empty HTML from Apps templ")
 	}
@@ -250,7 +236,7 @@ func TestAppsTempl_RendersNonEmpty(t *testing.T) {
 }
 
 func TestAppsTempl_EmptyList(t *testing.T) {
-	html := renderTempl(Apps(nil, true, traitCatalog{}))
+	html := mustRender(t, Apps(nil, true, traitCatalog{}))
 	if html == "" {
 		t.Fatal("expected non-empty HTML even with empty list")
 	}
@@ -272,7 +258,7 @@ func TestSoundTempl_RendersNonEmpty(t *testing.T) {
 			{UID: "mic-1", Name: "MacBook Air Microphone", VoiceHint: "microphone", IsDefault: true},
 		},
 	}
-	html := renderTempl(Sound(data))
+	html := mustRender(t, Sound(data))
 	if html == "" {
 		t.Fatal("expected non-empty HTML from Sound templ")
 	}
@@ -294,7 +280,7 @@ func TestSoundTempl_Muted(t *testing.T) {
 		VolumePlus:  57,
 		Muted:       true,
 	}
-	html := renderTempl(Sound(data))
+	html := mustRender(t, Sound(data))
 	if html == "" {
 		t.Fatal("expected non-empty HTML")
 	}
@@ -310,7 +296,7 @@ func TestSoundTempl_NoDevices(t *testing.T) {
 		VolumeMinus: 0,
 		VolumePlus:  7,
 	}
-	html := renderTempl(Sound(data))
+	html := mustRender(t, Sound(data))
 	if html == "" {
 		t.Fatal("expected non-empty HTML even with no devices")
 	}
@@ -320,19 +306,18 @@ func TestSoundTempl_NoDevices(t *testing.T) {
 	}
 }
 
-// --- appRowView construction in handleRenderSettings ---
+// --- appRowView construction in renderAppsTab ---
 
 func TestAppRowView_DisabledStatus(t *testing.T) {
 	setTestApps([]AppEntry{
 		{Name: "Hidden", BundleID: "com.example.hidden", Enabled: false},
 	})
 	req := &branchkit.RenderSettingsRequest{TabKey: "apps"}
-	result, err := handleRenderSettings(req)
+	html, err := renderAppsTab(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	resp := result.(branchkit.RenderSettingsResponse)
-	if !strings.Contains(resp.HTML, "Disabled") {
+	if !strings.Contains(html, "Disabled") {
 		t.Error("expected 'Disabled' status badge for disabled app")
 	}
 }
@@ -346,15 +331,14 @@ func TestHandleRenderSettings_SearchByBundleID(t *testing.T) {
 		TabKey: "apps",
 		Search: "com.apple.Safari",
 	}
-	result, err := handleRenderSettings(req)
+	html, err := renderAppsTab(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	resp := result.(branchkit.RenderSettingsResponse)
-	if !strings.Contains(resp.HTML, "Safari") {
+	if !strings.Contains(html, "Safari") {
 		t.Error("expected Safari matched by bundle ID search")
 	}
-	if strings.Contains(resp.HTML, "Finder") {
+	if strings.Contains(html, "Finder") {
 		t.Error("expected Finder filtered out")
 	}
 }
@@ -369,4 +353,15 @@ func TestHandleLaunch_EmptyBundleIDNoOp(t *testing.T) {
 	if _, err := handleLaunch(LaunchParams{BundleID: ""}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+}
+
+// mustRender is the test-side render: a component that fails to render is
+// a test failure, not an empty string.
+func mustRender(t *testing.T, c branchkit.HTMLComponent) string {
+	t.Helper()
+	html, err := branchkit.RenderComponent(c)
+	if err != nil {
+		t.Fatalf("render: %v", err)
+	}
+	return html
 }

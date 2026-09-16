@@ -117,7 +117,7 @@ func voiceHint(name string) string {
 	return lower
 }
 
-func renderSoundSettings(p *branchkit.Plugin) string {
+func renderSoundSettings(p *branchkit.Plugin) (string, error) {
 	vol, muted, err := getVolume()
 	if err != nil {
 		branchkit.Logf("system", "getVolume error: %v", err)
@@ -174,5 +174,6 @@ func renderSoundSettings(p *branchkit.Plugin) string {
 		Inputs:      inputs,
 	}
 
-	return renderTempl(Sound(data))
+	return branchkit.RenderComponent(Sound(data))
 }
+

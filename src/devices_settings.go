@@ -17,12 +17,13 @@ type hidDeviceView struct {
 	Seized    bool
 }
 
-func renderDevicesSettings(p *branchkit.Plugin) string {
+func renderDevicesSettings(p *branchkit.Plugin) (string, error) {
 	entries, err := p.NativeHidDevices()
 	if err != nil {
 		branchkit.Logf("system", "hid-devices error: %v", err)
-		return renderTempl(Devices(nil))
+		return branchkit.RenderComponent(Devices(nil))
 	}
+
 
 	var views []hidDeviceView
 	for _, e := range entries {
@@ -41,5 +42,6 @@ func renderDevicesSettings(p *branchkit.Plugin) string {
 		return strings.ToLower(views[i].Name) < strings.ToLower(views[j].Name)
 	})
 
-	return renderTempl(Devices(views))
+	return branchkit.RenderComponent(Devices(views))
 }
+
