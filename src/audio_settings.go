@@ -13,9 +13,6 @@ func (h *Host) loadDeviceAliases() map[string][]string {
 	h.deviceAliasesMu.Lock()
 	defer h.deviceAliasesMu.Unlock()
 
-	if h.plugin == nil {
-		return map[string][]string{}
-	}
 	rec, err := h.plugin.Get("plugin.system.device_aliases", "singleton")
 	if err != nil {
 		branchkit.Logf("system", "device aliases collection read error: %v", err)
@@ -33,9 +30,6 @@ func (h *Host) loadDeviceAliases() map[string][]string {
 }
 
 func (h *Host) saveDeviceAliases(m map[string][]string) {
-	if h.plugin == nil {
-		return
-	}
 	if err := h.plugin.Put("plugin.system.device_aliases", "singleton", m); err != nil {
 		branchkit.Logf("system", "save device aliases: %v", err)
 	}
@@ -55,9 +49,7 @@ func (h *Host) addDeviceAlias(uid, alias string) {
 		}
 	}
 	m[uid] = append(m[uid], alias)
-	if h.plugin != nil {
-		h.plugin.Put("plugin.system.device_aliases", "singleton", m)
-	}
+	h.plugin.Put("plugin.system.device_aliases", "singleton", m)
 }
 
 func (h *Host) removeDeviceAlias(uid, alias string) {
@@ -77,9 +69,7 @@ func (h *Host) removeDeviceAlias(uid, alias string) {
 	} else {
 		m[uid] = kept
 	}
-	if h.plugin != nil {
-		h.plugin.Put("plugin.system.device_aliases", "singleton", m)
-	}
+	h.plugin.Put("plugin.system.device_aliases", "singleton", m)
 }
 
 type soundSettingsData struct {
