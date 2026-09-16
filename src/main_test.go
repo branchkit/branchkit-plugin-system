@@ -69,20 +69,21 @@ func TestMatchesDevice_NilAliases(t *testing.T) {
 }
 
 // setTestApps sets the internal app list for testing.
-func setTestApps(entries []AppEntry) {
-	appsMu.Lock()
-	apps = entries
-	appsMu.Unlock()
+func (h *Host) setTestApps(entries []AppEntry) {
+	h.appsMu.Lock()
+	h.apps = entries
+	h.appsMu.Unlock()
 }
 
 // --- renderAppsTab ---
 
 func TestHandleRenderSettings_AppsTab(t *testing.T) {
-	setTestApps([]AppEntry{
+	h := newTestHost()
+	h.setTestApps([]AppEntry{
 		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true, Aliases: []string{"browser"}},
 	})
 	req := &branchkit.RenderSettingsRequest{TabKey: "apps"}
-	html, err := renderAppsTab(req)
+	html, err := h.renderAppsTab(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -98,7 +99,8 @@ func TestHandleRenderSettings_AppsTab(t *testing.T) {
 }
 
 func TestHandleRenderSettings_AppsSearch(t *testing.T) {
-	setTestApps([]AppEntry{
+	h := newTestHost()
+	h.setTestApps([]AppEntry{
 		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true},
 		{Name: "Finder", BundleID: "com.apple.finder", Enabled: true},
 	})
@@ -106,7 +108,7 @@ func TestHandleRenderSettings_AppsSearch(t *testing.T) {
 		TabKey: "apps",
 		Search: "safari",
 	}
-	html, err := renderAppsTab(req)
+	html, err := h.renderAppsTab(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -125,29 +127,33 @@ func TestHandleRenderSettings_AppsSearch(t *testing.T) {
 // only cover plugin-local input validation paths.
 
 func TestHandleSetOutput_NoName(t *testing.T) {
+	h := newTestHost()
 	req := &branchkit.OnActionRequest{Action: "system.set_output"}
-	if _, err := handleSetOutput(SetOutputParams{}, req); err != nil {
+	if _, err := h.handleSetOutput(SetOutputParams{}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func TestHandleSetInput_NoName(t *testing.T) {
+	h := newTestHost()
 	req := &branchkit.OnActionRequest{Action: "system.set_input"}
-	if _, err := handleSetInput(SetInputParams{}, req); err != nil {
+	if _, err := h.handleSetInput(SetInputParams{}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func TestHandleLaunch_NoBundleID(t *testing.T) {
+	h := newTestHost()
 	req := &branchkit.OnActionRequest{Action: "system.launch"}
-	if _, err := handleLaunch(LaunchParams{}, req); err != nil {
+	if _, err := h.handleLaunch(LaunchParams{}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func TestHandleOpen_NoTarget(t *testing.T) {
+	h := newTestHost()
 	req := &branchkit.OnActionRequest{Action: "system.open"}
-	if _, err := handleOpen(OpenParams{}, req); err != nil {
+	if _, err := h.handleOpen(OpenParams{}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
@@ -279,11 +285,12 @@ func TestSoundTempl_NoDevices(t *testing.T) {
 // --- appRowView construction in renderAppsTab ---
 
 func TestAppRowView_DisabledStatus(t *testing.T) {
-	setTestApps([]AppEntry{
+	h := newTestHost()
+	h.setTestApps([]AppEntry{
 		{Name: "Hidden", BundleID: "com.example.hidden", Enabled: false},
 	})
 	req := &branchkit.RenderSettingsRequest{TabKey: "apps"}
-	html, err := renderAppsTab(req)
+	html, err := h.renderAppsTab(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -293,7 +300,8 @@ func TestAppRowView_DisabledStatus(t *testing.T) {
 }
 
 func TestHandleRenderSettings_SearchByBundleID(t *testing.T) {
-	setTestApps([]AppEntry{
+	h := newTestHost()
+	h.setTestApps([]AppEntry{
 		{Name: "Safari", BundleID: "com.apple.Safari", Enabled: true},
 		{Name: "Finder", BundleID: "com.apple.finder", Enabled: true},
 	})
@@ -301,7 +309,7 @@ func TestHandleRenderSettings_SearchByBundleID(t *testing.T) {
 		TabKey: "apps",
 		Search: "com.apple.Safari",
 	}
-	html, err := renderAppsTab(req)
+	html, err := h.renderAppsTab(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -316,11 +324,12 @@ func TestHandleRenderSettings_SearchByBundleID(t *testing.T) {
 // --- Action launch param compatibility ---
 
 func TestHandleLaunch_EmptyBundleIDNoOp(t *testing.T) {
+	h := newTestHost()
 	// The canonical key is "bundle_id" (matches the manifest and the
 	// generated LaunchParams struct). With an empty value, the handler
 	// logs and returns without making an RPC call.
 	req := &branchkit.OnActionRequest{Action: "system.launch"}
-	if _, err := handleLaunch(LaunchParams{BundleID: ""}, req); err != nil {
+	if _, err := h.handleLaunch(LaunchParams{BundleID: ""}, req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }

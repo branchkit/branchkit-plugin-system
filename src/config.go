@@ -22,11 +22,9 @@ type SystemConfig struct {
 
 const configCollection = "plugin.system.config"
 
-var configMirror *branchkit.SettingsMirror[SystemConfig]
-
 // initConfig wires the typed mirror. Must run before plugin.Run().
-func initConfig(p *branchkit.Plugin) {
-	configMirror = branchkit.Settings[SystemConfig](p, configCollection)
+func (h *Host) initConfig(p *branchkit.Plugin) {
+	h.configMirror = branchkit.Settings[SystemConfig](p, configCollection)
 }
 
 // DefaultSystemConfig mirrors the manifest defaults — the pre-Ready
@@ -35,9 +33,9 @@ func DefaultSystemConfig() SystemConfig {
 	return SystemConfig{MouseFollowsFocus: false}
 }
 
-func LoadSystemConfig() SystemConfig {
-	if configMirror != nil && configMirror.Ready() {
-		return configMirror.Get()
+func (h *Host) LoadSystemConfig() SystemConfig {
+	if h.configMirror != nil && h.configMirror.Ready() {
+		return h.configMirror.Get()
 	}
 	return DefaultSystemConfig()
 }
@@ -45,9 +43,9 @@ func LoadSystemConfig() SystemConfig {
 // setUserConfigField relays one user gesture into the user band (plugins
 // never write settings; writers: platform_only). SetUser refreshes the
 // mirror in the same operation, so re-renders see the write immediately.
-func setUserConfigField(key string, value any) error {
-	if configMirror == nil {
+func (h *Host) setUserConfigField(key string, value any) error {
+	if h.configMirror == nil {
 		return nil
 	}
-	return configMirror.SetUser(key, value)
+	return h.configMirror.SetUser(key, value)
 }

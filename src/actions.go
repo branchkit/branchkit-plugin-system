@@ -10,29 +10,29 @@ import (
 
 // --- Per-action handlers ---
 
-func handleVolumeUp(_ *branchkit.OnActionRequest) (any, error) {
-	if err := volumeUp(); err != nil {
+func (h *Host) handleVolumeUp(_ *branchkit.OnActionRequest) (any, error) {
+	if err := h.volumeUp(); err != nil {
 		branchkit.Logf("system", "volume_up: %v", err)
 	}
 	return nil, nil
 }
 
-func handleVolumeDown(_ *branchkit.OnActionRequest) (any, error) {
-	if err := volumeDown(); err != nil {
+func (h *Host) handleVolumeDown(_ *branchkit.OnActionRequest) (any, error) {
+	if err := h.volumeDown(); err != nil {
 		branchkit.Logf("system", "volume_down: %v", err)
 	}
 	return nil, nil
 }
 
-func handleMute(_ *branchkit.OnActionRequest) (any, error) {
-	if err := mute(); err != nil {
+func (h *Host) handleMute(_ *branchkit.OnActionRequest) (any, error) {
+	if err := h.mute(); err != nil {
 		branchkit.Logf("system", "mute: %v", err)
 	}
 	return nil, nil
 }
 
-func handleUnmute(_ *branchkit.OnActionRequest) (any, error) {
-	if err := unmute(); err != nil {
+func (h *Host) handleUnmute(_ *branchkit.OnActionRequest) (any, error) {
+	if err := h.unmute(); err != nil {
 		branchkit.Logf("system", "unmute: %v", err)
 	}
 	return nil, nil
@@ -42,29 +42,29 @@ func handleUnmute(_ *branchkit.OnActionRequest) (any, error) {
 // generated from plugin.json's action_types block. Edit that and re-run
 // `just gen-plugins` — do not hand-declare these structs here.
 
-func handleSetOutput(p SetOutputParams, req *branchkit.OnActionRequest) (any, error) {
+func (h *Host) handleSetOutput(p SetOutputParams, req *branchkit.OnActionRequest) (any, error) {
 	if p.Name == "" {
 		branchkit.Logf("system", "set_output: no device name provided")
 		return nil, nil
 	}
-	if err := setOutputDevice(plugin, p.Name); err != nil {
+	if err := h.setOutputDevice(h.plugin, p.Name); err != nil {
 		branchkit.Logf("system", "set_output: %v", err)
 	}
 	return nil, nil
 }
 
-func handleSetInput(p SetInputParams, req *branchkit.OnActionRequest) (any, error) {
+func (h *Host) handleSetInput(p SetInputParams, req *branchkit.OnActionRequest) (any, error) {
 	if p.Name == "" {
 		branchkit.Logf("system", "set_input: no device name provided")
 		return nil, nil
 	}
-	if err := setInputDevice(plugin, p.Name); err != nil {
+	if err := h.setInputDevice(h.plugin, p.Name); err != nil {
 		branchkit.Logf("system", "set_input: %v", err)
 	}
 	return nil, nil
 }
 
-func handleLaunch(p LaunchParams, req *branchkit.OnActionRequest) (any, error) {
+func (h *Host) handleLaunch(p LaunchParams, req *branchkit.OnActionRequest) (any, error) {
 	if p.BundleID == "" {
 		branchkit.Logf("system", "launch: no bundle_id provided")
 		return nil, nil
@@ -73,14 +73,14 @@ func handleLaunch(p LaunchParams, req *branchkit.OnActionRequest) (any, error) {
 	if p.NewInstance != nil {
 		newInstance = *p.NewInstance
 	}
-	if err := plugin.Call("native.launch_app", map[string]any{
+	if err := h.plugin.Call("native.launch_app", map[string]any{
 		"bundle_id":    p.BundleID,
 		"new_instance": newInstance,
 	}, nil); err != nil {
 		branchkit.Logf("system", "launch: %v", err)
 	}
-	if LoadSystemConfig().MouseFollowsFocus {
-		go warpCursorToApp(p.BundleID)
+	if h.LoadSystemConfig().MouseFollowsFocus {
+		go h.warpCursorToApp(p.BundleID)
 	}
 	return nil, nil
 }
@@ -94,10 +94,10 @@ func handleLaunch(p LaunchParams, req *branchkit.OnActionRequest) (any, error) {
 // window or the wrong display — so wait until the app is actually frontmost,
 // then query the now-visible focused window. Freshly launched apps that never
 // come frontmost in time (or have no windows yet) are skipped.
-func warpCursorToApp(bundleID string) {
+func (h *Host) warpCursorToApp(bundleID string) {
 	deadline := time.Now().Add(1500 * time.Millisecond)
 	for {
-		if front, err := plugin.NativeFrontmostApp(); err == nil {
+		if front, err := h.plugin.NativeFrontmostApp(); err == nil {
 			var app struct {
 				BundleID string `json:"bundle_id"`
 			}
@@ -113,13 +113,13 @@ func warpCursorToApp(bundleID string) {
 	// One more beat for the window raise after the app becomes frontmost.
 	time.Sleep(80 * time.Millisecond)
 
-	wins, err := plugin.NativeAppWindows(bundleID)
+	wins, err := h.plugin.NativeAppWindows(bundleID)
 	if err != nil {
 		branchkit.Logf("system", "warp: app_windows(%s): %v", bundleID, err)
 		return
 	}
 	var cursor *branchkit.NativeCursorResponse
-	if cur, err := plugin.NativeCursor(); err == nil {
+	if cur, err := h.plugin.NativeCursor(); err == nil {
 		cursor = cur
 	}
 	target := pickWarpTarget(wins, cursor)
@@ -127,7 +127,7 @@ func warpCursorToApp(bundleID string) {
 		branchkit.Logf("system", "warp: %s skipped (no visible window, or cursor already inside)", bundleID)
 		return
 	}
-	if err := plugin.NativeWarpCursor(target.X, target.Y); err != nil {
+	if err := h.plugin.NativeWarpCursor(target.X, target.Y); err != nil {
 		branchkit.Logf("system", "warp: warp_cursor: %v", err)
 		return
 	}
@@ -174,7 +174,7 @@ func pickWarpTarget(wins []branchkit.WindowDetail, cursor *branchkit.NativeCurso
 // window creation lives in the actuator (native.new_app_window); it reports
 // ok=false for apps with no scriptable window element, and we fall back to a
 // normal launch.
-func handleNewWindow(p NewWindowParams, req *branchkit.OnActionRequest) (any, error) {
+func (h *Host) handleNewWindow(p NewWindowParams, req *branchkit.OnActionRequest) (any, error) {
 	if p.BundleID == "" {
 		branchkit.Logf("system", "new_window: no bundle_id provided")
 		return nil, nil
@@ -182,11 +182,11 @@ func handleNewWindow(p NewWindowParams, req *branchkit.OnActionRequest) (any, er
 	var res struct {
 		OK bool `json:"ok"`
 	}
-	err := plugin.Call("native.new_app_window", map[string]string{"bundle_id": p.BundleID}, &res)
+	err := h.plugin.Call("native.new_app_window", map[string]string{"bundle_id": p.BundleID}, &res)
 	if err != nil || !res.OK {
 		branchkit.Logf("system", "new_window: %s not scriptable (err=%v) — falling back to launch",
 			p.BundleID, err)
-		if err := plugin.Call("native.launch_app", map[string]any{
+		if err := h.plugin.Call("native.launch_app", map[string]any{
 			"bundle_id":    p.BundleID,
 			"new_instance": false,
 		}, nil); err != nil {
@@ -196,12 +196,12 @@ func handleNewWindow(p NewWindowParams, req *branchkit.OnActionRequest) (any, er
 	return nil, nil
 }
 
-func handleOpen(p OpenParams, req *branchkit.OnActionRequest) (any, error) {
+func (h *Host) handleOpen(p OpenParams, req *branchkit.OnActionRequest) (any, error) {
 	if p.Target == "" {
 		branchkit.Logf("system", "open: no target provided")
 		return nil, nil
 	}
-	if err := plugin.Call("native.open_target", map[string]any{
+	if err := h.plugin.Call("native.open_target", map[string]any{
 		"target": p.Target,
 	}, nil); err != nil {
 		branchkit.Logf("system", "open: %v", err)

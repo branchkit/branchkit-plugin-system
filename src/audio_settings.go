@@ -3,25 +3,20 @@ package main
 import (
 	"encoding/json"
 	"strings"
-	"sync"
 
 	"github.com/branchkit/plugin-sdk-go"
 )
 
 // --- Device aliases persistence ---
 
-var (
-	deviceAliasesMu sync.Mutex
-)
+func (h *Host) loadDeviceAliases() map[string][]string {
+	h.deviceAliasesMu.Lock()
+	defer h.deviceAliasesMu.Unlock()
 
-func loadDeviceAliases() map[string][]string {
-	deviceAliasesMu.Lock()
-	defer deviceAliasesMu.Unlock()
-
-	if plugin == nil {
+	if h.plugin == nil {
 		return map[string][]string{}
 	}
-	rec, err := plugin.Get("plugin.system.device_aliases", "singleton")
+	rec, err := h.plugin.Get("plugin.system.device_aliases", "singleton")
 	if err != nil {
 		branchkit.Logf("system", "device aliases collection read error: %v", err)
 		return map[string][]string{}
@@ -37,39 +32,39 @@ func loadDeviceAliases() map[string][]string {
 	return map[string][]string{}
 }
 
-func saveDeviceAliases(m map[string][]string) {
-	if plugin == nil {
+func (h *Host) saveDeviceAliases(m map[string][]string) {
+	if h.plugin == nil {
 		return
 	}
-	if err := plugin.Put("plugin.system.device_aliases", "singleton", m); err != nil {
+	if err := h.plugin.Put("plugin.system.device_aliases", "singleton", m); err != nil {
 		branchkit.Logf("system", "save device aliases: %v", err)
 	}
 }
 
-func addDeviceAlias(uid, alias string) {
+func (h *Host) addDeviceAlias(uid, alias string) {
 	alias = strings.TrimSpace(strings.ToLower(alias))
 	if alias == "" {
 		return
 	}
-	m := loadDeviceAliases()
-	deviceAliasesMu.Lock()
-	defer deviceAliasesMu.Unlock()
+	m := h.loadDeviceAliases()
+	h.deviceAliasesMu.Lock()
+	defer h.deviceAliasesMu.Unlock()
 	for _, a := range m[uid] {
 		if a == alias {
 			return
 		}
 	}
 	m[uid] = append(m[uid], alias)
-	if plugin != nil {
-		plugin.Put("plugin.system.device_aliases", "singleton", m)
+	if h.plugin != nil {
+		h.plugin.Put("plugin.system.device_aliases", "singleton", m)
 	}
 }
 
-func removeDeviceAlias(uid, alias string) {
+func (h *Host) removeDeviceAlias(uid, alias string) {
 	alias = strings.TrimSpace(strings.ToLower(alias))
-	m := loadDeviceAliases()
-	deviceAliasesMu.Lock()
-	defer deviceAliasesMu.Unlock()
+	m := h.loadDeviceAliases()
+	h.deviceAliasesMu.Lock()
+	defer h.deviceAliasesMu.Unlock()
 	aliases := m[uid]
 	var kept []string
 	for _, a := range aliases {
@@ -82,8 +77,8 @@ func removeDeviceAlias(uid, alias string) {
 	} else {
 		m[uid] = kept
 	}
-	if plugin != nil {
-		plugin.Put("plugin.system.device_aliases", "singleton", m)
+	if h.plugin != nil {
+		h.plugin.Put("plugin.system.device_aliases", "singleton", m)
 	}
 }
 
@@ -117,8 +112,8 @@ func voiceHint(name string) string {
 	return lower
 }
 
-func renderSoundSettings(p *branchkit.Plugin) (string, error) {
-	vol, muted, err := getVolume()
+func (h *Host) renderSoundSettings(p *branchkit.Plugin) (string, error) {
+	vol, muted, err := h.getVolume()
 	if err != nil {
 		branchkit.Logf("system", "getVolume error: %v", err)
 	}
@@ -129,7 +124,7 @@ func renderSoundSettings(p *branchkit.Plugin) (string, error) {
 		devList = &branchkit.NativeAudioDevicesResponse{}
 	}
 
-	aliases := loadDeviceAliases()
+	aliases := h.loadDeviceAliases()
 
 	var outputs, inputs []deviceView
 	for _, d := range devList.Devices {

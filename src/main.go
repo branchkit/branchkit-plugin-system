@@ -22,20 +22,18 @@ type appRowView struct {
 
 // --- Handlers ---
 
-var plugin *branchkit.Plugin
-
-func renderSoundTab(_ *branchkit.RenderSettingsRequest) (string, error) {
-	return renderSoundSettings(plugin)
+func (h *Host) renderSoundTab(_ *branchkit.RenderSettingsRequest) (string, error) {
+	return h.renderSoundSettings(h.plugin)
 }
 
-func renderDevicesTab(_ *branchkit.RenderSettingsRequest) (string, error) {
-	return renderDevicesSettings(plugin)
+func (h *Host) renderDevicesTab(_ *branchkit.RenderSettingsRequest) (string, error) {
+	return renderDevicesSettings(h.plugin)
 }
 
-func renderAppsTab(req *branchkit.RenderSettingsRequest) (string, error) {
-	allApps := getApps()
+func (h *Host) renderAppsTab(req *branchkit.RenderSettingsRequest) (string, error) {
+	allApps := h.getApps()
 
-	traits := loadTraitCatalog(plugin)
+	traits := loadTraitCatalog(h.plugin)
 	search := strings.ToLower(req.Search)
 	var rows []appRowView
 	for _, app := range allApps {
@@ -63,7 +61,7 @@ func renderAppsTab(req *branchkit.RenderSettingsRequest) (string, error) {
 	// The SDK's render hook has already refreshed the config mirror, so
 	// this read is current even when the render is the one fired right
 	// after the mouse-follows-focus toggle's own write.
-	conf := LoadSystemConfig()
+	conf := h.LoadSystemConfig()
 	return branchkit.RenderComponent(Apps(rows, conf.MouseFollowsFocus, traits))
 }
 
@@ -73,8 +71,8 @@ type appToggleRequest struct {
 	BundleID string `json:"bundle_id"`
 }
 
-func handleAppToggle(req *appToggleRequest) (any, error) {
-	toggleApp(plugin, req.BundleID)
+func (h *Host) handleAppToggle(req *appToggleRequest) (any, error) {
+	h.toggleApp(h.plugin, req.BundleID)
 	return map[string]string{"result": "ok"}, nil
 }
 
@@ -83,13 +81,13 @@ type appAliasRequest struct {
 	Alias    string `json:"newAlias"`
 }
 
-func handleAppAliasAdd(req *appAliasRequest) (any, error) {
-	addAppAlias(plugin, req.BundleID, req.Alias)
+func (h *Host) handleAppAliasAdd(req *appAliasRequest) (any, error) {
+	h.addAppAlias(h.plugin, req.BundleID, req.Alias)
 	return map[string]string{"result": "ok"}, nil
 }
 
-func handleAppAliasRemove(req *appAliasRequest) (any, error) {
-	removeAppAlias(plugin, req.BundleID, req.Alias)
+func (h *Host) handleAppAliasRemove(req *appAliasRequest) (any, error) {
+	h.removeAppAlias(h.plugin, req.BundleID, req.Alias)
 	return map[string]string{"result": "ok"}, nil
 }
 
@@ -103,15 +101,15 @@ type appTraitRequest struct {
 // log and report success. A rejected trait name is something the user just
 // typed and needs to see; an alias add can only fail on a transport error
 // nobody could act on.
-func handleAppTraitAdd(req *appTraitRequest) (any, error) {
-	if err := addAppTrait(plugin, req.BundleID, req.Trait); err != nil {
+func (h *Host) handleAppTraitAdd(req *appTraitRequest) (any, error) {
+	if err := addAppTrait(h.plugin, req.BundleID, req.Trait); err != nil {
 		return nil, err
 	}
 	return map[string]string{"result": "ok"}, nil
 }
 
-func handleAppTraitRemove(req *appTraitRequest) (any, error) {
-	if err := removeAppTrait(plugin, req.BundleID, req.Trait); err != nil {
+func (h *Host) handleAppTraitRemove(req *appTraitRequest) (any, error) {
+	if err := removeAppTrait(h.plugin, req.BundleID, req.Trait); err != nil {
 		return nil, err
 	}
 	return map[string]string{"result": "ok"}, nil
@@ -121,8 +119,8 @@ type setMouseFollowsFocusRequest struct {
 	Enabled bool `json:"enabled"`
 }
 
-func handleSetMouseFollowsFocus(req *setMouseFollowsFocusRequest) (any, error) {
-	if err := setUserConfigField("mouse_follows_focus", req.Enabled); err != nil {
+func (h *Host) handleSetMouseFollowsFocus(req *setMouseFollowsFocusRequest) (any, error) {
+	if err := h.setUserConfigField("mouse_follows_focus", req.Enabled); err != nil {
 		branchkit.Logf("system", "config relay error: %v", err)
 	}
 	return map[string]string{"result": "ok"}, nil
@@ -134,8 +132,8 @@ type setVolumeRequest struct {
 	Volume int `json:"volume"`
 }
 
-func handleSetVolume(req *setVolumeRequest) (any, error) {
-	if err := setVolume(float64(req.Volume) / 100.0); err != nil {
+func (h *Host) handleSetVolume(req *setVolumeRequest) (any, error) {
+	if err := h.setVolume(float64(req.Volume) / 100.0); err != nil {
 		branchkit.Logf("system", "set-volume error: %v", err)
 	}
 	return map[string]string{"result": "ok"}, nil
@@ -145,12 +143,12 @@ type setMuteRequest struct {
 	Muted bool `json:"muted"`
 }
 
-func handleSetMute(req *setMuteRequest) (any, error) {
+func (h *Host) handleSetMute(req *setMuteRequest) (any, error) {
 	var err error
 	if req.Muted {
-		err = mute()
+		err = h.mute()
 	} else {
-		err = unmute()
+		err = h.unmute()
 	}
 	if err != nil {
 		branchkit.Logf("system", "set-mute error: %v", err)
@@ -163,13 +161,13 @@ type deviceAliasRequest struct {
 	Alias string `json:"newAlias"`
 }
 
-func handleDeviceAliasAdd(req *deviceAliasRequest) (any, error) {
-	addDeviceAlias(req.UID, req.Alias)
+func (h *Host) handleDeviceAliasAdd(req *deviceAliasRequest) (any, error) {
+	h.addDeviceAlias(req.UID, req.Alias)
 	return map[string]string{"result": "ok"}, nil
 }
 
-func handleDeviceAliasRemove(req *deviceAliasRequest) (any, error) {
-	removeDeviceAlias(req.UID, req.Alias)
+func (h *Host) handleDeviceAliasRemove(req *deviceAliasRequest) (any, error) {
+	h.removeDeviceAlias(req.UID, req.Alias)
 	return map[string]string{"result": "ok"}, nil
 }
 
@@ -178,8 +176,8 @@ type setDeviceRequest struct {
 	DeviceType string `json:"device_type"`
 }
 
-func handleSetDevice(req *setDeviceRequest) (any, error) {
-	if err := setAudioDeviceViaRPC(plugin, req.UID, req.DeviceType); err != nil {
+func (h *Host) handleSetDevice(req *setDeviceRequest) (any, error) {
+	if err := setAudioDeviceViaRPC(h.plugin, req.UID, req.DeviceType); err != nil {
 		branchkit.Logf("system", "set-device error: %v", err)
 	}
 	return map[string]string{"result": "ok"}, nil
@@ -188,39 +186,39 @@ func handleSetDevice(req *setDeviceRequest) (any, error) {
 // --- Startup ---
 
 func main() {
-	plugin = branchkit.NewPlugin()
-	initApps(plugin)
-	initConfig(plugin)
+	h := newHost(branchkit.NewPlugin())
+	h.initApps(h.plugin)
+	h.initConfig(h.plugin)
 
 	// Per-action handlers. Registrars come from actions_gen.go, generated from
 	// plugin.json — so no action string is spelled here and a handler's params
 	// type cannot drift from what the manifest declares.
-	HandleVolumeUp(plugin, handleVolumeUp)
-	HandleVolumeDown(plugin, handleVolumeDown)
-	HandleMute(plugin, handleMute)
-	HandleUnmute(plugin, handleUnmute)
-	HandleSetOutput(plugin, handleSetOutput)
-	HandleSetInput(plugin, handleSetInput)
-	HandleLaunch(plugin, handleLaunch)
-	HandleNewWindow(plugin, handleNewWindow)
-	HandleOpen(plugin, handleOpen)
+	HandleVolumeUp(h.plugin, h.handleVolumeUp)
+	HandleVolumeDown(h.plugin, h.handleVolumeDown)
+	HandleMute(h.plugin, h.handleMute)
+	HandleUnmute(h.plugin, h.handleUnmute)
+	HandleSetOutput(h.plugin, h.handleSetOutput)
+	HandleSetInput(h.plugin, h.handleSetInput)
+	HandleLaunch(h.plugin, h.handleLaunch)
+	HandleNewWindow(h.plugin, h.handleNewWindow)
+	HandleOpen(h.plugin, h.handleOpen)
 
-	plugin.SettingsCSS(systemCSS)
-	plugin.SettingsTab("apps", renderAppsTab)
-	plugin.SettingsTab("sound", renderSoundTab)
-	plugin.SettingsTab("devices", renderDevicesTab)
+	h.plugin.SettingsCSS(systemCSS)
+	h.plugin.SettingsTab("apps", h.renderAppsTab)
+	h.plugin.SettingsTab("sound", h.renderSoundTab)
+	h.plugin.SettingsTab("devices", h.renderDevicesTab)
 
-	branchkit.HandleTyped(plugin, "set_volume", handleSetVolume)
-	branchkit.HandleTyped(plugin, "set_mute", handleSetMute)
-	branchkit.HandleTyped(plugin, "set_device", handleSetDevice)
-	branchkit.HandleTyped(plugin, "device_alias_add", handleDeviceAliasAdd)
-	branchkit.HandleTyped(plugin, "device_alias_remove", handleDeviceAliasRemove)
-	branchkit.HandleTyped(plugin, "app_toggle", handleAppToggle)
-	branchkit.HandleTyped(plugin, "app_alias_add", handleAppAliasAdd)
-	branchkit.HandleTyped(plugin, "app_alias_remove", handleAppAliasRemove)
-	branchkit.HandleTyped(plugin, "app_trait_add", handleAppTraitAdd)
-	branchkit.HandleTyped(plugin, "app_trait_remove", handleAppTraitRemove)
-	branchkit.HandleTyped(plugin, "set_mouse_follows_focus", handleSetMouseFollowsFocus)
+	branchkit.HandleTyped(h.plugin, "set_volume", h.handleSetVolume)
+	branchkit.HandleTyped(h.plugin, "set_mute", h.handleSetMute)
+	branchkit.HandleTyped(h.plugin, "set_device", h.handleSetDevice)
+	branchkit.HandleTyped(h.plugin, "device_alias_add", h.handleDeviceAliasAdd)
+	branchkit.HandleTyped(h.plugin, "device_alias_remove", h.handleDeviceAliasRemove)
+	branchkit.HandleTyped(h.plugin, "app_toggle", h.handleAppToggle)
+	branchkit.HandleTyped(h.plugin, "app_alias_add", h.handleAppAliasAdd)
+	branchkit.HandleTyped(h.plugin, "app_alias_remove", h.handleAppAliasRemove)
+	branchkit.HandleTyped(h.plugin, "app_trait_add", h.handleAppTraitAdd)
+	branchkit.HandleTyped(h.plugin, "app_trait_remove", h.handleAppTraitRemove)
+	branchkit.HandleTyped(h.plugin, "set_mouse_follows_focus", h.handleSetMouseFollowsFocus)
 
 	// Publish current audio device names as speakable collections once RPC is
 	// available (OnReady), so "set output/input <device>" matches real names.
@@ -228,18 +226,18 @@ func main() {
 	// replace is idempotent (byte-identical records are skipped platform-
 	// side), so bursts and no-op
 	// changes (e.g. default-device moves) don't churn the grammar.
-	plugin.OnReady(func() { pushAudioDevicesCollections(plugin) })
-	plugin.On("_platform.audio_devices.changed", func(json.RawMessage) {
-		pushAudioDevicesCollections(plugin)
+	h.plugin.OnReady(func() { pushAudioDevicesCollections(h.plugin) })
+	h.plugin.On("_platform.audio_devices.changed", func(json.RawMessage) {
+		pushAudioDevicesCollections(h.plugin)
 	})
 	// Devices can come and go while the machine is asleep — a dock unplugged,
 	// Bluetooth headphones taken out of range — and the CoreAudio property
 	// listener that feeds audio_devices.changed is not running to see it. Wake
 	// is the one moment the collections are guaranteed stale, so re-push.
 	// Same idempotent replace as hotplug: no churn when nothing moved.
-	plugin.On("_platform.system.did_wake", func(json.RawMessage) {
-		pushAudioDevicesCollections(plugin)
+	h.plugin.On("_platform.system.did_wake", func(json.RawMessage) {
+		pushAudioDevicesCollections(h.plugin)
 	})
 
-	plugin.Run()
+	h.plugin.Run()
 }

@@ -60,12 +60,13 @@ func TestMergeAliases_NoDuplicateAliases(t *testing.T) {
 }
 
 func TestPushAppsCollection_BuildsFlatEntries(t *testing.T) {
-	setTestApps([]AppEntry{
+	h := newTestHost()
+	h.setTestApps([]AppEntry{
 		{Name: "Chrome", BundleID: "com.google.Chrome", Aliases: []string{"chrome", "google chrome"}, Enabled: true},
 		{Name: "Hidden", BundleID: "com.example.hidden", Aliases: []string{"hidden"}, Enabled: false},
 	})
 
-	allApps := getApps()
+	allApps := h.getApps()
 	if len(allApps) != 2 {
 		t.Fatalf("expected 2 apps, got %d", len(allApps))
 	}

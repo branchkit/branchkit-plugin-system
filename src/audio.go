@@ -11,47 +11,47 @@ import (
 const volumeStep = 0.07 // ~7% per step
 
 // getVolume returns the current output volume (0.0–1.0) and mute state via actuator RPC.
-func getVolume() (float64, bool, error) {
+func (h *Host) getVolume() (float64, bool, error) {
 	var resp branchkit.NativeVolumeResponse
-	if err := plugin.Call("native.volume", nil, &resp); err != nil {
+	if err := h.plugin.Call("native.volume", nil, &resp); err != nil {
 		return 0, false, fmt.Errorf("get volume: %w", err)
 	}
 	return resp.Volume, resp.IsMuted, nil
 }
 
 // setVolume sets the output volume (0.0–1.0) via actuator RPC.
-func setVolume(vol float64) error {
+func (h *Host) setVolume(vol float64) error {
 	if vol < 0 {
 		vol = 0
 	}
 	if vol > 1 {
 		vol = 1
 	}
-	return plugin.Call("native.set_volume", branchkit.NativeSetVolumeRequest{Volume: vol}, nil)
+	return h.plugin.Call("native.set_volume", branchkit.NativeSetVolumeRequest{Volume: vol}, nil)
 }
 
-func volumeUp() error {
-	vol, _, err := getVolume()
+func (h *Host) volumeUp() error {
+	vol, _, err := h.getVolume()
 	if err != nil {
 		return err
 	}
-	return setVolume(vol + volumeStep)
+	return h.setVolume(vol + volumeStep)
 }
 
-func volumeDown() error {
-	vol, _, err := getVolume()
+func (h *Host) volumeDown() error {
+	vol, _, err := h.getVolume()
 	if err != nil {
 		return err
 	}
-	return setVolume(vol - volumeStep)
+	return h.setVolume(vol - volumeStep)
 }
 
-func mute() error {
-	return plugin.Call("native.mute", branchkit.NativeMuteRequest{Muted: true}, nil)
+func (h *Host) mute() error {
+	return h.plugin.Call("native.mute", branchkit.NativeMuteRequest{Muted: true}, nil)
 }
 
-func unmute() error {
-	return plugin.Call("native.mute", branchkit.NativeMuteRequest{Muted: false}, nil)
+func (h *Host) unmute() error {
+	return h.plugin.Call("native.mute", branchkit.NativeMuteRequest{Muted: false}, nil)
 }
 
 // pushAudioDevicesCollections publishes current output/input device names as
@@ -134,13 +134,13 @@ func matchesDevice(d branchkit.AudioDevice, spoken string, aliases map[string][]
 }
 
 // setOutputDevice fuzzy-matches a spoken device name and sets the default output device.
-func setOutputDevice(p *branchkit.Plugin, spokenName string) error {
+func (h *Host) setOutputDevice(p *branchkit.Plugin, spokenName string) error {
 	devices, err := getAudioDevices(p)
 	if err != nil {
 		return fmt.Errorf("get audio devices: %w", err)
 	}
 	spoken := strings.ToLower(spokenName)
-	aliases := loadDeviceAliases()
+	aliases := h.loadDeviceAliases()
 	for _, d := range devices.Devices {
 		if d.IsOutput && matchesDevice(d, spoken, aliases) {
 			return setAudioDeviceViaRPC(p, d.UID, "output")
@@ -150,13 +150,13 @@ func setOutputDevice(p *branchkit.Plugin, spokenName string) error {
 }
 
 // setInputDevice fuzzy-matches a spoken device name and sets the default input device.
-func setInputDevice(p *branchkit.Plugin, spokenName string) error {
+func (h *Host) setInputDevice(p *branchkit.Plugin, spokenName string) error {
 	devices, err := getAudioDevices(p)
 	if err != nil {
 		return fmt.Errorf("get audio devices: %w", err)
 	}
 	spoken := strings.ToLower(spokenName)
-	aliases := loadDeviceAliases()
+	aliases := h.loadDeviceAliases()
 	for _, d := range devices.Devices {
 		if d.IsInput && matchesDevice(d, spoken, aliases) {
 			return setAudioDeviceViaRPC(p, d.UID, "input")

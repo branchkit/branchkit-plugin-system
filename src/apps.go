@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/branchkit/plugin-sdk-go"
@@ -50,15 +49,10 @@ type installedApp struct {
 // an unpublished name list carry the "not a stable surface" signal instead.
 const appTraitsCollection = "app_traits"
 
-var (
-	appsMu sync.Mutex
-	apps   []AppEntry
-)
-
 // initApps loads installed apps, merges curated aliases, and pushes the
 // flat collection. User overrides (aliases, disabled) are handled by the
 // platform collection override system.
-func initApps(p *branchkit.Plugin) {
+func (h *Host) initApps(p *branchkit.Plugin) {
 	// 1. Scan installed apps via native method
 	scanned, scanErr := scanInstalledApps(p)
 
@@ -67,11 +61,11 @@ func initApps(p *branchkit.Plugin) {
 	appTraits := buildAppTraits(coreApps)
 	scanned = mergeAliases(scanned, coreApps)
 
-	appsMu.Lock()
-	apps = scanned
-	appsMu.Unlock()
+	h.appsMu.Lock()
+	h.apps = scanned
+	h.appsMu.Unlock()
 
-	pushAppsCollection(p)
+	h.pushAppsCollection(p)
 	pushAppTraitsCollection(p, appTraits)
 
 	// A failed scan is not a small collection — it is a WRONG one that nothing
@@ -90,14 +84,14 @@ func initApps(p *branchkit.Plugin) {
 	// backing off, and it stops at the first success; a permanently broken
 	// native side degrades to today's behavior instead of spinning.
 	if scanErr != nil {
-		go retryAppScan(p)
+		go h.retryAppScan(p)
 	}
 
 	// Sync enabled/disabled state from platform overrides.
 	// If a user previously disabled an app, the override has its aliases
 	// in the 'removed' map. Mark those apps as disabled in the internal model
 	// so the HUD and settings UI reflect the persisted state.
-	syncDisabledFromOverrides(p)
+	h.syncDisabledFromOverrides(p)
 }
 
 // scanInstalledApps calls native.installed_apps and returns the AppEntry slice.
@@ -142,7 +136,7 @@ var appScanRetryDelays = []time.Duration{
 // retryAppScan re-runs the installed-apps scan after a failed one and re-pushes
 // on the first success. Runs in its own goroutine; stops at the first success or
 // when the backoff is exhausted.
-func retryAppScan(p *branchkit.Plugin) {
+func (h *Host) retryAppScan(p *branchkit.Plugin) {
 	for i, delay := range appScanRetryDelays {
 		time.Sleep(delay)
 		scanned, err := scanInstalledApps(p)
@@ -154,11 +148,11 @@ func retryAppScan(p *branchkit.Plugin) {
 		appTraits := buildAppTraits(coreApps)
 		scanned = mergeAliases(scanned, coreApps)
 
-		appsMu.Lock()
-		apps = scanned
-		appsMu.Unlock()
+		h.appsMu.Lock()
+		h.apps = scanned
+		h.appsMu.Unlock()
 
-		pushAppsCollection(p)
+		h.pushAppsCollection(p)
 		// Traits do not depend on the scan, so this re-push is not about new
 		// data — it covers the case where the actuator was unresponsive at boot
 		// and BOTH pushes failed. A whole-scope replace of identical records is
@@ -166,7 +160,7 @@ func retryAppScan(p *branchkit.Plugin) {
 		pushAppTraitsCollection(p, appTraits)
 		// Re-apply user overrides: the replace above rewrote the collection, so
 		// the disabled set has to be reconciled against it again.
-		syncDisabledFromOverrides(p)
+		h.syncDisabledFromOverrides(p)
 		branchkit.Logf("system", "app scan retry %d/%d succeeded: %d apps",
 			i+1, len(appScanRetryDelays), len(scanned))
 		return
@@ -244,7 +238,7 @@ func containsLower(ss []string, target string) bool {
 
 // syncDisabledFromOverrides reads the platform's collection_overrides for the
 // apps collection and marks apps as disabled if ALL their aliases are removed.
-func syncDisabledFromOverrides(p *branchkit.Plugin) {
+func (h *Host) syncDisabledFromOverrides(p *branchkit.Plugin) {
 	// Read the current named_lists["apps"] — this has overrides already applied.
 	// Compare with our internal list to find apps whose aliases are all removed.
 	var resp struct {
@@ -254,24 +248,24 @@ func syncDisabledFromOverrides(p *branchkit.Plugin) {
 		return
 	}
 
-	appsMu.Lock()
-	defer appsMu.Unlock()
+	h.appsMu.Lock()
+	defer h.appsMu.Unlock()
 
 	activeAliases := make(map[string]bool, len(resp.Data))
 	for spoken := range resp.Data {
 		activeAliases[spoken] = true
 	}
 
-	for i := range apps {
+	for i := range h.apps {
 		allRemoved := true
-		for _, alias := range apps[i].Aliases {
+		for _, alias := range h.apps[i].Aliases {
 			if activeAliases[strings.ToLower(alias)] {
 				allRemoved = false
 				break
 			}
 		}
-		if allRemoved && len(apps[i].Aliases) > 0 {
-			apps[i].Enabled = false
+		if allRemoved && len(h.apps[i].Aliases) > 0 {
+			h.apps[i].Enabled = false
 		}
 	}
 }
@@ -287,21 +281,21 @@ func syncDisabledFromOverrides(p *branchkit.Plugin) {
 // Note: the legacy `WithLabel("Apps")` Settings UI section-header
 // declaration is dropped here. Section headers will derive from a future
 // manifest-level label field; in the interim the section renders as "apps".
-func pushAppsCollection(p *branchkit.Plugin) {
+func (h *Host) pushAppsCollection(p *branchkit.Plugin) {
 	type entry struct {
 		Spoken   string `json:"spoken"`
 		BundleID string `json:"bundle_id"`
 	}
 
-	appsMu.Lock()
+	h.appsMu.Lock()
 	var rows []entry
-	for _, app := range apps {
+	for _, app := range h.apps {
 		for _, alias := range app.Aliases {
 			spoken := strings.ToLower(alias)
 			rows = append(rows, entry{Spoken: spoken, BundleID: app.BundleID})
 		}
 	}
-	appsMu.Unlock()
+	h.appsMu.Unlock()
 
 	records := make([]branchkit.CollectionPutEntry, 0, len(rows))
 	for _, row := range rows {
@@ -374,19 +368,19 @@ func pushAppTraitsCollection(p *branchkit.Plugin, traits map[string][]string) {
 
 // --- Mutations (route through platform collection.override) ---
 
-func toggleApp(p *branchkit.Plugin, bundleID string) {
-	appsMu.Lock()
+func (h *Host) toggleApp(p *branchkit.Plugin, bundleID string) {
+	h.appsMu.Lock()
 	var aliases []string
 	var nowEnabled bool
-	for i := range apps {
-		if apps[i].BundleID == bundleID {
-			apps[i].Enabled = !apps[i].Enabled
-			nowEnabled = apps[i].Enabled
-			aliases = append([]string{}, apps[i].Aliases...)
+	for i := range h.apps {
+		if h.apps[i].BundleID == bundleID {
+			h.apps[i].Enabled = !h.apps[i].Enabled
+			nowEnabled = h.apps[i].Enabled
+			aliases = append([]string{}, h.apps[i].Aliases...)
 			break
 		}
 	}
-	appsMu.Unlock()
+	h.appsMu.Unlock()
 
 	// Suppress/restore each alias via platform override
 	for _, alias := range aliases {
@@ -411,21 +405,21 @@ func toggleApp(p *branchkit.Plugin, bundleID string) {
 	}
 }
 
-func addAppAlias(p *branchkit.Plugin, bundleID, alias string) {
+func (h *Host) addAppAlias(p *branchkit.Plugin, bundleID, alias string) {
 	alias = strings.TrimSpace(strings.ToLower(alias))
 	if alias == "" {
 		return
 	}
-	appsMu.Lock()
-	for i := range apps {
-		if apps[i].BundleID == bundleID {
-			if !containsLower(apps[i].Aliases, alias) {
-				apps[i].Aliases = append(apps[i].Aliases, alias)
+	h.appsMu.Lock()
+	for i := range h.apps {
+		if h.apps[i].BundleID == bundleID {
+			if !containsLower(h.apps[i].Aliases, alias) {
+				h.apps[i].Aliases = append(h.apps[i].Aliases, alias)
 			}
 			break
 		}
 	}
-	appsMu.Unlock()
+	h.appsMu.Unlock()
 
 	// Add via platform override — a user gesture, so the user band.
 	if err := p.Call("overrides.apply", map[string]any{
@@ -436,22 +430,22 @@ func addAppAlias(p *branchkit.Plugin, bundleID, alias string) {
 	}
 }
 
-func removeAppAlias(p *branchkit.Plugin, bundleID, alias string) {
+func (h *Host) removeAppAlias(p *branchkit.Plugin, bundleID, alias string) {
 	alias = strings.TrimSpace(strings.ToLower(alias))
-	appsMu.Lock()
-	for i := range apps {
-		if apps[i].BundleID == bundleID {
-			filtered := apps[i].Aliases[:0]
-			for _, a := range apps[i].Aliases {
+	h.appsMu.Lock()
+	for i := range h.apps {
+		if h.apps[i].BundleID == bundleID {
+			filtered := h.apps[i].Aliases[:0]
+			for _, a := range h.apps[i].Aliases {
 				if strings.ToLower(a) != alias {
 					filtered = append(filtered, a)
 				}
 			}
-			apps[i].Aliases = filtered
+			h.apps[i].Aliases = filtered
 			break
 		}
 	}
-	appsMu.Unlock()
+	h.appsMu.Unlock()
 
 	// Remove via platform override — "remove" filters the merged view, so it
 	// suppresses a plugin-shipped alias and drops a user-added one alike.
@@ -464,11 +458,11 @@ func removeAppAlias(p *branchkit.Plugin, bundleID, alias string) {
 }
 
 // getApps returns a snapshot of the current app list.
-func getApps() []AppEntry {
-	appsMu.Lock()
-	defer appsMu.Unlock()
-	cp := make([]AppEntry, len(apps))
-	copy(cp, apps)
+func (h *Host) getApps() []AppEntry {
+	h.appsMu.Lock()
+	defer h.appsMu.Unlock()
+	cp := make([]AppEntry, len(h.apps))
+	copy(cp, h.apps)
 	return cp
 }
 
