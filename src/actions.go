@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"strings"
 	"time"
 
@@ -98,10 +97,7 @@ func (h *Host) warpCursorToApp(bundleID string) {
 	deadline := time.Now().Add(1500 * time.Millisecond)
 	for {
 		if front, err := h.plugin.NativeFrontmostApp(); err == nil {
-			var app struct {
-				BundleID string `json:"bundle_id"`
-			}
-			if json.Unmarshal(front.App, &app) == nil && strings.EqualFold(app.BundleID, bundleID) {
+			if front.App != nil && front.App.BundleID != nil && strings.EqualFold(*front.App.BundleID, bundleID) {
 				break
 			}
 		}
