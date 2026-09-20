@@ -272,7 +272,13 @@ func TestRestoreIsTheInverseOfAdd(t *testing.T) {
 		if end := strings.Index(body[1:], "\nfunc "); end >= 0 {
 			body = body[:end]
 		}
-		if !strings.Contains(body, `"action": "restore"`) {
+		// Matches the action argument, not one spelling of it: the call sites
+		// moved from a `map[string]any{"action": "restore"}` literal to the
+		// generated OverridesApply wrapper via userBandOverride() on
+		// 2026-09-20, and this pattern went red on the refactor while the
+		// invariant it guards was untouched. A source-grep test pins text, so
+		// it has to pin the least text that still means the thing.
+		if !strings.Contains(body, `"restore"`) {
 			t.Errorf("%s no longer restores first — the user band will accumulate "+
 				"contradictory add/remove pairs that the composed view hides", fn)
 		}

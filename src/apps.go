@@ -101,15 +101,13 @@ func (h *Host) initApps(p *branchkit.Plugin) {
 // difference — the first needs a retry, the second does not. Returning a bare
 // nil for both is what made a transient failure look like a legitimate result.
 func scanInstalledApps(p *branchkit.Plugin) ([]AppEntry, error) {
-	var resp struct {
-		Apps []installedApp `json:"apps"`
-	}
-	if err := p.Call("native.installed_apps", struct{}{}, &resp); err != nil {
+	apps, err := p.NativeInstalledApps()
+	if err != nil {
 		branchkit.Logf("system", "installed_apps: %v", err)
 		return nil, err
 	}
-	entries := make([]AppEntry, 0, len(resp.Apps))
-	for _, app := range resp.Apps {
+	entries := make([]AppEntry, 0, len(apps))
+	for _, app := range apps {
 		alias := strings.ToLower(app.Name)
 		entries = append(entries, AppEntry{
 			Name:     app.Name,
@@ -241,18 +239,23 @@ func containsLower(ss []string, target string) bool {
 func (h *Host) syncDisabledFromOverrides(p *branchkit.Plugin) {
 	// Read the current named_lists["apps"] — this has overrides already applied.
 	// Compare with our internal list to find apps whose aliases are all removed.
-	var resp struct {
-		Data map[string]string `json:"data"`
+	got, err := p.CollectionGet("apps")
+	if err != nil {
+		return
 	}
-	if err := p.Call("collection.get", map[string]string{"name": "apps"}, &resp); err != nil {
+	// Data is json.RawMessage on the wire and stays that way in the generated
+	// type: a collection record body is open by design, so the shape is this
+	// plugin's to assert, not the platform's to promise.
+	var data map[string]string
+	if err := json.Unmarshal(got.Data, &data); err != nil {
 		return
 	}
 
 	h.appsMu.Lock()
 	defer h.appsMu.Unlock()
 
-	activeAliases := make(map[string]bool, len(resp.Data))
-	for spoken := range resp.Data {
+	activeAliases := make(map[string]bool, len(data))
+	for spoken := range data {
 		activeAliases[spoken] = true
 	}
 
@@ -389,16 +392,12 @@ func (h *Host) toggleApp(p *branchkit.Plugin, bundleID string) {
 			// Re-enable: clear the suppression so plugin data takes effect.
 			// tenant "_user": this is the user's settings-tab gesture, the
 			// plugin is transport — it must land in the user band, not ours.
-			if err := p.Call("overrides.apply", map[string]any{
-				"collection": "apps", "action": "restore", "id": spoken, "tenant": "_user",
-			}, nil); err != nil {
+			if err := userBandOverride(p, "apps", "restore", spoken, nil); err != nil {
 				branchkit.Logf("system", "app_toggle restore %q: %v", spoken, err)
 			}
 		} else {
 			// Disable: suppress each alias
-			if err := p.Call("overrides.apply", map[string]any{
-				"collection": "apps", "action": "remove", "id": spoken, "tenant": "_user",
-			}, nil); err != nil {
+			if err := userBandOverride(p, "apps", "remove", spoken, nil); err != nil {
 				branchkit.Logf("system", "app_toggle remove %q: %v", spoken, err)
 			}
 		}
@@ -422,10 +421,8 @@ func (h *Host) addAppAlias(p *branchkit.Plugin, bundleID, alias string) {
 	h.appsMu.Unlock()
 
 	// Add via platform override — a user gesture, so the user band.
-	if err := p.Call("overrides.apply", map[string]any{
-		"collection": "apps", "action": "add", "tenant": "_user",
-		"fields": map[string]string{"spoken": alias, "bundle_id": bundleID},
-	}, nil); err != nil {
+	if err := userBandOverride(p, "apps", "add", "",
+		map[string]string{"spoken": alias, "bundle_id": bundleID}); err != nil {
 		branchkit.Logf("system", "alias add %q: %v", alias, err)
 	}
 }
@@ -450,9 +447,7 @@ func (h *Host) removeAppAlias(p *branchkit.Plugin, bundleID, alias string) {
 	// Remove via platform override — "remove" filters the merged view, so it
 	// suppresses a plugin-shipped alias and drops a user-added one alike.
 	// A user gesture, so the user band.
-	if err := p.Call("overrides.apply", map[string]any{
-		"collection": "apps", "action": "remove", "id": alias, "tenant": "_user",
-	}, nil); err != nil {
+	if err := userBandOverride(p, "apps", "remove", alias, nil); err != nil {
 		branchkit.Logf("system", "alias remove %q: %v", alias, err)
 	}
 }
@@ -477,4 +472,26 @@ func loadAppsFile(path string) []AppEntry {
 		return nil
 	}
 	return entries
+}
+
+// userBandOverride wraps the generated OverridesApply for this plugin's one
+// shape: a user-band gesture on a collection, by record id or with fields.
+// The generated wrapper is positional across seven arguments, which reads
+// badly eight times over; this names them once.
+func userBandOverride(p *branchkit.Plugin, collection, action, id string, fields map[string]string) error {
+	tenant := "_user"
+	var idPtr *string
+	if id != "" {
+		idPtr = &id
+	}
+	var raw json.RawMessage
+	if fields != nil {
+		b, err := json.Marshal(fields)
+		if err != nil {
+			return err
+		}
+		raw = b
+	}
+	_, err := p.OverridesApply(action, collection, nil, raw, idPtr, nil, &tenant)
+	return err
 }

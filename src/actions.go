@@ -72,10 +72,7 @@ func (h *Host) handleLaunch(p LaunchParams, req *branchkit.OnActionRequest) (any
 	if p.NewInstance != nil {
 		newInstance = *p.NewInstance
 	}
-	if err := h.plugin.Call("native.launch_app", map[string]any{
-		"bundle_id":    p.BundleID,
-		"new_instance": newInstance,
-	}, nil); err != nil {
+	if err := h.plugin.NativeLaunchApp(p.BundleID, &newInstance); err != nil {
 		branchkit.Logf("system", "launch: %v", err)
 	}
 	if h.LoadSystemConfig().MouseFollowsFocus {
@@ -175,6 +172,12 @@ func (h *Host) handleNewWindow(p NewWindowParams, req *branchkit.OnActionRequest
 		branchkit.Logf("system", "new_window: no bundle_id provided")
 		return nil, nil
 	}
+	// Deliberately raw: native.new_app_window answers `{ok}` — whether the
+	// app was scriptable — and THAT is what selects the fallback below. The
+	// generated NativeNewAppWindow wrapper calls with a nil result pointer
+	// and returns only `error`, so the bool is unreachable through it.
+	// Migrating this site would silently disable the fallback (caught
+	// 2026-09-20, before it shipped). Fix the generator, then use the wrapper.
 	var res struct {
 		OK bool `json:"ok"`
 	}
@@ -182,10 +185,8 @@ func (h *Host) handleNewWindow(p NewWindowParams, req *branchkit.OnActionRequest
 	if err != nil || !res.OK {
 		branchkit.Logf("system", "new_window: %s not scriptable (err=%v) — falling back to launch",
 			p.BundleID, err)
-		if err := h.plugin.Call("native.launch_app", map[string]any{
-			"bundle_id":    p.BundleID,
-			"new_instance": false,
-		}, nil); err != nil {
+		noNewInstance := false
+		if err := h.plugin.NativeLaunchApp(p.BundleID, &noNewInstance); err != nil {
 			branchkit.Logf("system", "new_window launch fallback: %v", err)
 		}
 	}
@@ -197,9 +198,7 @@ func (h *Host) handleOpen(p OpenParams, req *branchkit.OnActionRequest) (any, er
 		branchkit.Logf("system", "open: no target provided")
 		return nil, nil
 	}
-	if err := h.plugin.Call("native.open_target", map[string]any{
-		"target": p.Target,
-	}, nil); err != nil {
+	if err := h.plugin.NativeOpenTarget(p.Target); err != nil {
 		branchkit.Logf("system", "open: %v", err)
 	}
 	return nil, nil

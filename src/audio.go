@@ -12,8 +12,8 @@ const volumeStep = 0.07 // ~7% per step
 
 // getVolume returns the current output volume (0.0–1.0) and mute state via actuator RPC.
 func (h *Host) getVolume() (float64, bool, error) {
-	var resp branchkit.NativeVolumeResponse
-	if err := h.plugin.Call("native.volume", nil, &resp); err != nil {
+	resp, err := h.plugin.NativeVolume()
+	if err != nil {
 		return 0, false, fmt.Errorf("get volume: %w", err)
 	}
 	return resp.Volume, resp.IsMuted, nil
@@ -27,7 +27,7 @@ func (h *Host) setVolume(vol float64) error {
 	if vol > 1 {
 		vol = 1
 	}
-	return h.plugin.Call("native.set_volume", branchkit.NativeSetVolumeRequest{Volume: vol}, nil)
+	return h.plugin.NativeSetVolume(vol)
 }
 
 func (h *Host) volumeUp() error {
@@ -47,11 +47,11 @@ func (h *Host) volumeDown() error {
 }
 
 func (h *Host) mute() error {
-	return h.plugin.Call("native.mute", branchkit.NativeMuteRequest{Muted: true}, nil)
+	return h.plugin.NativeMute(true)
 }
 
 func (h *Host) unmute() error {
-	return h.plugin.Call("native.mute", branchkit.NativeMuteRequest{Muted: false}, nil)
+	return h.plugin.NativeMute(false)
 }
 
 // pushAudioDevicesCollections publishes current output/input device names as
@@ -72,7 +72,7 @@ func pushAudioDevicesCollections(p *branchkit.Plugin) {
 	}
 	var outputs, inputs []branchkit.CollectionPutEntry
 	seenOut, seenIn := map[string]bool{}, map[string]bool{}
-	for _, d := range resp.Devices {
+	for _, d := range resp {
 		spoken := strings.ToLower(strings.TrimSpace(d.Name))
 		if spoken == "" {
 			continue
@@ -104,20 +104,13 @@ func pushAudioDevicesCollections(p *branchkit.Plugin) {
 }
 
 // getAudioDevices fetches audio devices from the actuator via RPC.
-func getAudioDevices(p *branchkit.Plugin) (*branchkit.NativeAudioDevicesResponse, error) {
-	var resp branchkit.NativeAudioDevicesResponse
-	if err := p.Call("native.audio_devices", nil, &resp); err != nil {
-		return nil, err
-	}
-	return &resp, nil
+func getAudioDevices(p *branchkit.Plugin) ([]branchkit.AudioDevice, error) {
+	return p.NativeAudioDevices()
 }
 
 // setAudioDeviceViaRPC sets the default audio device via RPC.
 func setAudioDeviceViaRPC(p *branchkit.Plugin, uid, deviceType string) error {
-	return p.Call("native.set_audio_device", map[string]string{
-		"uid":         uid,
-		"device_type": deviceType,
-	}, nil)
+	return p.NativeSetAudioDevice(deviceType, uid)
 }
 
 // matchesDevice checks if spokenName matches a device by name, voice hint, or alias.
@@ -141,7 +134,7 @@ func (h *Host) setOutputDevice(p *branchkit.Plugin, spokenName string) error {
 	}
 	spoken := strings.ToLower(spokenName)
 	aliases := h.loadDeviceAliases()
-	for _, d := range devices.Devices {
+	for _, d := range devices {
 		if d.IsOutput && matchesDevice(d, spoken, aliases) {
 			return setAudioDeviceViaRPC(p, d.UID, "output")
 		}
@@ -157,7 +150,7 @@ func (h *Host) setInputDevice(p *branchkit.Plugin, spokenName string) error {
 	}
 	spoken := strings.ToLower(spokenName)
 	aliases := h.loadDeviceAliases()
-	for _, d := range devices.Devices {
+	for _, d := range devices {
 		if d.IsInput && matchesDevice(d, spoken, aliases) {
 			return setAudioDeviceViaRPC(p, d.UID, "input")
 		}

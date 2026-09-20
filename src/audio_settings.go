@@ -111,13 +111,13 @@ func (h *Host) renderSoundSettings(p *branchkit.Plugin) (string, error) {
 	devList, err := getAudioDevices(p)
 	if err != nil {
 		branchkit.Logf("system", "GetAudioDevices error: %v", err)
-		devList = &branchkit.NativeAudioDevicesResponse{}
+		devList = nil
 	}
 
 	aliases := h.loadDeviceAliases()
 
 	var outputs, inputs []deviceView
-	for _, d := range devList.Devices {
+	for _, d := range devList {
 		hint := voiceHint(d.Name)
 		devAliases := aliases[d.UID]
 		if d.IsOutput {

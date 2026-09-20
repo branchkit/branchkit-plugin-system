@@ -157,9 +157,7 @@ func addAppTrait(p *branchkit.Plugin, bundleID, rawTrait string) error {
 	// Clear a prior suppression. An error here is the ordinary "there was
 	// nothing to restore" case, which is not a failure — the add below is what
 	// reports one.
-	if err := p.Call("overrides.apply", map[string]any{
-		"collection": appTraitsCollection, "action": "restore", "tenant": "_user", "id": id,
-	}, nil); err != nil {
+	if err := userBandOverride(p, appTraitsCollection, "restore", id, nil); err != nil {
 		branchkit.Logf("system", "trait restore %q (may be a no-op): %v", id, err)
 	}
 
@@ -170,10 +168,8 @@ func addAppTrait(p *branchkit.Plugin, bundleID, rawTrait string) error {
 		return nil
 	}
 
-	if err := p.Call("overrides.apply", map[string]any{
-		"collection": appTraitsCollection, "action": "add", "tenant": "_user",
-		"fields": map[string]string{"key": id, "trait": trait, "bundle_id": bundleID},
-	}, nil); err != nil {
+	if err := userBandOverride(p, appTraitsCollection, "add", "",
+		map[string]string{"key": id, "trait": trait, "bundle_id": bundleID}); err != nil {
 		branchkit.Logf("system", "trait add %q: %v", id, err)
 		return fmt.Errorf("could not add trait %q: %w", trait, err)
 	}
@@ -223,9 +219,7 @@ func removeAppTrait(p *branchkit.Plugin, bundleID, rawTrait string) error {
 
 	// Drop any user-band state for this id. An error is the ordinary "nothing
 	// to restore" case for a trait that only ever came from the shipped file.
-	if err := p.Call("overrides.apply", map[string]any{
-		"collection": appTraitsCollection, "action": "restore", "tenant": "_user", "id": id,
-	}, nil); err != nil {
+	if err := userBandOverride(p, appTraitsCollection, "restore", id, nil); err != nil {
 		branchkit.Logf("system", "trait restore %q (may be a no-op): %v", id, err)
 	}
 
@@ -235,9 +229,7 @@ func removeAppTrait(p *branchkit.Plugin, bundleID, rawTrait string) error {
 	}
 
 	// Still there, so it ships. Suppress it.
-	if err := p.Call("overrides.apply", map[string]any{
-		"collection": appTraitsCollection, "action": "remove", "tenant": "_user", "id": id,
-	}, nil); err != nil {
+	if err := userBandOverride(p, appTraitsCollection, "remove", id, nil); err != nil {
 		branchkit.Logf("system", "trait remove %q: %v", id, err)
 		return fmt.Errorf("could not remove trait %q: %w", trait, err)
 	}
