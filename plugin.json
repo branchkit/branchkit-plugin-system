@@ -3,14 +3,16 @@
   "id": "system",
   "name": "System",
   "icon": "gear",
-  "privileges": [
-    "apps",
-    "apps.control",
-    "audio",
-    "filesystem",
-    "input",
-    "display"
-  ],
+  "requires": {
+    "privileges": [
+      "apps",
+      "apps.control",
+      "audio",
+      "filesystem",
+      "input",
+      "display"
+    ]
+  },
   "version": "1.0.0",
   "min_api_version": "0.1.0",
   "description": "Application registry, app switching HUD, audio control, and system settings.",
