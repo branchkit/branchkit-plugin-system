@@ -172,24 +172,18 @@ func (h *Host) handleNewWindow(p NewWindowParams, req *branchkit.OnActionRequest
 		branchkit.Logf("system", "new_window: no bundle_id provided")
 		return nil, nil
 	}
-	// Still raw, but no longer forever: native.new_app_window answers
-	// `{ok}` — whether the app was scriptable — and THAT is what selects
-	// the fallback below. The generator that dropped it was FIXED
-	// 2026-09-22, and `NativeNewAppWindow` now returns `(bool, error)`.
+	// `scriptable` is the whole point of this call: native.new_app_window
+	// answers whether the app had a scriptable window element, and THAT
+	// selects the fallback below rather than any error.
 	//
-	// This plugin pins the RELEASED plugin-sdk-go (v0.9.0) with no
-	// `replace`, deliberately: it is one of the four that prove a third
-	// party can build against what is published. So the migration waits on
-	// the next SDK release rather than on the generator, and it is then a
-	// two-line change:
-	//
-	//     scriptable, err := h.plugin.NativeNewAppWindow(p.BundleID)
-	//     if err != nil || !scriptable {
-	var res struct {
-		OK bool `json:"ok"`
-	}
-	err := h.plugin.Call("native.new_app_window", map[string]string{"bundle_id": p.BundleID}, &res)
-	if err != nil || !res.OK {
+	// It was hand-rolled as a raw `plugin.Call` until 2026-09-22, because
+	// the generated wrapper returned `error` alone and dropped the bool —
+	// migrating it then would have silently disabled this fallback, caught
+	// here 2026-09-20 before it shipped. The generator was fixed and
+	// plugin-sdk-go v0.10.0 carries the signature, so the wrapper can
+	// finally answer. This was the last raw call in any first-party plugin.
+	scriptable, err := h.plugin.NativeNewAppWindow(p.BundleID)
+	if err != nil || !scriptable {
 		branchkit.Logf("system", "new_window: %s not scriptable (err=%v) — falling back to launch",
 			p.BundleID, err)
 		noNewInstance := false
