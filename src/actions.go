@@ -172,12 +172,19 @@ func (h *Host) handleNewWindow(p NewWindowParams, req *branchkit.OnActionRequest
 		branchkit.Logf("system", "new_window: no bundle_id provided")
 		return nil, nil
 	}
-	// Deliberately raw: native.new_app_window answers `{ok}` — whether the
-	// app was scriptable — and THAT is what selects the fallback below. The
-	// generated NativeNewAppWindow wrapper calls with a nil result pointer
-	// and returns only `error`, so the bool is unreachable through it.
-	// Migrating this site would silently disable the fallback (caught
-	// 2026-09-20, before it shipped). Fix the generator, then use the wrapper.
+	// Still raw, but no longer forever: native.new_app_window answers
+	// `{ok}` — whether the app was scriptable — and THAT is what selects
+	// the fallback below. The generator that dropped it was FIXED
+	// 2026-09-22, and `NativeNewAppWindow` now returns `(bool, error)`.
+	//
+	// This plugin pins the RELEASED plugin-sdk-go (v0.9.0) with no
+	// `replace`, deliberately: it is one of the four that prove a third
+	// party can build against what is published. So the migration waits on
+	// the next SDK release rather than on the generator, and it is then a
+	// two-line change:
+	//
+	//     scriptable, err := h.plugin.NativeNewAppWindow(p.BundleID)
+	//     if err != nil || !scriptable {
 	var res struct {
 		OK bool `json:"ok"`
 	}
