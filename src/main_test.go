@@ -204,8 +204,9 @@ func TestAppsTempl_RendersNonEmpty(t *testing.T) {
 	if !strings.Contains(html, "This app is a &#39;terminal&#39;") {
 		t.Error("expected the trait name interpolated into the chip tooltip")
 	}
-	// The tooltip is where the fact-vs-opinion distinction is stated, and
-	// DESIGN_APP_TRAITS.md makes that an obligation rather than a nicety.
+	// The tooltip is where the fact-vs-opinion distinction is stated, and it
+	// is an obligation rather than a nicety: a trait is a fact every plugin
+	// reads, so removing one is never a dictation-only change.
 	if !strings.Contains(html, "not just dictation") {
 		t.Error("tooltip must say a trait change reaches every plugin, not only dictation")
 	}
