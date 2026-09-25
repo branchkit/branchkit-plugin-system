@@ -73,6 +73,9 @@ func pushAudioDevicesCollections(p *branchkit.Plugin) {
 	var outputs, inputs []branchkit.CollectionPutEntry
 	seenOut, seenIn := map[string]bool{}, map[string]bool{}
 	for _, d := range resp {
+		if isAutoAggregate(d) {
+			continue
+		}
 		spoken := strings.ToLower(strings.TrimSpace(d.Name))
 		if spoken == "" {
 			continue
@@ -101,6 +104,16 @@ func pushAudioDevicesCollections(p *branchkit.Plugin) {
 	if _, err := p.Replace("audio_inputs", inputs, branchkit.ScopeCollection()); err != nil {
 		branchkit.Logf("system", "replace audio_inputs: %v", err)
 	}
+}
+
+// isAutoAggregate reports whether d is an aggregate device macOS created for
+// one process's own use — named and identified "CADefaultDeviceAggregate-
+// <pid>-<n>", as a voice-processing audio unit makes. Nobody picks it as an
+// output, and because its name carries a process id, every relaunch would add
+// new, unsayable words to the speech vocabulary, which never forgets a word.
+func isAutoAggregate(d branchkit.AudioDevice) bool {
+	const prefix = "CADefaultDeviceAggregate"
+	return strings.HasPrefix(d.UID, prefix) || strings.HasPrefix(d.Name, prefix)
 }
 
 // getAudioDevices fetches audio devices from the actuator via RPC.
