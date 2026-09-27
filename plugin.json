@@ -28,17 +28,17 @@
   "run": "./system-plugin",
   "action_prefix": "system",
   "action_types": {
-    "volume_up": { "label": "Volume Up" },
-    "volume_down": { "label": "Volume Down" },
-    "mute": { "label": "Mute" },
-    "unmute": { "label": "Unmute" },
-    "set_output": {
+    "volume_up": { "uses": ["native.volume", "native.set_volume"], "label": "Volume Up" },
+    "volume_down": { "uses": ["native.volume", "native.set_volume"], "label": "Volume Down" },
+    "mute": { "uses": ["native.mute"], "label": "Mute" },
+    "unmute": { "uses": ["native.mute"], "label": "Unmute" },
+    "set_output": { "uses": ["native.audio_devices", "native.set_audio_device"],
       "label": "Set Audio Output Device",
       "fields": [
         { "key": "name", "label": "Device Name", "field_type": "string", "required": true }
       ]
     },
-    "set_input": {
+    "set_input": { "uses": ["native.audio_devices", "native.set_audio_device"],
       "label": "Set Audio Input Device",
       "fields": [
         { "key": "name", "label": "Device Name", "field_type": "string", "required": true }
