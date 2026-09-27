@@ -96,3 +96,34 @@ func TestContainsLower(t *testing.T) {
 		t.Error("expected no match on nil slice")
 	}
 }
+
+// Off macOS a curated entry applies only through its id for that OS, and
+// then carries that id, so its aliases land on the app the scan found. Keyed
+// by the macOS bundle id it became a second "firefox" row that won the
+// spoken name and launched nothing on Windows.
+func TestCoreForOS(t *testing.T) {
+	core := []AppEntry{
+		{Name: "Firefox", BundleID: "org.mozilla.firefox", Aliases: []string{"firefox"},
+			IDs: map[string][]string{"linux": {"firefox"}, "windows": {"firefox"}}},
+		{Name: "Safari", BundleID: "com.apple.Safari", Aliases: []string{"safari"}},
+		{Name: "kitty", BundleID: "net.kovidgoyal.kitty", Traits: []string{"terminal"},
+			IDs: map[string][]string{"linux": {"kitty"}}},
+	}
+	if got := coreForOS(core, "darwin"); len(got) != 3 || got[0].BundleID != "org.mozilla.firefox" {
+		t.Fatalf("macOS keeps the file as written, got %+v", got)
+	}
+	win := coreForOS(core, "windows")
+	if len(win) != 1 || win[0].BundleID != "firefox" || win[0].IDs != nil {
+		t.Fatalf("windows: want only firefox, got %+v", win)
+	}
+	linux := coreForOS(core, "linux")
+	if len(linux) != 2 || linux[1].BundleID != "kitty" || linux[1].Traits[0] != "terminal" {
+		t.Fatalf("linux: want firefox and kitty, got %+v", linux)
+	}
+
+	scanned := []AppEntry{{Name: "Firefox", BundleID: "firefox", Aliases: []string{"firefox"}}}
+	merged := mergeAliases(scanned, win)
+	if len(merged) != 1 || merged[0].BundleID != "firefox" {
+		t.Fatalf("the curated entry must merge into the scanned app, got %+v", merged)
+	}
+}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -27,6 +28,12 @@ type AppEntry struct {
 	// storage.supports_record_groups). Two meanings for one word in one area is
 	// a homonym, and the second one is always the expensive one to undo.
 	Traits []string `json:"traits,omitempty"`
+	// IDs name the application off macOS, where BundleID (a macOS bundle
+	// identifier) means nothing: "linux" is the identity the Linux world model
+	// gives the app's windows (its desktop entry, "google-chrome"), "windows"
+	// its executable's lowercased stem ("chrome"). An entry with no id for the
+	// running OS does not apply there. Only core_apps.json carries these.
+	IDs map[string][]string `json:"ids,omitempty"`
 	// Note documents an entry that nobody here has run — JSON has no comments,
 	// so unverified bundle identifiers say so in the data. Never read by code.
 	Note string `json:"note,omitempty"`
@@ -57,7 +64,7 @@ func (h *Host) initApps(p *branchkit.Plugin) {
 	scanned, scanErr := scanInstalledApps(p)
 
 	// 2. Load curated core aliases (shipped alongside plugin binary)
-	coreApps := loadAppsFile(filepath.Join(branchkit.PluginDir(), "core_apps.json"))
+	coreApps := loadCoreApps()
 	appTraits := buildAppTraits(coreApps)
 	scanned = mergeAliases(scanned, coreApps)
 
@@ -142,7 +149,7 @@ func (h *Host) retryAppScan(p *branchkit.Plugin) {
 			branchkit.Logf("system", "app scan retry %d/%d: %v", i+1, len(appScanRetryDelays), err)
 			continue
 		}
-		coreApps := loadAppsFile(filepath.Join(branchkit.PluginDir(), "core_apps.json"))
+		coreApps := loadCoreApps()
 		appTraits := buildAppTraits(coreApps)
 		scanned = mergeAliases(scanned, coreApps)
 
@@ -459,6 +466,36 @@ func (h *Host) getApps() []AppEntry {
 	cp := make([]AppEntry, len(h.apps))
 	copy(cp, h.apps)
 	return cp
+}
+
+// loadCoreApps reads the curated apps shipped beside the plugin, as they
+// apply on this OS.
+func loadCoreApps() []AppEntry {
+	return coreForOS(loadAppsFile(filepath.Join(branchkit.PluginDir(), "core_apps.json")), runtime.GOOS)
+}
+
+// coreForOS keeps the curated entries that name an application on goos,
+// each carrying that OS's identity as its BundleID, so aliases and traits
+// attach to the app the native scan and the world model report. Keyed by
+// macOS bundle ids alone, a curated "firefox" on Windows or Linux became a
+// second row for "org.mozilla.firefox" that took the spoken name from the
+// scanned app, and launching it asked for an app that does not exist there.
+func coreForOS(core []AppEntry, goos string) []AppEntry {
+	if goos == "darwin" {
+		return core
+	}
+	var out []AppEntry
+	for _, ca := range core {
+		for _, id := range ca.IDs[goos] {
+			e := ca
+			e.BundleID = id
+			e.IDs = nil
+			e.Aliases = append([]string(nil), ca.Aliases...)
+			e.Traits = append([]string(nil), ca.Traits...)
+			out = append(out, e)
+		}
+	}
+	return out
 }
 
 func loadAppsFile(path string) []AppEntry {
