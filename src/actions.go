@@ -72,7 +72,7 @@ func (h *Host) handleLaunch(p LaunchParams, req *branchkit.OnActionRequest) (any
 	if p.NewInstance != nil {
 		newInstance = *p.NewInstance
 	}
-	if err := h.plugin.NativeLaunchApp(p.BundleID, &newInstance); err != nil {
+	if err := h.plugin.NativeLaunchApp(branchkit.NativeLaunchAppRequest{BundleID: p.BundleID, NewInstance: &newInstance}); err != nil {
 		branchkit.Logf("system", "launch: %v", err)
 	}
 	if h.LoadSystemConfig().MouseFollowsFocus {
@@ -106,7 +106,7 @@ func (h *Host) warpCursorToApp(bundleID string) {
 	// One more beat for the window raise after the app becomes frontmost.
 	time.Sleep(80 * time.Millisecond)
 
-	wins, err := h.plugin.NativeAppWindows(bundleID)
+	wins, err := h.plugin.NativeAppWindows(branchkit.NativeAppWindowsRequest{BundleID: bundleID})
 	if err != nil {
 		branchkit.Logf("system", "warp: app_windows(%s): %v", bundleID, err)
 		return
@@ -120,7 +120,7 @@ func (h *Host) warpCursorToApp(bundleID string) {
 		branchkit.Logf("system", "warp: %s skipped (no visible window, or cursor already inside)", bundleID)
 		return
 	}
-	if err := h.plugin.NativeWarpCursor(target.X, target.Y); err != nil {
+	if err := h.plugin.NativeWarpCursor(branchkit.NativeWarpCursorRequest{X: target.X, Y: target.Y}); err != nil {
 		branchkit.Logf("system", "warp: warp_cursor: %v", err)
 		return
 	}
@@ -182,12 +182,12 @@ func (h *Host) handleNewWindow(p NewWindowParams, req *branchkit.OnActionRequest
 	// here 2026-09-20 before it shipped. The generator was fixed and
 	// plugin-sdk-go v0.10.0 carries the signature, so the wrapper can
 	// finally answer. This was the last raw call in any first-party plugin.
-	scriptable, err := h.plugin.NativeNewAppWindow(p.BundleID)
+	scriptable, err := h.plugin.NativeNewAppWindow(branchkit.NativeNewAppWindowRequest{BundleID: p.BundleID})
 	if err != nil || !scriptable {
 		branchkit.Logf("system", "new_window: %s not scriptable (err=%v) — falling back to launch",
 			p.BundleID, err)
 		noNewInstance := false
-		if err := h.plugin.NativeLaunchApp(p.BundleID, &noNewInstance); err != nil {
+		if err := h.plugin.NativeLaunchApp(branchkit.NativeLaunchAppRequest{BundleID: p.BundleID, NewInstance: &noNewInstance}); err != nil {
 			branchkit.Logf("system", "new_window launch fallback: %v", err)
 		}
 	}
@@ -199,7 +199,7 @@ func (h *Host) handleOpen(p OpenParams, req *branchkit.OnActionRequest) (any, er
 		branchkit.Logf("system", "open: no target provided")
 		return nil, nil
 	}
-	if err := h.plugin.NativeOpenTarget(p.Target); err != nil {
+	if err := h.plugin.NativeOpenTarget(branchkit.NativeOpenTargetRequest{Target: p.Target}); err != nil {
 		branchkit.Logf("system", "open: %v", err)
 	}
 	return nil, nil

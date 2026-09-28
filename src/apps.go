@@ -246,7 +246,7 @@ func containsLower(ss []string, target string) bool {
 func (h *Host) syncDisabledFromOverrides(p *branchkit.Plugin) {
 	// Read the current named_lists["apps"] — this has overrides already applied.
 	// Compare with our internal list to find apps whose aliases are all removed.
-	got, err := p.CollectionGet("apps")
+	got, err := p.CollectionGet(branchkit.CollectionGetRequest{Name: "apps"})
 	if err != nil {
 		return
 	}
@@ -529,6 +529,6 @@ func userBandOverride(p *branchkit.Plugin, collection, action, id string, fields
 		}
 		raw = b
 	}
-	_, err := p.OverridesApply(action, collection, nil, raw, idPtr, nil, &tenant)
+	_, err := p.OverridesApply(branchkit.OverridesApplyRequest{Action: action, Collection: collection, Fields: raw, ID: idPtr, Tenant: &tenant})
 	return err
 }

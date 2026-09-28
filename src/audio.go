@@ -27,7 +27,7 @@ func (h *Host) setVolume(vol float64) error {
 	if vol > 1 {
 		vol = 1
 	}
-	return h.plugin.NativeSetVolume(vol)
+	return h.plugin.NativeSetVolume(branchkit.NativeSetVolumeRequest{Volume: vol})
 }
 
 func (h *Host) volumeUp() error {
@@ -47,11 +47,11 @@ func (h *Host) volumeDown() error {
 }
 
 func (h *Host) mute() error {
-	return h.plugin.NativeMute(true)
+	return h.plugin.NativeMute(branchkit.NativeMuteRequest{Muted: true})
 }
 
 func (h *Host) unmute() error {
-	return h.plugin.NativeMute(false)
+	return h.plugin.NativeMute(branchkit.NativeMuteRequest{Muted: false})
 }
 
 // pushAudioDevicesCollections publishes current output/input device names as
@@ -123,7 +123,7 @@ func getAudioDevices(p *branchkit.Plugin) ([]branchkit.AudioDevice, error) {
 
 // setAudioDeviceViaRPC sets the default audio device via RPC.
 func setAudioDeviceViaRPC(p *branchkit.Plugin, uid, deviceType string) error {
-	return p.NativeSetAudioDevice(deviceType, uid)
+	return p.NativeSetAudioDevice(branchkit.NativeSetAudioDeviceRequest{DeviceType: deviceType, UID: uid})
 }
 
 // matchesDevice checks if spokenName matches a device by name, voice hint, or alias.
