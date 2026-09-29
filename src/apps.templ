@@ -9,17 +9,11 @@ templ Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) {
 			<div class="settings-row">
 				<div class="label" title="After 'focus <app>' / 'switch <app>', warp the cursor to the app's window so scrolling lands there">Mouse follows focus</div>
 				<div class="row-actions">
-					if mouseFollowsFocus {
-						<span class="badge badge-core clickable"
-							data-on:click={ branchkit.MethodPost("set_mouse_follows_focus", "{enabled: false}") }>
-							Enabled
-						</span>
-					} else {
-						<span class="badge badge-user clickable"
-							data-on:click={ branchkit.MethodPost("set_mouse_follows_focus", "{enabled: true}") }>
-							Disabled
-						</span>
-					}
+					// A setting, so a switch: a real control that Tab, screen readers
+					// and hint overlays reach. It reports the requested value and moves
+					// only when the re-render says the change took.
+					<bk-toggle checked?={ mouseFollowsFocus } title="Mouse follows focus"
+						data-on:change={ branchkit.MethodPost("set_mouse_follows_focus", "{enabled: evt.detail.checked}") }></bk-toggle>
 				</div>
 			</div>
 		</bk-table>
@@ -33,7 +27,7 @@ templ Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) {
 			<div>Application</div>
 			<div>Aliases</div>
 			<div>Traits</div>
-			<div class="align-right">Status</div>
+			<div class="align-right">Enabled</div>
 		</div>
 		for _, app := range apps {
 			<div class="settings-row">
@@ -93,10 +87,8 @@ templ Apps(apps []appRowView, mouseFollowsFocus bool, traits traitCatalog) {
 					</div>
 				</div>
 				<div class="row-actions">
-					<span class={ "badge clickable " + app.BadgeClass }
-						data-on:click={ branchkit.MethodPost("app_toggle", ui.Args("bundle_id", app.BundleID)) }>
-						{ app.Status }
-					</span>
+					<bk-toggle checked?={ app.Enabled } title={ app.Name + " enabled" }
+						data-on:change={ branchkit.MethodPost("app_toggle", ui.Args("bundle_id", app.BundleID)) }></bk-toggle>
 				</div>
 			</div>
 		}

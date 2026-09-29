@@ -163,7 +163,7 @@ func TestHandleOpen_NoTarget(t *testing.T) {
 func TestAppsTempl_RendersNonEmpty(t *testing.T) {
 	rows := []appRowView{
 		{Name: "Safari", BundleID: "com.apple.Safari", Aliases: []string{"browser"},
-			Traits: []string{"terminal"}, Status: "Enabled", BadgeClass: "badge-core"},
+			Traits: []string{"terminal"}, Enabled: true},
 	}
 	cat := traitCatalog{
 		ByBundle: map[string][]string{"com.apple.Safari": {"terminal"}},
@@ -180,6 +180,11 @@ func TestAppsTempl_RendersNonEmpty(t *testing.T) {
 	}
 	if !strings.Contains(html, "browser") {
 		t.Error("expected alias in rendered output")
+	}
+	// The enabled app's switch renders checked (and this pins the attribute
+	// order the disabled-app test below relies on).
+	if !strings.Contains(html, `<bk-toggle checked title="Safari enabled"`) {
+		t.Errorf("expected Safari's switch checked; got %s", html)
 	}
 	if !strings.Contains(html, "app_trait_remove") {
 		t.Error("expected a trait chip with its remove button")
@@ -295,8 +300,12 @@ func TestAppRowView_DisabledStatus(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !strings.Contains(html, "Disabled") {
-		t.Error("expected 'Disabled' status badge for disabled app")
+	// A switch, not a status word: a real control, unchecked for a disabled app.
+	if !strings.Contains(html, `title="Hidden enabled"`) {
+		t.Fatalf("expected a switch named for the app; got %s", html)
+	}
+	if strings.Contains(html, `<bk-toggle checked title="Hidden enabled"`) {
+		t.Error("expected the disabled app's switch to be unchecked")
 	}
 }
 
@@ -344,4 +353,21 @@ func mustRender(t *testing.T, c branchkit.HTMLComponent) string {
 		t.Fatalf("render: %v", err)
 	}
 	return html
+}
+
+func TestDeviceList_MakeDefaultIsAButton(t *testing.T) {
+	devs := []deviceView{
+		{UID: "a", Name: "Speakers", IsDefault: true},
+		{UID: "b", Name: "Headphones"},
+	}
+	html := mustRender(t, deviceList(devs, "output"))
+	if !strings.Contains(html, "Default") {
+		t.Error("expected the default device labelled Default")
+	}
+	if !strings.Contains(html, `title="Make Headphones the default output"`) {
+		t.Errorf("expected a Make default button for the other device; got %s", html)
+	}
+	if strings.Contains(html, `class="clickable"`) {
+		t.Error("device choice must be a button, not a clickable span")
+	}
 }

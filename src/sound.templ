@@ -10,7 +10,7 @@ templ deviceList(devices []deviceView, deviceType string) {
 		<div class="settings-row">
 			<div class="label">
 				<div class="sound-device-name-row">
-					<span class="clickable" data-on:click={ branchkit.MethodPost("set-device", ui.Args("uid", dev.UID, "device_type", deviceType)) }>{ dev.Name }</span>
+					{ dev.Name }
 				</div>
 				<div class="sound-device-hints">
 					<div class="alias-tags">
@@ -34,8 +34,14 @@ templ deviceList(devices []deviceView, deviceType string) {
 				</div>
 			</div>
 			<div class="row-actions">
+				// Choosing a device is a real button beside the name, not a
+				// click on the name: a span handler reached neither Tab, a screen
+				// reader nor a hint overlay, and nothing said the name did anything.
 				if dev.IsDefault {
 					<span class="badge badge-core">Default</span>
+				} else {
+					<button type="button" class="small" title={ "Make " + dev.Name + " the default " + deviceType }
+						data-on:click={ branchkit.MethodPost("set-device", ui.Args("uid", dev.UID, "device_type", deviceType)) }>Make default</button>
 				}
 			</div>
 		</div>

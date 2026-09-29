@@ -12,12 +12,11 @@ import (
 var systemCSS string
 
 type appRowView struct {
-	Name       string
-	BundleID   string
-	Aliases    []string
-	Traits     []string
-	Status     string
-	BadgeClass string
+	Name     string
+	BundleID string
+	Aliases  []string
+	Traits   []string
+	Enabled  bool
 }
 
 // --- Handlers ---
@@ -42,19 +41,12 @@ func (h *Host) renderAppsTab(req *branchkit.RenderSettingsRequest) (string, erro
 			!strings.Contains(strings.ToLower(app.BundleID), search) {
 			continue
 		}
-		status := "Enabled"
-		badgeClass := "badge-core"
-		if !app.Enabled {
-			status = "Disabled"
-			badgeClass = "badge-user"
-		}
 		rows = append(rows, appRowView{
-			Name:       app.Name,
-			BundleID:   app.BundleID,
-			Aliases:    app.Aliases,
-			Traits:     traits.ByBundle[app.BundleID],
-			Status:     status,
-			BadgeClass: badgeClass,
+			Name:     app.Name,
+			BundleID: app.BundleID,
+			Aliases:  app.Aliases,
+			Traits:   traits.ByBundle[app.BundleID],
+			Enabled:  app.Enabled,
 		})
 	}
 
