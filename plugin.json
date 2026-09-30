@@ -11,7 +11,25 @@
       "filesystem",
       "input",
       "display"
-    ]
+    ],
+    "capabilities": {
+      "uses": [
+        "native.app_windows",
+        "native.audio_devices",
+        "native.cursor",
+        "native.frontmost_app",
+        "native.hid_devices",
+        "native.installed_apps",
+        "native.launch_app",
+        "native.mute",
+        "native.new_app_window",
+        "native.open_target",
+        "native.set_audio_device",
+        "native.set_volume",
+        "native.volume",
+        "native.warp_cursor"
+      ]
+    }
   },
   "version": "1.0.0",
   "min_api_version": "0.2.0",
